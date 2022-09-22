@@ -20,13 +20,13 @@ spaces used in the pseudo REGEX should be taken as 1 or many spaces.
 ------------------------------------------------------------------------------------------------------------
  1    set variable
 ------------------------------------------------------------------------------------------------------------
-(var/const or nothing) {NAME} = {ANY}
+(let/const or nothing) {NAME} = {ANY}
 
-var and const variables will set variables. if a const is already set in that stack, it will throw an error.
+let and const variables will set variables. if a const is already set in that stack, it will throw an error.
 at the end of a opperation (e.g. if, while, or function) drop the variable stack.
 
 having no verb at the start suggests the program would like to edit a variables from a different stack.
-if there is no variable found in the other stacks, then it sets one in the current stack as a var.
+if there is no variable found in the other stacks, then it sets one in the current stack as a let.
 
 setting variables returns the value, which can be used.
 
@@ -39,7 +39,7 @@ example:
 ------------------------------------------------------------------------------------------------------------
  2    functions
 ------------------------------------------------------------------------------------------------------------
-(var/const or nothing) {NAME}({PARAMS}) = {CODE}
+(let/const or nothing) {NAME}({PARAMS}) = {CODE}
 
 the starting verb follows the rules set by (REF 1).
 
@@ -64,10 +64,10 @@ a wrap is used to wrap code in square brackets. its used to create a memory stac
 inside the wraps stack are deleted once the wrap is finished.
 
 example:
-    var name = unknown
+    let name = unknown
     [
         name = input('name: ')
-        var age = input('age: ')
+        let age = input('age: ')
         log('you are', age, 'years old!')
     ]
     log('hello', name)
