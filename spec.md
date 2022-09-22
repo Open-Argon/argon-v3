@@ -82,6 +82,8 @@ a wrap is used to wrap code in square brackets. its used to create a memory stac
 inside the wraps stack are deleted once the wrap is finished.
 
 example:
+
+```
 let name = unknown
 [
 name = input('name: ')
@@ -90,7 +92,4 @@ log('you are', age, 'years old!')
 ]
 log('hello', name)
 log('we do not know your age anymore because it got deleted when the wrap finished.')
-
-```
-
 ```
