@@ -17,7 +17,7 @@ rules set in maths. It's designed to be easy for mathematicians to write and und
 reused variables, and infomation for use in understanding the pseudo REGEX:
 
 ```
-NAME = [a-zA-Z][a-za-z0-9]\*
+NAME = [a-zA-Z][a-za-z0-9]*
 spaces used in the pseudo REGEX should be taken as 1 or many spaces.
 ```
 
