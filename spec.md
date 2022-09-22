@@ -39,7 +39,7 @@ example:
 
 ```
 if (x = 10) > 5 [
-log(x, 'is bigger than 5')
+    log(x, 'is bigger than 5')
 ]
 ```
 
