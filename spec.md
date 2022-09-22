@@ -86,9 +86,9 @@ example:
 ```
 let name = unknown
 [
-name = input('name: ')
-let age = input('age: ')
-log('you are', age, 'years old!')
+    name = input('name: ')
+    let age = input('age: ')
+    log('you are', age, 'years old!')
 ]
 log('hello', name)
 log('we do not know your age anymore because it got deleted when the wrap finished.')
