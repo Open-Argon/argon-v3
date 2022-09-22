@@ -12,7 +12,7 @@ follow some design patterns found in those interpreters.
 
 Argon 3 is a programming language primarily designed for maths computation, it is designed to use techniques and
 rules set in maths. It's designed to be easy for mathematicians to write and understand algorithms in.
-(e.g. f(x) = x^2 to set a function)
+(e.g. `f(x) = x^2` to set a function)
 
 reused variables, and infomation for use in understanding the pseudo REGEX:
 
