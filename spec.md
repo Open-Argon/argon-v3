@@ -36,9 +36,12 @@ if there is no variable found in the other stacks, then it sets one in the curre
 setting variables returns the value, which can be used.
 
 example:
+
+```
 if (x = 10) > 5 [
 log(x, 'is bigger than 5')
 ]
+```
 
 ---
 
