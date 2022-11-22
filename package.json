@@ -1,0 +1,23 @@
+{
+  "name": "argon-v3",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "mkdir -p build && go build -o build/argon ./src",
+    "dev": "nodemon -x go run ./src/. --signal SIGKILL -e go --verbose"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ugric/argon-v3.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Ugric/argon-v3/issues"
+  },
+  "homepage": "https://github.com/Ugric/argon-v3#readme",
+  "dependencies": {
+    "nodemon": "^2.0.20"
+  }
+}
