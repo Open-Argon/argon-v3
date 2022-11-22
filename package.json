@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "build": "mkdir -p build && go build -o build/argon ./src",
-    "dev": "nodemon -x go run ./src/. --signal SIGKILL -e go --verbose"
+    "dev": "nodemon -x go run ./src/. --signal SIGKILL -e go --verbose",
+    "start": "go run ./src/."
   },
   "repository": {
     "type": "git",
