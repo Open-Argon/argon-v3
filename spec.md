@@ -18,6 +18,7 @@ reused variables, and infomation for use in understanding the pseudo REGEX:
 
 -   NAME = [a-zA-Z][a-za-z0-9]\*
 -   spaces used in the pseudo REGEX should be taken as 1 or many spaces.
+-   there can be 0 or more spaces around any of the pseudo REGEX
 
 ---
 
@@ -76,8 +77,8 @@ if the function does not return, then the value given is unknown/null
 
 `[{CODE}]`
 
-a wrap is used to wrap code in square brackets. its used to create a memory stack, so variables set from
-inside the wraps stack are deleted once the wrap is finished.
+a wrap encloses code in square brackets. its used to create a new scope, so variables set from
+inside the wraps scope are deleted once the wrap is finished.
 
 example:
 
@@ -91,3 +92,22 @@ let name = unknown
 log('hello', name)
 log('we do not know your age anymore because it got deleted when the wrap finished.')
 ```
+
+A wrap, unless specificifed otherwise, can have a return value. This value can be used as the value of the wrap.
+
+example:
+
+```
+const password = [
+    let password = input("set password: ")
+    while len(password) < 8 [
+        log("password must be longer then 8 characters!")
+        password = input("set password: ")
+    ]
+    return password
+]
+
+log("your password is", password)
+```
+
+If the wrap does not take a return value, then the wrap passes the return value back to a parent wrap.
