@@ -1,4 +1,4 @@
-# ARGON 3 beta 1.0
+# ARGON 3 dev 1.0
 
 This is the specification on how to create an Argon interpreter.
 
