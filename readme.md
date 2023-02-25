@@ -10,6 +10,7 @@ ARGON 3 is a math-driven programming language designed to make code easy to read
 ## 📚 Features
 
    - Easy to read and write: Argon 3 is designed with clarity of code in mind, making it easier for you and others to read and write code.
+   - All numbers are stored as rational numbers, preventing precision errors.
    - Math-driven: Designed for mathematical computations, Argon 3 uses techniques and rules set in maths. It's designed to be easy for mathematicians to write and understand algorithms in.
    - Interpreted: Argon 3 is an interpreted language, so you don't need to compile your code before running it.
    - Cross-platform: Argon 3 can be run on any platform that has an interpreter for it.

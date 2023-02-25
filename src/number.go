@@ -6,7 +6,16 @@ import (
 	"strings"
 )
 
-var numberCompile = makeRegex("( *)((\\-)?(([0-9]*(\\.[0-9]+)?)(e((\\-|\\+)?([0-9]+(\\.[0-9]+)?)))?)|(0b[10]+(.[10]+)?(e((\\-|\\+)?([0-9]+(\\.[0-9]+)?)))?)|(0x[a-fA-F0-9]+(.[a-fA-F0-9]+)?)|(0o[0-7]+(.[0-7]+)?(e((\\-|\\+)?([0-9]+(\\.[0-9]+)?)))?))( *)")
+type translateNumber struct {
+	number
+	code string
+	line int
+}
+
+var numberCompile = makeRegex("( *)(\\-)?((([0-9]+(\\.[0-9]+)?)|(\\.[0-9]+))(e((\\-|\\+)?([0-9]+(\\.[0-9]+)?)))?)( *)")
+var binaryCompile = makeRegex("( *)(0b[10]+(.[10]+)?(e((\\-|\\+)?([0-9]+(\\.[0-9]+)?)))?)( *)")
+var hexCompile = makeRegex("( *)(0x[a-fA-F0-9]+(.[a-fA-F0-9]+)?)( *)")
+var octalCompile = makeRegex("( *)(0o[0-7]+(.[0-7]+)?(e((\\-|\\+)?([0-9]+(\\.[0-9]+)?)))?)( *)")
 
 // a number type
 type number = *big.Rat
@@ -22,7 +31,7 @@ func stringToNumber(str string) (*big.Rat, bool) {
 }
 
 func isNumber(code UNPARSEcode) bool {
-	return numberCompile.MatchString(code.code)
+	return numberCompile.MatchString(code.code) || binaryCompile.MatchString(code.code) || hexCompile.MatchString(code.code) || octalCompile.MatchString(code.code)
 }
 
 // converts a number type to a string
@@ -80,10 +89,10 @@ var subscript = map[byte]string{
 }
 
 // returns translateNumber, success, error
-func parseNumber(code UNPARSEcode) (translateNumber, bool, string) {
-	output, _ := newNumber().SetString(code.code)
+func parseNumber(code UNPARSEcode) (translateNumber, bool, ArErr, int) {
+	output, _ := newNumber().SetString(strings.TrimSpace(code.code))
 	return translateNumber{
 		number: output,
 		line:   code.line,
-	}, true, ""
+	}, true, ArErr{}, 1
 }

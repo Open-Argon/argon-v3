@@ -64,7 +64,7 @@ output:
 f(10) = 121
 ```
 
-if the function does not return, then the value returned is `unknown`
+if the function does not return, then the value returned is `null`
 
 ---
 

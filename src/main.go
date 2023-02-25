@@ -8,7 +8,6 @@ import (
 var Args = os.Args[1:]
 
 func main() {
-
 	ex, e := os.Getwd()
 	if e != nil {
 		panic(e)
@@ -17,7 +16,7 @@ func main() {
 		panic("No file specified")
 	}
 	err := importMod(Args[0], ex, true)
-	if err != "" {
-		panic(err)
+	if err.EXISTS {
+		panicErr(err)
 	}
 }

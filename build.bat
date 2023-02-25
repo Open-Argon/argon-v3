@@ -1,3 +1,3 @@
 @echo off
 
-go build -o bin/Argon-v3.exe ./src
+go build -o bin/argon.exe ./src

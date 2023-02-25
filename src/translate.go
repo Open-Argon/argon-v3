@@ -1,37 +1,43 @@
 package main
 
-import (
-	"fmt"
-	"log"
-)
+type UNPARSEcode struct {
+	code     string
+	realcode string
+	line     int
+	path     string
+}
 
-// returns (translateNumber | translateString), success, error
-func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine bool) (any, bool, string) {
+// returns (translateNumber | translateString| nil), success, error
+func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine bool) (any, bool, ArErr, int) {
 	if isLine {
-		if isComment(code) {
-			return nil, true, ""
+		if isBlank(code) {
+			return nil, true, ArErr{}, 1
+		} else if isComment(code) {
+			resp, worked, err := parseComment(code, index, codelines)
+			if worked {
+				return resp, worked, err, 1
+			}
 		}
 	}
-
-	if isNumber(code) {
+	if isCall(code) {
+		return parseCall(code, index, codelines)
+	} else if isVariable(code) {
+		return parseVariable(code)
+	} else if isNumber(code) {
 		return parseNumber(code)
 	} else if isString(code) {
 		return parseString(code)
 	}
-	if isLine {
-		return nil, false, "Syntax Error: invalid code on line " + fmt.Sprint(code.line) + ": " + code.code
-	}
-	return nil, false, ""
+	return nil, false, ArErr{"Syntax Error", "invalid syntax", code.line, code.path, code.realcode, true}, 1
 }
 
 // returns [](translateNumber | translateString), error
-func translate(codelines []UNPARSEcode) ([]any, string) {
+func translate(codelines []UNPARSEcode) ([]any, ArErr) {
 	translated := []any{}
 	for i, code := range codelines {
-		val, _, err := translateVal(code, i, codelines, true)
+		val, _, err, _ := translateVal(code, i, codelines, true)
 
-		if err != "" {
-			log.Fatal(err)
+		if err.EXISTS {
 			return nil, err
 		}
 		if val == nil {
@@ -39,5 +45,5 @@ func translate(codelines []UNPARSEcode) ([]any, string) {
 		}
 		translated = append(translated, val)
 	}
-	return translated, ""
+	return translated, ArErr{}
 }

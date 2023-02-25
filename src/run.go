@@ -1,24 +1,27 @@
 package main
 
-import "fmt"
-
-func runLine(line any) (any, string) {
-	switch line.(type) {
+// returns (number|string|nil), error
+func runVal(line any, stack []map[string]variableValue) (any, ArErr) {
+	switch x := line.(type) {
 	case translateNumber:
-		return (numberToString(line.(translateNumber).number, 0)), ""
+		return (x.number), ArErr{}
 	case translateString:
-		return (line.(translateString).str), ""
+		return (x.str), ArErr{}
+	case call:
+		return runCall(x, stack)
+	case accessVariable:
+		return readVariable(x, stack)
 	}
-	return nil, "Error: invalid code on line " + fmt.Sprint(line.(translateNumber).line) + ": " + line.(translateNumber).code
+	panic("unreachable")
 }
 
 // returns error
-func run(translated []any) (any, string) {
+func run(translated []any, stack []map[string]variableValue) (any, ArErr) {
 	for _, val := range translated {
-		_, err := runLine(val)
-		if err != "" {
+		_, err := runVal(val, stack)
+		if err.EXISTS {
 			return nil, err
 		}
 	}
-	return nil, ""
+	return nil, ArErr{}
 }

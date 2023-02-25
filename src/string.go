@@ -1,10 +1,15 @@
 package main
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 )
+
+type translateString struct {
+	str  string
+	code string
+	line int
+}
 
 var stringCompile = makeRegex("(( *)\"((\\\\([a-z\\\"'`]))|[^\\\"])*\"( *))|(( *)'((\\\\([a-z\\'\"`]))|[^\\'])*'( *))")
 
@@ -27,16 +32,16 @@ func unquoted(
 }
 
 // returns translateString, success, error
-func parseString(code UNPARSEcode) (translateString, bool, string) {
+func parseString(code UNPARSEcode) (translateString, bool, ArErr, int) {
 	trim := strings.Trim(code.code, " ")
 
 	unquoted, err := unquoted(trim)
 	if err != nil {
-		return translateString{}, false, "Syntax Error: invalid string on line " + fmt.Sprint(code.line) + ": " + code.code
+		return translateString{}, false, ArErr{"Syntax Error", "invalid string", code.line, code.path, code.realcode, true}, 1
 	}
 
 	return translateString{
 		str:  unquoted,
 		line: code.line,
-	}, true, ""
+	}, true, ArErr{}, 1
 }
