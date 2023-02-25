@@ -6,6 +6,8 @@ import (
 	"strings"
 )
 
+var numberCompile = makeRegex("( *)((\\-)?(([0-9]*(\\.[0-9]+)?)(e((\\-|\\+)?([0-9]+(\\.[0-9]+)?)))?)|(0b[10]+(.[10]+)?(e((\\-|\\+)?([0-9]+(\\.[0-9]+)?)))?)|(0x[a-fA-F0-9]+(.[a-fA-F0-9]+)?)|(0o[0-7]+(.[0-7]+)?(e((\\-|\\+)?([0-9]+(\\.[0-9]+)?)))?))( *)")
+
 // a number type
 type number = *big.Rat
 
@@ -17,6 +19,10 @@ func newNumber() *big.Rat {
 // converts a string into a number
 func stringToNumber(str string) (*big.Rat, bool) {
 	return newNumber().SetString(str)
+}
+
+func isNumber(code UNPARSEcode) bool {
+	return numberCompile.MatchString(code.code)
 }
 
 // converts a number type to a string
@@ -71,4 +77,13 @@ var subscript = map[byte]string{
 	'7': "₇",
 	'8': "₈",
 	'9': "₉",
+}
+
+// returns translateNumber, success, error
+func parseNumber(code UNPARSEcode) (translateNumber, bool, string) {
+	output, _ := newNumber().SetString(code.code)
+	return translateNumber{
+		number: output,
+		line:   code.line,
+	}, true, ""
 }

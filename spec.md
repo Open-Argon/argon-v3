@@ -24,10 +24,10 @@ reused variables, and infomation for use in understanding the pseudo REGEX:
 
 ## set variable
 
-`(let/const or nothing) {NAME} = {ANY}`
+`(let or nothing) {NAME} = {ANY}`
 
-let and const variables will set variables. if a const is already set in that stack, it will throw an error.
-at the end of a opperation (e.g. if, while, or function) drop the variable stack.
+let variables will set variables. at the end of a opperation (e.g. if, while, or function) drop the
+variable stack.
 
 having no verb at the start suggests the program would like to edit a variables from a different stack.
 if there is no variable found in the other stacks, then it sets one in the current stack as a let.
@@ -36,17 +36,16 @@ setting variables returns the value, which can be used.
 
 example:
 
-```
-if (x = 10) > 5 [
+```javascript
+if (x = 10) > 5 do
     log(x, 'is bigger than 5')
-]
 ```
 
 ---
 
 ## functions
 
-`(let/const or nothing) {NAME}({PARAMS}) = {CODE}`
+`(let or nothing) {NAME}({PARAMS}) = {CODE}`
 
 the starting verb follows the rules set by [set variable](#set-variable).
 
@@ -54,41 +53,41 @@ function can be called by using its name followed by brackets with the params.
 
 example:
 
-```
-
-const f(x) = x^2 + 2*x + 1
+```javascript
+f(x) = x^2 + 2*x + 1
 log('f(10) =', f(10))
-
 ```
 
 output:
 
-```
-
+```javascript
 f(10) = 121
-
 ```
 
-if the function does not return, then the value given is unknown/null
+if the function does not return, then the value returned is `unknown`
 
 ---
 
 ## wrap
 
-`[{CODE}]`
+```
+do
+   {CODE}
+```
 
-a wrap encloses code in square brackets. its used to create a new scope, so variables set from
+a wrap encloses code indented in after the word `do` its used to create a new scope, so variables set from
 inside the wraps scope are deleted once the wrap is finished.
 
 example:
 
-```
+```javascript
 let name = unknown
-[
+
+do
     name = input('name: ')
     let age = input('age: ')
     log('you are', age, 'years old!')
-]
+
 log('hello', name)
 log('we do not know your age anymore because it got deleted when the wrap finished.')
 ```
@@ -97,17 +96,19 @@ A wrap, unless specificifed otherwise, can have a return value. This value can b
 
 example:
 
-```
-const password = [
+```javascript
+let password = do
     let password = input("set password: ")
-    while len(password) < 8 [
+    while len(password) < 8 do
         log("password must be longer then 8 characters!")
         password = input("set password: ")
-    ]
     return password
-]
 
 log("your password is", password)
 ```
 
 If the wrap does not take a return value, then the wrap passes the return value back to a parent wrap.
+
+## Comments
+`//{COMMENT}`
+Comments allow the programmer to write a message into their code, without the message being processed by the computer.
