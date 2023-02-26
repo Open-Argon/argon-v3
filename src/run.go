@@ -1,7 +1,7 @@
 package main
 
 // returns (number|string|nil), error
-func runVal(line any, stack []map[string]variableValue) (any, ArErr) {
+func runVal(line any, stack stack) (any, ArErr) {
 	switch x := line.(type) {
 	case translateNumber:
 		return (x.number), ArErr{}
@@ -11,12 +11,14 @@ func runVal(line any, stack []map[string]variableValue) (any, ArErr) {
 		return runCall(x, stack)
 	case accessVariable:
 		return readVariable(x, stack)
+	case ArMapGet:
+		return mapGet(x, stack)
 	}
 	panic("unreachable")
 }
 
 // returns error
-func run(translated []any, stack []map[string]variableValue) (any, ArErr) {
+func run(translated []any, stack stack) (any, ArErr) {
 	for _, val := range translated {
 		_, err := runVal(val, stack)
 		if err.EXISTS {

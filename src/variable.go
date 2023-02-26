@@ -46,7 +46,7 @@ func parseVariable(code UNPARSEcode) (accessVariable, bool, ArErr, int) {
 	return accessVariable{name: name, code: code.code, line: code.line}, true, ArErr{}, 1
 }
 
-func readVariable(v accessVariable, stack []map[string]variableValue) (any, ArErr) {
+func readVariable(v accessVariable, stack stack) (any, ArErr) {
 	for i := len(stack) - 1; i >= 0; i-- {
 		if val, ok := stack[i][v.name]; ok {
 			return val.VAL, ArErr{}

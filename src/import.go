@@ -98,7 +98,7 @@ func importMod(realpath string, origin string, main bool) ArErr {
 	if translationerr.EXISTS {
 		return translationerr
 	}
-	_, runimeErr := run(translated, []map[string]variableValue{vars})
+	_, runimeErr := run(translated, stack{vars})
 	if runimeErr.EXISTS {
 		return runimeErr
 	}

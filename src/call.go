@@ -11,6 +11,7 @@ type call struct {
 	args     []any
 	code     string
 	line     int
+	path     string
 }
 
 func isCall(code UNPARSEcode) bool {
@@ -50,10 +51,10 @@ func parseCall(code UNPARSEcode, index int, codelines []UNPARSEcode) (any, bool,
 	if !works {
 		return nil, false, ArErr{"Syntax Error", "invalid call", code.line, code.path, code.realcode, true}, 1
 	}
-	return call{callable: callable, args: arguments, line: code.line, code: code.code}, true, ArErr{}, 1
+	return call{callable: callable, args: arguments, line: code.line, code: code.realcode, path: code.path}, true, ArErr{}, 1
 }
 
-func runCall(c call, stack []map[string]variableValue) (any, ArErr) {
+func runCall(c call, stack stack) (any, ArErr) {
 	callable, err := runVal(c.callable, stack)
 	if err.EXISTS {
 		return nil, err
@@ -70,7 +71,7 @@ func runCall(c call, stack []map[string]variableValue) (any, ArErr) {
 	case builtinFunc:
 		return x.FUNC(args...)
 	case Callable:
-		return nil, ArErr{"Runtime Error", "cannot call a class", c.line, "", c.code, true}
+		return nil, ArErr{"Runtime Error", "cannot call a class", c.line, c.path, c.code, true}
 	}
-	return nil, ArErr{"Runtime Error", typeof(callable) + "' is not callable", c.line, "", c.code, true}
+	return nil, ArErr{"Runtime Error", "type '" + typeof(callable) + "' is not callable", c.line, c.path, c.code, true}
 }

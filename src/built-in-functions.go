@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
 type builtinFunc struct {
 	name string
@@ -31,4 +34,16 @@ func ArgonMult(args ...any) (any, ArErr) {
 	return reduce(func(x any, y any) any {
 		return newNumber().Mul(y.(number), x.(number))
 	}, args), ArErr{}
+}
+
+func ArgonSleep(args ...any) (any, ArErr) {
+	if len(args) > 0 {
+		float, _ := args[0].(number).Float64()
+		time.Sleep(time.Duration(float*1000000000) * time.Nanosecond)
+	}
+	return nil, ArErr{}
+}
+
+func ArgonTimestamp(args ...any) (any, ArErr) {
+	return newNumber().Quo(newNumber().SetInt64(time.Now().UnixNano()), newNumber().SetInt64(1000000000)), ArErr{}
 }
