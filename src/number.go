@@ -7,15 +7,15 @@ import (
 )
 
 type translateNumber struct {
-	number
-	code string
-	line int
+	number number
+	code   string
+	line   int
 }
 
-var numberCompile = makeRegex("( *)(\\-)?((([0-9]+(\\.[0-9]+)?)|(\\.[0-9]+))(e((\\-|\\+)?([0-9]+(\\.[0-9]+)?)))?)( *)")
-var binaryCompile = makeRegex("( *)(0b[10]+(.[10]+)?(e((\\-|\\+)?([0-9]+(\\.[0-9]+)?)))?)( *)")
-var hexCompile = makeRegex("( *)(0x[a-fA-F0-9]+(.[a-fA-F0-9]+)?)( *)")
-var octalCompile = makeRegex("( *)(0o[0-7]+(.[0-7]+)?(e((\\-|\\+)?([0-9]+(\\.[0-9]+)?)))?)( *)")
+var numberCompile = makeRegex("( *)(-)?((([0-9]+(\\.[0-9]+)?)|(\\.[0-9]+))(e((\\-|\\+)?([0-9]+(\\.[0-9]+)?)))?)( *)")
+var binaryCompile = makeRegex("( *)(-)?(0b[10]+(.\\[10]+)?(e((\\-|\\+)?([0-9]+(\\.[0-9]+)?)))?)( *)")
+var hexCompile = makeRegex("( *)(-)?(0x[a-fA-F0-9]+(\\.[a-fA-F0-9]+)?)( *)")
+var octalCompile = makeRegex("( *)(-)?(0o[0-7]+(\\.[0-7]+)?(e((\\-|\\+)?([0-9]+(\\.[0-9]+)?)))?)( *)")
 
 // a number type
 type number = *big.Rat
@@ -23,11 +23,6 @@ type number = *big.Rat
 // create a new number type
 func newNumber() *big.Rat {
 	return new(big.Rat)
-}
-
-// converts a string into a number
-func stringToNumber(str string) (*big.Rat, bool) {
-	return newNumber().SetString(str)
 }
 
 func isNumber(code UNPARSEcode) bool {
@@ -89,10 +84,7 @@ var subscript = map[byte]string{
 }
 
 // returns translateNumber, success, error
-func parseNumber(code UNPARSEcode) (translateNumber, bool, ArErr, int) {
+func parseNumber(code UNPARSEcode) (number, bool, ArErr, int) {
 	output, _ := newNumber().SetString(strings.TrimSpace(code.code))
-	return translateNumber{
-		number: output,
-		line:   code.line,
-	}, true, ArErr{}, 1
+	return output, true, ArErr{}, 1
 }

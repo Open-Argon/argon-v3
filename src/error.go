@@ -15,9 +15,11 @@ type ArErr struct {
 }
 
 func panicErr(err ArErr) {
-	fmt.Println("  File:", err.path+":"+fmt.Sprint(err.line))
-	fmt.Println("    " + err.code)
-	fmt.Println()
+	if err.code != "" && err.line != 0 && err.path != "" {
+		fmt.Println("  File:", err.path+":"+fmt.Sprint(err.line))
+		fmt.Println("    " + err.code)
+		fmt.Println()
+	}
 	fmt.Println(err.TYPE+":", err.message)
 	os.Exit(1)
 }

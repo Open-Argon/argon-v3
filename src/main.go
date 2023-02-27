@@ -7,7 +7,7 @@ import (
 // args without the program path
 var Args = os.Args[1:]
 
-type stack = []map[string]variableValue
+type stack = []map[string]any
 
 func main() {
 	ex, e := os.Getwd()

@@ -7,7 +7,12 @@ import (
 
 type ArMap = map[any]any
 
-var mapGetCompile = makeRegex(".+\\.([a-zA-Z_])([a-zA-Z0-9_])*( *)")
+type ArClass struct {
+	value any
+	MAP   ArMap
+}
+
+var mapGetCompile = makeRegex("(.|\n)+\\.([a-zA-Z_])([a-zA-Z0-9_])*( *)")
 
 type ArMapGet struct {
 	VAL  any
@@ -39,6 +44,19 @@ func mapGet(r ArMapGet, stack stack) (any, ArErr) {
 			}
 		}
 		return m[key], ArErr{}
+	case ArClass:
+		if _, ok := m.MAP[key]; !ok {
+			return nil, ArErr{
+				"KeyError",
+				"key '" + fmt.Sprint(key) + "' not found",
+				r.line,
+				r.path,
+				r.code,
+				true,
+			}
+		}
+		return m.MAP[key], ArErr{}
+
 	}
 	return nil, ArErr{
 		"TypeError",

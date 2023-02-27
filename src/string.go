@@ -32,16 +32,13 @@ func unquoted(
 }
 
 // returns translateString, success, error
-func parseString(code UNPARSEcode) (translateString, bool, ArErr, int) {
+func parseString(code UNPARSEcode) (string, bool, ArErr, int) {
 	trim := strings.Trim(code.code, " ")
 
 	unquoted, err := unquoted(trim)
 	if err != nil {
-		return translateString{}, false, ArErr{"Syntax Error", "invalid string", code.line, code.path, code.realcode, true}, 1
+		return "", false, ArErr{"Syntax Error", "invalid string", code.line, code.path, code.realcode, true}, 1
 	}
 
-	return translateString{
-		str:  unquoted,
-		line: code.line,
-	}, true, ArErr{}, 1
+	return unquoted, true, ArErr{}, 1
 }

@@ -4,7 +4,7 @@ import (
 	"strings"
 )
 
-var commentCompile = makeRegex(".*//.*")
+var commentCompile = makeRegex("(.|\n)*//(.|\n)*")
 
 func isComment(code UNPARSEcode) bool {
 	return commentCompile.MatchString(code.code)

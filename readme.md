@@ -17,7 +17,7 @@ ARGON 3 is a math-driven programming language designed to make code easy to read
    - Lightweight: The Argon 3 interpreter is small and doesn't require a lot of system resources to run.
 
 ## 💻 Installation
-As of now, Argon 3 does not have an installer. Feel free to clone this repo and run the `build` file for your plateform. the build will be found in `bin/Argon-v3(.exe)`.
+As of now, Argon 3 does not have an installer. Feel free to clone this repo and run the `build` file for your plateform. the build will be found in `bin/argon(.exe)`.
 
 ## 📖 Usage
 

@@ -7,7 +7,7 @@ type UNPARSEcode struct {
 	path     string
 }
 
-// returns (translateNumber | translateString| nil), success, error
+// returns (translateNumber | translateString| nil), success, error, step
 func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine bool) (any, bool, ArErr, int) {
 	if isLine {
 		if isBlank(code) {
@@ -19,14 +19,20 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine b
 			}
 		}
 	}
-	if isCall(code) {
+	if isSetVariable(code) {
+		return parseSetVariable(code, index, codelines)
+	} else if isBrackets(code) {
+		return parseBrackets(code, index, codelines)
+	} else if isNumber(code) {
+		return parseNumber(code)
+	} else if isNegative(code) {
+		return parseNegative(code, index, codelines)
+	} else if isCall(code) {
 		return parseCall(code, index, codelines)
 	} else if isVariable(code) {
 		return parseVariable(code)
 	} else if isMapGet(code) {
 		return mapGetParse(code, index, codelines)
-	} else if isNumber(code) {
-		return parseNumber(code)
 	} else if isString(code) {
 		return parseString(code)
 	}
@@ -36,9 +42,9 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine b
 // returns [](translateNumber | translateString), error
 func translate(codelines []UNPARSEcode) ([]any, ArErr) {
 	translated := []any{}
-	for i, code := range codelines {
-		val, _, err, _ := translateVal(code, i, codelines, true)
-
+	for i := 0; i < len(codelines); {
+		val, _, err, step := translateVal(codelines[i], i, codelines, true)
+		i += step
 		if err.EXISTS {
 			return nil, err
 		}

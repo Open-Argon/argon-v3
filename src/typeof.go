@@ -14,6 +14,8 @@ func typeof(val any) string {
 		return "function"
 	case builtinFunc:
 		return "function"
+	case ArMap:
+		return "map"
 	}
 	return "unknown"
 }

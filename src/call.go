@@ -1,10 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"strings"
 )
 
-var callCompile = makeRegex("( *).+\\(.*\\)( *)")
+var callCompile = makeRegex("( *)(.|\n)+\\((.|\n)*\\)( *)")
 
 type call struct {
 	callable any
@@ -60,8 +61,9 @@ func runCall(c call, stack stack) (any, ArErr) {
 		return nil, err
 	}
 	args := []any{}
+	level := append(stack, map[string]any{})
 	for _, arg := range c.args {
-		resp, err := runVal(arg, stack)
+		resp, err := runVal(arg, level)
 		if err.EXISTS {
 			return nil, err
 		}
@@ -69,9 +71,20 @@ func runCall(c call, stack stack) (any, ArErr) {
 	}
 	switch x := callable.(type) {
 	case builtinFunc:
-		return x.FUNC(args...)
+		resp, err := x.FUNC(args...)
+		if err.EXISTS {
+			err = ArErr{err.TYPE, err.message, c.line, c.path, c.code, true}
+		}
+		return resp, err
 	case Callable:
-		return nil, ArErr{"Runtime Error", "cannot call a class", c.line, c.path, c.code, true}
+		if len(x.params) != len(args) {
+			return nil, ArErr{"Runtime Error", "expected " + fmt.Sprint(len(x.params)) + " arguments, got " + fmt.Sprint(len(args)), c.line, c.path, c.code, true}
+		}
+		level := map[string]any{}
+		for i, param := range x.params {
+			level[param] = args[i]
+		}
+		return runVal(x.run, append(stack, level))
 	}
 	return nil, ArErr{"Runtime Error", "type '" + typeof(callable) + "' is not callable", c.line, c.path, c.code, true}
 }
