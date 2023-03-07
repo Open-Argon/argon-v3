@@ -29,6 +29,11 @@ func isNumber(code UNPARSEcode) bool {
 	return numberCompile.MatchString(code.code) || binaryCompile.MatchString(code.code) || hexCompile.MatchString(code.code) || octalCompile.MatchString(code.code)
 }
 
+func isAnyNumber(x any) bool {
+	_, ok := x.(number)
+	return ok
+}
+
 // converts a number type to a string
 func numberToString(num number, fraction int) string {
 	if fraction != 0 {
@@ -44,7 +49,7 @@ func numberToString(num number, fraction int) string {
 		denominator := split[1]
 
 		super := []string{}
-		for i := 0; i < len(numerator); i++ {
+		for i := 0; i <= len(numerator); i++ {
 			super = append(super, superscript[numerator[i]])
 		}
 		sub := []string{}

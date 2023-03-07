@@ -1,6 +1,8 @@
 package main
 
-import "strings"
+import (
+	"strings"
+)
 
 var bracketsCompile = makeRegex(`( *)\((.|\n)+\)( *)`)
 
@@ -17,7 +19,7 @@ func isBrackets(code UNPARSEcode) bool {
 
 func parseBrackets(code UNPARSEcode, index int, codeline []UNPARSEcode) (brackets, bool, ArErr, int) {
 	resp, worked, err, i := translateVal(UNPARSEcode{
-		code:     strings.TrimSpace(code.code)[1 : len(code.code)-1],
+		code:     strings.TrimSpace(code.code)[1 : len(code.code)-2],
 		realcode: code.realcode,
 		line:     code.line,
 		path:     code.path,

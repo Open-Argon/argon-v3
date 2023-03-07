@@ -1,5 +1,10 @@
 package main
 
+import (
+	"fmt"
+	"reflect"
+)
+
 // returns (number|string|nil), error
 func runVal(line any, stack stack) (any, ArErr) {
 	if len(stack) > 500 {
@@ -26,6 +31,7 @@ func runVal(line any, stack stack) (any, ArErr) {
 		return setVariableValue(x, stack)
 	case negative:
 		resp, err := runVal(x.VAL, stack)
+		resp = classVal(resp)
 		if err.EXISTS {
 			return nil, err
 		}
@@ -40,7 +46,10 @@ func runVal(line any, stack stack) (any, ArErr) {
 		}
 	case brackets:
 		return runVal(x.VAL, stack)
+	case operationType:
+		return runOperation(x, stack)
 	}
+	fmt.Println("unreachable", reflect.TypeOf(line))
 	panic("unreachable")
 }
 

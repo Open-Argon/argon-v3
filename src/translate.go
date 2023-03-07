@@ -7,7 +7,7 @@ type UNPARSEcode struct {
 	path     string
 }
 
-// returns (translateNumber | translateString| nil), success, error, step
+// returns (number | string | nil), success, error, step
 func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine bool) (any, bool, ArErr, int) {
 	if isLine {
 		if isBlank(code) {
@@ -19,11 +19,18 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine b
 			}
 		}
 	}
-	if isSetVariable(code) {
-		return parseSetVariable(code, index, codelines)
-	} else if isBrackets(code) {
+	if isBrackets(code) {
 		return parseBrackets(code, index, codelines)
-	} else if isNumber(code) {
+	} else if isSetVariable(code) {
+		return parseSetVariable(code, index, codelines)
+	}
+	operation, worked, err, step := parseOperations(code, index, codelines)
+	if worked {
+		return operation, worked, err, step
+	} else if err.EXISTS {
+		return nil, worked, err, step
+	}
+	if isNumber(code) {
 		return parseNumber(code)
 	} else if isNegative(code) {
 		return parseNegative(code, index, codelines)
@@ -39,7 +46,7 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine b
 	return nil, false, ArErr{"Syntax Error", "invalid syntax", code.line, code.path, code.realcode, true}, 1
 }
 
-// returns [](translateNumber | translateString), error
+// returns [](number | string), error
 func translate(codelines []UNPARSEcode) ([]any, ArErr) {
 	translated := []any{}
 	for i := 0; i < len(codelines); {

@@ -116,7 +116,7 @@ func setVariableValue(v setVariable, stack stack) (any, ArErr) {
 		for i := len(stack) - 1; i >= 0; i-- {
 			if _, ok := stack[i][v.name]; ok {
 				stack[i][v.name] = resp
-				return stack, ArErr{}
+				return resp, ArErr{}
 			}
 		}
 		stack[len(stack)-1][v.name] = resp

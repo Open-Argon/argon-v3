@@ -68,6 +68,13 @@ func mapGet(r ArMapGet, stack stack) (any, ArErr) {
 	}
 }
 
+func classVal(r any) any {
+	if _, ok := r.(ArClass); ok {
+		return r.(ArClass).value
+	}
+	return r
+}
+
 func isMapGet(code UNPARSEcode) bool {
 	return mapGetCompile.MatchString(code.code)
 }
@@ -81,6 +88,6 @@ func mapGetParse(code UNPARSEcode, index int, codelines []UNPARSEcode) (ArMapGet
 	if !worked {
 		return ArMapGet{}, false, err, i
 	}
-	k := translateString{key, code.realcode, code.line}
+	k := key
 	return ArMapGet{resp, k, code.line, code.realcode, code.path}, true, ArErr{}, 1
 }

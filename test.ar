@@ -1,3 +1,4 @@
-let f(x) = x
-
-log(f(1))
+y = time.now()
+log('start')
+time.snooze(1)
+log(1e-250-1--1)

@@ -5,12 +5,6 @@ import (
 	"strings"
 )
 
-type translateString struct {
-	str  string
-	code string
-	line int
-}
-
 var stringCompile = makeRegex("(( *)\"((\\\\([a-z\\\"'`]))|[^\\\"])*\"( *))|(( *)'((\\\\([a-z\\'\"`]))|[^\\'])*'( *))")
 
 func isString(code UNPARSEcode) bool {
