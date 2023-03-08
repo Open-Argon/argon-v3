@@ -96,6 +96,9 @@ func nameToTranslated(code UNPARSEcode, index int, lines []UNPARSEcode) (any, bo
 		params := strings.Split(trimmed[start+1:len(trimmed)-1], ",")
 		for i := range params {
 			params[i] = strings.TrimSpace(params[i])
+			if params[i] == "" {
+				params = append(params[:i], params[i+1:]...)
+			}
 		}
 		name := strings.TrimSpace(trimmed[:start])
 		if blockedVariableNames[name] {
