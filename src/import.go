@@ -99,7 +99,7 @@ func importMod(realpath string, origin string, main bool) ArErr {
 		return translationerr
 	}
 	global := scope{}
-	_, runimeErr, _, _ := run(translated, stack{vars, global})
+	_, runimeErr, _ := run(translated, stack{vars, global})
 	if runimeErr.EXISTS {
 		return runimeErr
 	}

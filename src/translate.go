@@ -26,8 +26,15 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine b
 		if worked {
 			return bracket, worked, err, step
 		}
-	} else if isSetVariable(code) {
+	}
+	if isSetVariable(code) {
 		setvar, worked, err, step := parseSetVariable(code, index, codelines)
+		if worked {
+			return setvar, worked, err, step
+		}
+	}
+	if isAutoAsignVariable(code) {
+		setvar, worked, err, step := parseAutoAsignVariable(code, index, codelines)
 		if worked {
 			return setvar, worked, err, step
 		}

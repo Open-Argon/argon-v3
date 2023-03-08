@@ -22,14 +22,15 @@ func shell() {
 		code := input("\x1b[38;5;240m>>> \x1b[0m\x1b[1;5;240m")
 		fmt.Print("\x1b[0m")
 		translated, translationerr := translate([]UNPARSEcode{{code, code, 1, "<shell>"}})
+		count := len(translated)
 		if translationerr.EXISTS {
 			panicErr(translationerr)
 		}
-		_, runimeErr, count, output := run(translated, global)
+		_, runimeErr, output := run(translated, global)
 		if runimeErr.EXISTS {
 			panicErr(runimeErr)
 		}
-		if count == 0 {
+		if count == 1 {
 			fmt.Println(anyToArgon(output, true, true, 3, 0, true, 1))
 		}
 	}

@@ -94,7 +94,7 @@ func anyToArgon(x any, quote bool, simplify bool, depth int, indent int, color b
 		if color {
 			output = append(output, "\x1b[38;5;240m")
 		}
-		output = append(output, "<function "+x.name+">")
+		output = append(output, "<function>")
 		if color {
 			output = append(output, "\x1b[0m")
 		}
