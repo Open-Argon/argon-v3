@@ -45,7 +45,6 @@ func mapGet(r ArMapGet, stack stack) (any, ArErr) {
 		}
 		return m[key], ArErr{}
 	case ArClass:
-		fmt.Println(m.MAP)
 		if _, ok := m.MAP[key]; !ok {
 			return nil, ArErr{
 				"KeyError",
