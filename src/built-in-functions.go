@@ -1,10 +1,7 @@
 package main
 
 import (
-	"bufio"
-	"fmt"
 	"math/big"
-	"os"
 )
 
 type builtinFunc struct {
@@ -12,22 +9,12 @@ type builtinFunc struct {
 	FUNC func(...any) (any, ArErr)
 }
 
-func ArgonMult(args ...any) (any, ArErr) {
-	return reduce(func(x any, y any) any {
-		return newNumber().Mul(y.(number), x.(number))
-	}, args), ArErr{}
+func ArgonString(args ...any) (any, ArErr) {
+	return anyToArgon(args[0], true, false, 3, 0, false, 0), ArErr{}
 }
 
 func ArgonInput(args ...any) (any, ArErr) {
-	output := []any{}
-	for i := 0; i < len(args); i++ {
-		output = append(output, anyToArgon(args[i], false, true, 3, 0))
-	}
-	fmt.Print(output...)
-	scanner := bufio.NewScanner(os.Stdin)
-	scanner.Scan()
-	input := scanner.Text()
-	return input, ArErr{}
+	return input(args...), ArErr{}
 }
 
 func ArgonNumber(args ...any) (any, ArErr) {

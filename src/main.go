@@ -16,10 +16,12 @@ func main() {
 		panic(e)
 	}
 	if len(Args) == 0 {
-		panic("No file specified")
+		shell()
+		os.Exit(0)
 	}
 	err := importMod(Args[0], ex, true)
 	if err.EXISTS {
 		panicErr(err)
+		os.Exit(1)
 	}
 }

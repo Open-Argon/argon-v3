@@ -26,6 +26,11 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine b
 		if worked {
 			return bracket, worked, err, step
 		}
+	} else if isSetVariable(code) {
+		setvar, worked, err, step := parseSetVariable(code, index, codelines)
+		if worked {
+			return setvar, worked, err, step
+		}
 	}
 	operation, worked, err, step := parseOperations(code, index, codelines)
 	if worked {
@@ -33,9 +38,7 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine b
 	} else if err.EXISTS {
 		return nil, worked, err, step
 	}
-	if isSetVariable(code) {
-		return parseSetVariable(code, index, codelines)
-	} else if isNumber(code) {
+	if isNumber(code) {
 		return parseNumber(code)
 	} else if isNegative(code) {
 		return parseNegative(code, index, codelines)

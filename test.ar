@@ -1,1 +1,4 @@
-term.log(sqrt(10))
+x = 10
+term.log(x)
+x = x+1
+term.log(x)

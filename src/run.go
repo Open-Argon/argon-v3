@@ -54,12 +54,15 @@ func runVal(line any, stack stack) (any, ArErr) {
 }
 
 // returns error
-func run(translated []any, stack stack) (any, ArErr) {
+func run(translated []any, stack stack) (any, ArErr, int, any) {
+	var output any = nil
+	count := 0
 	for _, val := range translated {
-		_, err := runVal(val, stack)
+		val, err := runVal(val, stack)
+		output = val
 		if err.EXISTS {
-			return nil, err
+			return nil, err, count, output
 		}
 	}
-	return nil, ArErr{}
+	return nil, ArErr{}, count, output
 }

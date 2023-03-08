@@ -11,6 +11,15 @@ func isString(code UNPARSEcode) bool {
 	return stringCompile.MatchString(code.code)
 }
 
+func toStringClass(str string) ArClass {
+	return ArClass{
+		value: str,
+		MAP: ArMap{
+			"length": len(str),
+		},
+	}
+}
+
 func unquoted(
 	str string,
 ) (string, error) {
@@ -22,7 +31,12 @@ func unquoted(
 	str = str[1 : len(str)-1]
 	str = strings.Replace(str, "\\'", "'", -1)
 	str = "\"" + str + "\""
-	return strconv.Unquote(str)
+	output, err := strconv.Unquote(str)
+	if err != nil {
+		return "", err
+	}
+	classoutput := (output)
+	return classoutput, nil
 }
 
 // returns translateString, success, error

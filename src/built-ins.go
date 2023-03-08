@@ -3,14 +3,15 @@ package main
 var vars = scope{}
 
 func init() {
-	vars["window"] = vars
+	vars["vars"] = vars
 	vars["term"] = ArTerm
 	vars["true"] = true
 	vars["false"] = false
 	vars["null"] = nil
 	vars["input"] = builtinFunc{"input", ArgonInput}
 	vars["number"] = builtinFunc{"number", ArgonNumber}
-	vars["mult"] = builtinFunc{"mult", ArgonMult}
+	vars["string"] = builtinFunc{"string", ArgonString}
+	vars["infinity"] = infinity
 	vars["length"] = builtinFunc{"length", func(a ...any) (any, ArErr) {
 		switch x := a[0].(type) {
 		case string:

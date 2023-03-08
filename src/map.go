@@ -45,6 +45,7 @@ func mapGet(r ArMapGet, stack stack) (any, ArErr) {
 		}
 		return m[key], ArErr{}
 	case ArClass:
+		fmt.Println(m.MAP)
 		if _, ok := m.MAP[key]; !ok {
 			return nil, ArErr{
 				"KeyError",
@@ -60,7 +61,7 @@ func mapGet(r ArMapGet, stack stack) (any, ArErr) {
 	}
 	return nil, ArErr{
 		"TypeError",
-		"cannot read " + anyToArgon(key, true, true, 3, 0) + " from type '" + typeof(resp) + "'",
+		"cannot read " + anyToArgon(key, true, true, 3, 0, false, 0) + " from type '" + typeof(resp) + "'",
 		r.line,
 		r.path,
 		r.code,

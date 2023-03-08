@@ -49,7 +49,7 @@ func parseVariable(code UNPARSEcode) (accessVariable, bool, ArErr, int) {
 	if blockedVariableNames[name] {
 		return accessVariable{}, false, ArErr{"Naming Error", "Naming Error: \"" + name + "\" is a reserved keyword", code.line, code.path, code.realcode, true}, 1
 	}
-	return accessVariable{name: name, code: code.code, line: code.line}, true, ArErr{}, 1
+	return accessVariable{name: name, code: code.code, line: code.line, path: code.path}, true, ArErr{}, 1
 }
 
 func readVariable(v accessVariable, stack stack) (any, ArErr) {

@@ -58,6 +58,7 @@ func parseOperations(code UNPARSEcode, index int, codelines []UNPARSEcode) (oper
 	for i := 0; i < len(operations); i++ {
 		values := []any{}
 		current := 0
+		totalindex := 1
 		for l := 0; l < len(code.code); l++ {
 			for j := 0; j < len(operations[i]); j++ {
 				if len(code.code[l:]) >= len(operations[i][j]) && code.code[l:l+len(operations[i][j])] == operations[i][j] {
@@ -71,7 +72,7 @@ func parseOperations(code UNPARSEcode, index int, codelines []UNPARSEcode) (oper
 						}, index, codelines, false)
 
 					if success {
-						index += respindex - 1
+						totalindex += respindex - 1
 						values = append(values, resp)
 						current = l + len(operations[i][j])
 					}
@@ -87,7 +88,7 @@ func parseOperations(code UNPARSEcode, index int, codelines []UNPARSEcode) (oper
 					path:     code.path,
 				}, index, codelines, false)
 			if success {
-				index += respindex - 1
+				totalindex += respindex - 1
 				values = append(values, resp)
 				return operationType{
 					i,
@@ -95,12 +96,12 @@ func parseOperations(code UNPARSEcode, index int, codelines []UNPARSEcode) (oper
 					code.line,
 					code.realcode,
 					code.path,
-				}, true, err, index
+				}, true, err, totalindex
 			}
-			return operationType{}, false, err, index
+			return operationType{}, false, err, totalindex
 		}
 	}
-	return operationType{}, false, ArErr{}, index
+	return operationType{}, false, ArErr{}, 0
 }
 
 func compareValues(o operationType, stack stack) (bool, ArErr) {
@@ -216,7 +217,7 @@ func calcNegative(o operationType, stack stack) (number, ArErr) {
 			true,
 		}
 	}
-	output := resp.(number)
+	output := newNumber().Set(resp.(number))
 	for i := 1; i < len(o.values); i++ {
 		resp, err := runVal(
 			o.values[i],
@@ -242,6 +243,52 @@ func calcNegative(o operationType, stack stack) (number, ArErr) {
 	return output, ArErr{}
 }
 
+func calcDiv(o operationType, stack stack) (number, ArErr) {
+
+	resp, err := runVal(
+		o.values[0],
+		stack,
+	)
+	resp = classVal(resp)
+	if err.EXISTS {
+		return nil, err
+	}
+	if !isAnyNumber(resp) {
+		return nil, ArErr{
+			"Runtime Error",
+			"Cannot subtract from type '" + typeof(resp) + "'",
+			o.line,
+			o.path,
+			o.code,
+			true,
+		}
+	}
+	output := newNumber().Set(resp.(number))
+	for i := 1; i < len(o.values); i++ {
+		resp, err := runVal(
+			o.values[i],
+			stack,
+		)
+		resp = classVal(resp)
+		if err.EXISTS {
+			return nil, err
+		}
+		if typeof(resp) == "number" {
+			output = output.Quo(output, resp.(number))
+		} else {
+			return nil, ArErr{
+				"Runtime Error",
+				"Cannot divide type '" + typeof(resp) + "'",
+				o.line,
+				o.path,
+				o.code,
+				true,
+			}
+		}
+	}
+	return output, ArErr{}
+}
+
 func calcAdd(o operationType, stack stack) (any, ArErr) {
 
 	resp, err := runVal(
@@ -254,7 +301,9 @@ func calcAdd(o operationType, stack stack) (any, ArErr) {
 	}
 	var output any = resp
 	if typeof(output) != "number" {
-		output = anyToArgon(resp, false, true, 3, 0)
+		output = anyToArgon(resp, false, true, 3, 0, false, 0)
+	} else {
+		output = newNumber().Set(output.(number))
 	}
 	for i := 1; i < len(o.values); i++ {
 		resp, err := runVal(
@@ -266,14 +315,61 @@ func calcAdd(o operationType, stack stack) (any, ArErr) {
 			return nil, err
 		}
 		if typeof(output) == "number" && typeof(resp) == "string" {
-			output = anyToArgon(output, false, true, 3, 0)
+			output = anyToArgon(output, false, true, 3, 0, false, 0)
 		}
 		if typeof(output) == "number" {
-			output = newNumber().Add(output.(number), resp.(number))
+			output = output.(number).Add(output.(number), resp.(number))
 		} else {
-			output = output.(string) + anyToArgon(resp, false, true, 3, 0)
+			output = output.(string) + anyToArgon(resp, false, true, 3, 0, false, 0)
 		}
 
+	}
+	return output, ArErr{}
+}
+
+func calcMul(o operationType, stack stack) (any, ArErr) {
+
+	resp, err := runVal(
+		o.values[0],
+		stack,
+	)
+	resp = classVal(resp)
+	if err.EXISTS {
+		return nil, err
+	}
+	var output any = resp
+	if typeof(output) != "number" {
+		output = anyToArgon(resp, false, true, 3, 0, false, 0)
+	} else {
+		output = newNumber().Set(output.(number))
+	}
+	for i := 1; i < len(o.values); i++ {
+		resp, err := runVal(
+			o.values[i],
+			stack,
+		)
+		resp = classVal(resp)
+		if err.EXISTS {
+			return nil, err
+		}
+		if typeof(output) == "number" && typeof(resp) == "string" {
+			output = anyToArgon(output, false, true, 3, 0, false, 0)
+		}
+		if typeof(output) == "number" {
+			output = output.(number).Mul(output.(number), resp.(number))
+		} else if typeof(resp) == "number" {
+			n, _ := resp.(number).Float64()
+			output = strings.Repeat(output.(string), int(n))
+		} else {
+			return nil, ArErr{
+				"Runtime Error",
+				"Cannot multiply type '" + typeof(resp) + "'",
+				o.line,
+				o.path,
+				o.code,
+				true,
+			}
+		}
 	}
 	return output, ArErr{}
 }
@@ -356,7 +452,7 @@ func calcIn(o operationType, stack stack) (bool, ArErr) {
 
 	switch x := resp2.(type) {
 	case string:
-		check := anyToArgon(resp, false, true, 3, 0)
+		check := anyToArgon(resp, false, true, 3, 0, false, 0)
 		return strings.Contains(x, check), ArErr{}
 	case []any:
 		return stringInSlice(resp, x), ArErr{}
@@ -379,7 +475,7 @@ func equals(a any, b any) bool {
 	if typeof(a) == "number" && typeof(b) == "number" {
 		return a.(number).Cmp(b.(number)) == 0
 	} else if typeof(a) == "string" || typeof(b) == "string" {
-		return anyToArgon(a, false, true, 3, 0) == anyToArgon(b, false, true, 3, 0)
+		return anyToArgon(a, false, false, 3, 0, false, 0) == anyToArgon(b, false, false, 3, 0, false, 0)
 	}
 	return reflect.DeepEqual(a, b)
 }
@@ -412,6 +508,10 @@ func runOperation(o operationType, stack stack) (any, ArErr) {
 		return calcAdd(o, stack)
 	case 11:
 		return calcNegative(o, stack)
+	case 12:
+		return calcMul(o, stack)
+	case 13:
+		return calcDiv(o, stack)
 
 	}
 	panic("Unknown operation: " + fmt.Sprint(o.operation))

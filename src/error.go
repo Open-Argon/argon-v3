@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 )
 
 type ArErr struct {
@@ -20,6 +19,5 @@ func panicErr(err ArErr) {
 		fmt.Println("    " + err.code)
 		fmt.Println()
 	}
-	fmt.Println(err.TYPE+":", err.message)
-	os.Exit(1)
+	fmt.Printf("\x1b[%dm%s\x1b[0m", 91, fmt.Sprint(err.TYPE, ": ", err.message, "\n"))
 }
