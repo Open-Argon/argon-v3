@@ -61,7 +61,7 @@ func runCall(c call, stack stack) (any, ArErr) {
 		return nil, err
 	}
 	args := []any{}
-	level := append(stack, map[string]any{})
+	level := append(stack, scope{})
 	for _, arg := range c.args {
 		resp, err := runVal(arg, level)
 		if err.EXISTS {
@@ -80,7 +80,7 @@ func runCall(c call, stack stack) (any, ArErr) {
 		if len(x.params) != len(args) {
 			return nil, ArErr{"Runtime Error", "expected " + fmt.Sprint(len(x.params)) + " arguments, got " + fmt.Sprint(len(args)), c.line, c.path, c.code, true}
 		}
-		level := map[string]any{}
+		level := scope{}
 		for i, param := range x.params {
 			level[param] = args[i]
 		}

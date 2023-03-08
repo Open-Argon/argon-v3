@@ -18,8 +18,9 @@ func isBrackets(code UNPARSEcode) bool {
 }
 
 func parseBrackets(code UNPARSEcode, index int, codeline []UNPARSEcode) (brackets, bool, ArErr, int) {
+	trimmed := strings.TrimSpace(code.code)
 	resp, worked, err, i := translateVal(UNPARSEcode{
-		code:     strings.TrimSpace(code.code)[1 : len(code.code)-2],
+		code:     trimmed[1 : len(trimmed)-1],
 		realcode: code.realcode,
 		line:     code.line,
 		path:     code.path,

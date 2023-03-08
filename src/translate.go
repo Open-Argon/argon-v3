@@ -9,6 +9,7 @@ type UNPARSEcode struct {
 
 // returns (number | string | nil), success, error, step
 func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine bool) (any, bool, ArErr, int) {
+
 	if isLine {
 		if isBlank(code) {
 			return nil, true, ArErr{}, 1
@@ -19,10 +20,12 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine b
 			}
 		}
 	}
+
 	if isBrackets(code) {
-		return parseBrackets(code, index, codelines)
-	} else if isSetVariable(code) {
-		return parseSetVariable(code, index, codelines)
+		bracket, worked, err, step := parseBrackets(code, index, codelines)
+		if worked {
+			return bracket, worked, err, step
+		}
 	}
 	operation, worked, err, step := parseOperations(code, index, codelines)
 	if worked {
@@ -30,13 +33,19 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine b
 	} else if err.EXISTS {
 		return nil, worked, err, step
 	}
-	if isNumber(code) {
+	if isSetVariable(code) {
+		return parseSetVariable(code, index, codelines)
+	} else if isNumber(code) {
 		return parseNumber(code)
 	} else if isNegative(code) {
 		return parseNegative(code, index, codelines)
 	} else if isCall(code) {
-		return parseCall(code, index, codelines)
-	} else if isVariable(code) {
+		call, worked, err, step := parseCall(code, index, codelines)
+		if worked {
+			return call, worked, err, step
+		}
+	}
+	if isVariable(code) {
 		return parseVariable(code)
 	} else if isMapGet(code) {
 		return mapGetParse(code, index, codelines)

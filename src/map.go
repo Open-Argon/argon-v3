@@ -12,7 +12,7 @@ type ArClass struct {
 	MAP   ArMap
 }
 
-var mapGetCompile = makeRegex("(.|\n)+\\.([a-zA-Z_])([a-zA-Z0-9_])*( *)")
+var mapGetCompile = makeRegex(`(.|\n)+\.([a-zA-Z_]|(\p{L}\p{M}*))([a-zA-Z0-9_]|(\p{L}\p{M}*))*( *)`)
 
 type ArMapGet struct {
 	VAL  any
@@ -60,7 +60,7 @@ func mapGet(r ArMapGet, stack stack) (any, ArErr) {
 	}
 	return nil, ArErr{
 		"TypeError",
-		"cannot read " + anyToArgon(key, true) + " from type '" + typeof(resp) + "'",
+		"cannot read " + anyToArgon(key, true, true, 3, 0) + " from type '" + typeof(resp) + "'",
 		r.line,
 		r.path,
 		r.code,

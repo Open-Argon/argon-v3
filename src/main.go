@@ -7,7 +7,8 @@ import (
 // args without the program path
 var Args = os.Args[1:]
 
-type stack = []map[string]any
+type scope = ArMap
+type stack = []scope
 
 func main() {
 	ex, e := os.Getwd()

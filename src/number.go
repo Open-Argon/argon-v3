@@ -35,7 +35,7 @@ func isAnyNumber(x any) bool {
 }
 
 // converts a number type to a string
-func numberToString(num number, fraction int) string {
+func numberToString(num number, fraction int, simplify bool) string {
 	if fraction != 0 {
 		str := num.RatString()
 		if fraction == 1 {
@@ -58,7 +58,19 @@ func numberToString(num number, fraction int) string {
 		}
 		return strings.Join(super, "") + "/" + strings.Join(sub, "")
 	}
+	if simplify {
+		divPI, _ := newNumber().Quo(num, PI).Float64()
+		floated := float64(int(divPI * 100))
+		if divPI == 1 {
+			return "π"
+		} else if divPI == 0 {
+			return "0"
+		} else if (divPI*100) == floated && floated != 0 {
+			return fmt.Sprint(divPI) + "π"
+		}
+	}
 	x, _ := num.Float64()
+
 	return fmt.Sprint(x)
 }
 
