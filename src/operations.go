@@ -568,6 +568,9 @@ func calcPower(o operationType, stack stack) (number, ArErr) {
 			n1, _ := output.Float64()
 			n2, _ := resp.(number).Float64()
 			output = newNumber().SetFloat64(math.Pow(n1, n2))
+			if output == nil {
+				output = infinity
+			}
 		} else {
 			return nil, ArErr{
 				"Runtime Error",
