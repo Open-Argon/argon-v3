@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -9,7 +8,7 @@ var variableCompile = makeRegex(`( *)([a-zA-Z_]|(\p{L}\p{M}*))([a-zA-Z0-9_]|(\p{
 var validname = makeRegex(`(.|\n)+(\(( *)((([a-zA-Z_]|(\p{L}\p{M}*))([a-zA-Z0-9_]|(\p{L}\p{M}*))*)(( *)\,( *)([a-zA-Z_]|(\p{L}\p{M}*))([a-zA-Z0-9_]|(\p{L}\p{M}*))*)*)?( *)\))`)
 var setVariableCompile = makeRegex(`( *)(let( +))(.|\n)+( *)=(.|\n)+`)
 var autoAsignVariableCompile = makeRegex(`(.|\n)+=(.|\n)+`)
-var deleteVariableCompile = makeRegex(`( *)delete( +)( *)`)
+var deleteVariableCompile = makeRegex(`( *)delete( +)(.|\n)+( *)`)
 
 var blockedVariableNames = map[string]bool{
 	"if":       true,
@@ -53,6 +52,13 @@ type setFunction struct {
 	params []string
 }
 
+type ArDelete struct {
+	value any
+	line  int
+	code  string
+	path  string
+}
+
 func isVariable(code UNPARSEcode) bool {
 	return variableCompile.MatchString(code.code)
 }
@@ -92,9 +98,7 @@ func nameToTranslated(code UNPARSEcode, index int, lines []UNPARSEcode) (any, bo
 			params[i] = strings.TrimSpace(params[i])
 		}
 		name := strings.TrimSpace(trimmed[:start])
-		fmt.Println(name)
 		if blockedVariableNames[name] {
-			fmt.Println(name)
 			return accessVariable{}, false, ArErr{"Naming Error", "\"" + name + "\" is a reserved keyword", code.line, code.path, code.realcode, true}, 1
 		}
 		value, success, err, i := translateVal(UNPARSEcode{
@@ -185,7 +189,7 @@ func setVariableValue(v setVariable, stack stack) (any, ArErr) {
 
 	if v.TYPE == "let" {
 		if _, ok := stack[len(stack)-1][v.toset.(accessVariable).name]; ok {
-			return stack, ArErr{"Runtime Error", "variable \"" + v.toset.(accessVariable).name + "\" already exists", v.line, v.path, v.code, true}
+			return nil, ArErr{"Runtime Error", "variable \"" + v.toset.(accessVariable).name + "\" already exists", v.line, v.path, v.code, true}
 		}
 		stack[len(stack)-1][v.toset.(accessVariable).name] = resp
 	} else {
@@ -218,24 +222,53 @@ func setVariableValue(v setVariable, stack stack) (any, ArErr) {
 	return resp, ArErr{}
 }
 
-/*
-
-func parseAutosAsignVariable(code UNPARSEcode, index int, lines []UNPARSEcode) (setVariable, bool, ArErr, int) {
+func parseDelete(code UNPARSEcode, index int, lines []UNPARSEcode) (ArDelete, bool, ArErr, int) {
 	trim := strings.TrimSpace(code.code)
-	equalsplit := strings.SplitN(trim, "=", 2)
-	name := strings.TrimSpace(equalsplit[0])
-	params := []string{}
-	function := false
-
+	spacesplit := strings.SplitN(trim, " ", 2)
+	name := strings.TrimSpace(spacesplit[1])
 	if blockedVariableNames[name] {
-		return setVariable{}, false, ArErr{"Naming Error", "\"" + name + "\" is a reserved keyword", code.line, code.path, code.realcode, true}, 1
+		return ArDelete{}, false, ArErr{"Naming Error", "\"" + name + "\" is a reserved keyword", code.line, code.path, code.realcode, true}, 1
 	}
-	value, success, err, i := translateVal(UNPARSEcode{code: equalsplit[1], realcode: code.realcode, line: code.line, path: code.path}, index, lines, false)
+	toset, success, err, i := translateVal(UNPARSEcode{code: name, realcode: code.realcode, line: code.line, path: code.path}, index, lines, false)
+
 	if !success {
-		return setVariable{}, false, err, i
+		return ArDelete{}, false, err, i
 	}
-	return setVariable{TYPE: "let", name: name, value: value, function: function, params: params, line: code.line, code: code.code, path: code.path}, true, ArErr{}, i
+	return ArDelete{
+		toset,
+		code.line,
+		code.code,
+		code.path,
+	}, true, ArErr{}, i
 }
 
-
-*/
+func runDelete(d ArDelete, stack stack) (any, ArErr) {
+	switch x := d.value.(type) {
+	case accessVariable:
+		for i := len(stack) - 1; i >= 0; i-- {
+			if _, ok := stack[i][x.name]; ok {
+				delete(stack[i], x.name)
+				return nil, ArErr{}
+			}
+		}
+		return nil, ArErr{"Runtime Error", "variable \"" + x.name + "\" does not exist", d.line, d.path, d.code, true}
+	case ArMapGet:
+		respp, err := runVal(x.VAL, stack)
+		if err.EXISTS {
+			return nil, err
+		}
+		key, err := runVal(x.key, stack)
+		if err.EXISTS {
+			return nil, err
+		}
+		switch y := respp.(type) {
+		case ArMap:
+			delete(y, key)
+		default:
+			return nil, ArErr{"Runtime Error", "can't delete for non map", d.line, d.path, d.code, true}
+		}
+	default:
+		return nil, ArErr{"Runtime Error", "can't delete for non variable", d.line, d.path, d.code, true}
+	}
+	return nil, ArErr{}
+}

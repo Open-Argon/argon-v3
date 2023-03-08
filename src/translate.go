@@ -13,10 +13,12 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine b
 	if isLine {
 		if isBlank(code) {
 			return nil, true, ArErr{}, 1
+		} else if isDeleteVariable(code) {
+			return parseDelete(code, index, codelines)
 		} else if isComment(code) {
-			resp, worked, err := parseComment(code, index, codelines)
+			resp, worked, err, step := parseComment(code, index, codelines)
 			if worked {
-				return resp, worked, err, 1
+				return resp, worked, err, step
 			}
 		}
 	}

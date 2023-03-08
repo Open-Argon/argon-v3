@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"reflect"
 	"strings"
 )
@@ -243,7 +244,7 @@ func calcNegative(o operationType, stack stack) (number, ArErr) {
 	return output, ArErr{}
 }
 
-func calcDiv(o operationType, stack stack) (number, ArErr) {
+func calcDivide(o operationType, stack stack) (number, ArErr) {
 
 	resp, err := runVal(
 		o.values[0],
@@ -256,7 +257,7 @@ func calcDiv(o operationType, stack stack) (number, ArErr) {
 	if !isAnyNumber(resp) {
 		return nil, ArErr{
 			"Runtime Error",
-			"Cannot subtract from type '" + typeof(resp) + "'",
+			"Cannot divide from type '" + typeof(resp) + "'",
 			o.line,
 			o.path,
 			o.code,
@@ -480,6 +481,107 @@ func equals(a any, b any) bool {
 	return reflect.DeepEqual(a, b)
 }
 
+func calcMod(o operationType, stack stack) (number, ArErr) {
+	resp, err := runVal(
+		o.values[0],
+		stack,
+	)
+	resp = classVal(resp)
+	if err.EXISTS {
+		return nil, err
+	}
+	if !isAnyNumber(resp) {
+		return nil, ArErr{
+			"Runtime Error",
+			"Cannot calculate modulus from type '" + typeof(resp) + "'",
+			o.line,
+			o.path,
+			o.code,
+			true,
+		}
+	}
+	output := newNumber().Set(resp.(number))
+	for i := 1; i < len(o.values); i++ {
+		resp, err := runVal(
+			o.values[i],
+			stack,
+		)
+		resp = classVal(resp)
+		if err.EXISTS {
+			return nil, err
+		}
+		if typeof(resp) == "number" {
+			n1, _ := output.Float64()
+			n2, _ := resp.(number).Float64()
+			output = newNumber().SetFloat64(math.Mod(n1, n2))
+		} else {
+			return nil, ArErr{
+				"Runtime Error",
+				"Cannot calculate modulus of type '" + typeof(resp) + "'",
+				o.line,
+				o.path,
+				o.code,
+				true,
+			}
+		}
+	}
+	return output, ArErr{}
+}
+
+func calcIntDiv(o operationType, stack stack) (number, ArErr) {
+	resp, err := calcDivide(o, stack)
+	x, _ := resp.Float64()
+	resp = newNumber().SetFloat64(math.Trunc(x))
+	return resp, err
+}
+
+func calcPower(o operationType, stack stack) (number, ArErr) {
+	resp, err := runVal(
+		o.values[0],
+		stack,
+	)
+	resp = classVal(resp)
+	if err.EXISTS {
+		return nil, err
+	}
+	if typeof(resp) != "number" {
+		return nil, ArErr{
+			"Runtime Error",
+			"Cannot calculate power of type '" + typeof(resp) + "'",
+			o.line,
+			o.path,
+			o.code,
+			true,
+		}
+	}
+	output := newNumber().Set(resp.(number))
+	for i := 1; i < len(o.values); i++ {
+		resp, err := runVal(
+			o.values[i],
+			stack,
+		)
+		resp = classVal(resp)
+		if err.EXISTS {
+			return nil, err
+		}
+		if typeof(resp) == "number" {
+			n1, _ := output.Float64()
+			n2, _ := resp.(number).Float64()
+			output = newNumber().SetFloat64(math.Pow(n1, n2))
+		} else {
+			return nil, ArErr{
+				"Runtime Error",
+				"Cannot calculate power of type '" + typeof(resp) + "'",
+				o.line,
+				o.path,
+				o.code,
+				true,
+			}
+		}
+	}
+	return output, ArErr{}
+}
+
 func runOperation(o operationType, stack stack) (any, ArErr) {
 	switch o.operation {
 	case 0:
@@ -511,7 +613,13 @@ func runOperation(o operationType, stack stack) (any, ArErr) {
 	case 12:
 		return calcMul(o, stack)
 	case 13:
-		return calcDiv(o, stack)
+		return calcMod(o, stack)
+	case 14:
+		return calcIntDiv(o, stack)
+	case 15:
+		return calcDivide(o, stack)
+	case 16:
+		return calcPower(o, stack)
 
 	}
 	panic("Unknown operation: " + fmt.Sprint(o.operation))

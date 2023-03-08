@@ -63,6 +63,8 @@ func numberToString(num number, fraction int, simplify bool) string {
 		floated := float64(int(divPI * 100))
 		if divPI == 1 {
 			return "π"
+		} else if divPI == -1 {
+			return "-π"
 		} else if divPI == 0 {
 			return "0"
 		} else if (divPI*100) == floated && floated != 0 {

@@ -48,6 +48,8 @@ func runVal(line any, stack stack) (any, ArErr) {
 		return runVal(x.VAL, stack)
 	case operationType:
 		return runOperation(x, stack)
+	case ArDelete:
+		return runDelete(x, stack)
 	}
 	fmt.Println("unreachable", reflect.TypeOf(line))
 	panic("unreachable")
