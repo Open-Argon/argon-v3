@@ -84,7 +84,7 @@ func runCall(c call, stack stack) (any, ArErr) {
 		for i, param := range x.params {
 			level[param] = args[i]
 		}
-		resp, err := runVal(x.run, append(stack, level))
+		resp, err := runVal(x.run, append(x.stack, level))
 		return resp, err
 	}
 	return nil, ArErr{"Runtime Error", "type '" + typeof(callable) + "' is not callable", c.line, c.path, c.code, true}
