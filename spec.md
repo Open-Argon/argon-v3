@@ -38,7 +38,7 @@ example:
 
 ```javascript
 if (x = 10) > 5 do
-    log(x, 'is bigger than 5')
+    term.log(x, 'is bigger than 5')
 ```
 
 ---
@@ -55,7 +55,7 @@ example:
 
 ```javascript
 f(x) = x^2 + 2*x + 1
-log('f(10) =', f(10))
+term.log('f(10) =', f(10))
 ```
 
 output:
@@ -81,15 +81,15 @@ inside the wraps scope are deleted once the wrap is finished.
 example:
 
 ```javascript
-let name = unknown
+let name = null
 
 do
     name = input('name: ')
     let age = input('age: ')
     log('you are', age, 'years old!')
 
-log('hello', name)
-log('we do not know your age anymore because it got deleted when the wrap finished.')
+term.log('hello', name)
+term.log('we do not know your age anymore because it got deleted when the wrap finished.')
 ```
 
 A wrap, unless specificifed otherwise, can have a return value. This value can be used as the value of the wrap.
@@ -104,11 +104,12 @@ let password = do
         password = input("set password: ")
     return password
 
-log("your password is", password)
+term.log("your password is", password)
 ```
 
 If the wrap does not take a return value, then the wrap passes the return value back to a parent wrap.
 
 ## Comments
 `//{COMMENT}`
+
 Comments allow the programmer to write a message into their code, without the message being processed by the computer.
