@@ -37,7 +37,7 @@ Here's an example of how to define a function in Argon 3:
 
 ```javascript
 f(x) = x^2 + 2*x + 1
-log('f(10) =', f(10))
+term.log('f(10) =', f(10))
 ```
 
 This code defines a function f(x) that calculates x^2 + 2*x + 1. It then calls the function with an argument of 10 and logs the result to the console.
