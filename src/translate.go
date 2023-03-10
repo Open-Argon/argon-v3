@@ -51,6 +51,8 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine b
 		return parseNumber(code)
 	} else if isNegative(code) {
 		return parseNegative(code, index, codelines)
+	} else if isFactorial(code) {
+		return parseFactorial(code, index, codelines)
 	} else if isCall(code) {
 		call, worked, err, step := parseCall(code, index, codelines)
 		if worked {

@@ -35,40 +35,19 @@ func isAnyNumber(x any) bool {
 }
 
 // converts a number type to a string
-func numberToString(num number, fraction int, simplify bool) string {
-	if fraction != 0 {
-		str := num.RatString()
-		if fraction == 1 {
-			return str
-		}
-		split := strings.SplitN(str, "/", 2)
-		if len(str) == 1 {
-			return split[0]
-		}
-		numerator := split[0]
-		denominator := split[1]
-
-		super := []string{}
-		for i := 0; i <= len(numerator); i++ {
-			super = append(super, superscript[numerator[i]])
-		}
-		sub := []string{}
-		for i := 0; i < len(denominator); i++ {
-			sub = append(sub, subscript[denominator[i]])
-		}
-		return strings.Join(super, "") + "/" + strings.Join(sub, "")
-	}
+func numberToString(num number, simplify bool) string {
 	if simplify {
-		divPI, _ := newNumber().Quo(num, PI).Float64()
-		floated := float64(int(divPI * 100))
-		if divPI == 1 {
+		divPI := newNumber().Quo(num, PI)
+		if divPI.Cmp(newNumber().SetInt64(1)) == 0 {
 			return "π"
-		} else if divPI == -1 {
+		} else if divPI.Cmp(newNumber().SetInt64(-1)) == 0 {
 			return "-π"
-		} else if divPI == 0 {
+		} else if divPI.Cmp(newNumber()) == 0 {
 			return "0"
-		} else if (divPI*100) == floated && floated != 0 {
-			return fmt.Sprint(divPI) + "π"
+		} else if divPI.Denom().Cmp(new(big.Int).SetInt64(1000)) <= 0 {
+			num := divPI.RatString()
+
+			return fmt.Sprint(num, "π")
 		}
 	}
 	x, _ := num.Float64()

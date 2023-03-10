@@ -24,6 +24,14 @@ var plain = ArMap{
 		fmt.Println(output...)
 		return nil, ArErr{}
 	}},
+	"print": builtinFunc{"print", func(args ...any) (any, ArErr) {
+		output := []any{}
+		for i := 0; i < len(args); i++ {
+			output = append(output, anyToArgon(args[i], false, false, 3, 0, false, 0))
+		}
+		fmt.Println(output...)
+		return nil, ArErr{}
+	}},
 }
 
 var ArTerm = ArMap{

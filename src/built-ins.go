@@ -1,5 +1,7 @@
 package main
 
+import "github.com/wadey/go-rounding"
+
 var vars = scope{}
 
 func init() {
@@ -41,7 +43,53 @@ func init() {
 			}
 			return newmap, ArErr{}
 		}
-		return nil, ArErr{TYPE: "TypeError", message: "Cannot create map from " + typeof(a[0]), EXISTS: true}
+		return nil, ArErr{TYPE: "TypeError", message: "Cannot create map from '" + typeof(a[0]) + "'", EXISTS: true}
+	}}
+	vars["array"] = builtinFunc{"array", func(a ...any) (any, ArErr) {
+		if len(a) == 0 {
+			return ArArray{}, ArErr{}
+		}
+		switch x := a[0].(type) {
+		case ArArray:
+			return x, ArErr{}
+		case string:
+			newarray := ArArray{}
+			for _, v := range x {
+				newarray = append(newarray, string(v))
+			}
+			return newarray, ArErr{}
+		case ArMap:
+			newarray := ArArray{}
+			for _, v := range x {
+				newarray = append(newarray, v)
+			}
+			return newarray, ArErr{}
+		}
+		return nil, ArErr{TYPE: "TypeError", message: "Cannot create array from '" + typeof(a[0]) + "'", EXISTS: true}
+	}}
+	vars["round"] = builtinFunc{"round", func(a ...any) (any, ArErr) {
+		if len(a) == 0 {
+			return nil, ArErr{TYPE: "round", message: "round takes 1 argument",
+				EXISTS: true}
+		}
+		precision := newNumber()
+		if len(a) > 1 {
+			switch x := a[1].(type) {
+			case number:
+				if !x.IsInt() {
+					return nil, ArErr{TYPE: "TypeError", message: "Cannot round to '" + typeof(a[1]) + "'", EXISTS: true}
+				}
+				precision = x
+			default:
+				return nil, ArErr{TYPE: "TypeError", message: "Cannot round to '" + typeof(a[1]) + "'", EXISTS: true}
+			}
+		}
+
+		switch x := a[0].(type) {
+		case number:
+			return rounding.Round(newNumber().Set(x), int(precision.Num().Int64()), rounding.HalfUp), ArErr{}
+		}
+		return nil, ArErr{TYPE: "TypeError", message: "Cannot round '" + typeof(a[0]) + "'", EXISTS: true}
 	}}
 	vars["time"] = ArTime
 	vars["PI"] = PI

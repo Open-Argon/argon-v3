@@ -21,6 +21,8 @@ func runVal(line any, stack stack) (any, ArErr) {
 		return x, ArErr{}
 	case call:
 		return runCall(x, stack)
+	case factorial:
+		return runFactorial(x, stack)
 	case accessVariable:
 		return readVariable(x, stack)
 	case ArMapGet:

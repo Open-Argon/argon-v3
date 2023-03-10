@@ -48,7 +48,7 @@ func anyToArgon(x any, quote bool, simplify bool, depth int, indent int, color b
 		} else if math.IsInf(num, -1) {
 			output = append(output, "-infinity")
 		} else {
-			output = append(output, numberToString(x, 0, simplify))
+			output = append(output, numberToString(x, simplify))
 		}
 		if color {
 			output = append(output, "\x1b[0m")
@@ -85,6 +85,32 @@ func anyToArgon(x any, quote bool, simplify bool, depth int, indent int, color b
 			output = append(output, anyToArgon(key, true, true, depth, (indent+1)*plain, color, plain)+": "+anyToArgon(x[key], true, true, depth-1, indent+1, color, plain))
 		}
 		return "{" + maybenewline + (strings.Repeat("    ", (indent+1)*plain)) + strings.Join(output, ","+maybenewline+(strings.Repeat("    ", (indent+1)*plain))) + maybenewline + (strings.Repeat("    ", indent*plain)) + "}"
+	case ArArray:
+		if len(x) == 0 {
+			return "[]"
+		}
+		output := []string{}
+		if simplify && len(x) >= 100 {
+			for i := 0; i < 10; i++ {
+				item := x[i]
+				output = append(output, anyToArgon(item, true, true, depth-1, indent+1, color, plain))
+			}
+			if color {
+				output = append(output, "\x1b[38;5;240m(...)\x1b[0m")
+			} else {
+				output = append(output, "(...)")
+			}
+			for i := len(x) - 10; i < len(x); i++ {
+				item := x[i]
+				output = append(output, anyToArgon(item, true, true, depth-1, indent+1, color, plain))
+			}
+		} else {
+			for i := 0; i < len(x); i++ {
+				item := x[i]
+				output = append(output, anyToArgon(item, true, true, depth-1, indent+1, color, plain))
+			}
+		}
+		return "[" + maybenewline + (strings.Repeat("    ", (indent+1)*plain)) + strings.Join(output, ","+maybenewline+(strings.Repeat("    ", (indent+1)*plain))) + maybenewline + (strings.Repeat("    ", indent*plain)) + "]"
 	case builtinFunc:
 		if color {
 			output = append(output, "\x1b[38;5;240m")
