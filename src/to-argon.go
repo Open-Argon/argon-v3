@@ -70,6 +70,9 @@ func anyToArgon(x any, quote bool, simplify bool, depth int, indent int, color b
 			output = append(output, "\x1b[0m")
 		}
 	case ArMap:
+		if len(x) == 0 {
+			return "{}"
+		}
 		keys := make([]any, len(x))
 
 		i := 0

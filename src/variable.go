@@ -5,7 +5,7 @@ import (
 )
 
 var variableCompile = makeRegex(`( *)([a-zA-Z_]|(\p{L}\p{M}*))([a-zA-Z0-9_]|(\p{L}\p{M}*))*( *)`)
-var validname = makeRegex(`(.|\n)+(\(( *)((([a-zA-Z_]|(\p{L}\p{M}*))([a-zA-Z0-9_]|(\p{L}\p{M}*))*)(( *)\,( *)([a-zA-Z_]|(\p{L}\p{M}*))([a-zA-Z0-9_]|(\p{L}\p{M}*))*)*)?( *)\))`)
+var validname = makeRegex(`(.|\n)*(\(( *)((([a-zA-Z_]|(\p{L}\p{M}*))([a-zA-Z0-9_]|(\p{L}\p{M}*))*)(( *)\,( *)([a-zA-Z_]|(\p{L}\p{M}*))([a-zA-Z0-9_]|(\p{L}\p{M}*))*)*)?( *)\))`)
 var setVariableCompile = makeRegex(`( *)(let( +))(.|\n)+( *)=(.|\n)+`)
 var autoAsignVariableCompile = makeRegex(`(.|\n)+=(.|\n)+`)
 var deleteVariableCompile = makeRegex(`( *)delete( +)(.|\n)+( *)`)
@@ -101,6 +101,9 @@ func nameToTranslated(code UNPARSEcode, index int, lines []UNPARSEcode) (any, bo
 			}
 		}
 		name := strings.TrimSpace(trimmed[:start])
+		if name == "" {
+			return setFunction{toset: nil, params: params}, true, ArErr{}, 1
+		}
 		if blockedVariableNames[name] {
 			return accessVariable{}, false, ArErr{"Naming Error", "\"" + name + "\" is a reserved keyword", code.line, code.path, code.realcode, true}, 1
 		}
@@ -136,6 +139,9 @@ func parseSetVariable(code UNPARSEcode, index int, lines []UNPARSEcode) (setVari
 		function = true
 		params = toset.(setFunction).params
 		toset = toset.(setFunction).toset
+		if toset == nil {
+			return setVariable{}, false, ArErr{"Type Error", "can't set for non variable, did you mean to put 'let' before?", code.line, code.path, code.realcode, true}, 1
+		}
 	default:
 		return setVariable{}, false, ArErr{"Type Error", "can't set for non variable, did you mean '=='?", code.line, code.path, code.realcode, true}, 1
 	}
@@ -210,7 +216,7 @@ func setVariableValue(v setVariable, stack stack) (any, ArErr) {
 			if err.EXISTS {
 				return nil, err
 			}
-			key, err := runVal(x.key, stack)
+			key, err := runVal(x.start, stack)
 			if err.EXISTS {
 				return nil, err
 			}
@@ -260,7 +266,7 @@ func runDelete(d ArDelete, stack stack) (any, ArErr) {
 		if err.EXISTS {
 			return nil, err
 		}
-		key, err := runVal(x.key, stack)
+		key, err := runVal(x.start, stack)
 		if err.EXISTS {
 			return nil, err
 		}

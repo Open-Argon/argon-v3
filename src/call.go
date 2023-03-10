@@ -30,7 +30,7 @@ func parseCall(code UNPARSEcode, index int, codelines []UNPARSEcode) (any, bool,
 	for i := 1; i < len(splitby); i++ {
 		name := strings.Join(splitby[0:i], "(")
 		argstr := strings.Join(splitby[i:], "(")
-		args, success, argserr := getValuesFromCommas(argstr, index, codelines)
+		args, success, argserr := getValuesFromLetter(argstr, ",", index, codelines, true)
 		arguments = args
 		if !success {
 			if i == len(splitby)-1 {
@@ -56,9 +56,18 @@ func parseCall(code UNPARSEcode, index int, codelines []UNPARSEcode) (any, bool,
 }
 
 func runCall(c call, stack stack) (any, ArErr) {
-	callable, err := runVal(c.callable, stack)
-	if err.EXISTS {
-		return nil, err
+	var callable any
+	switch x := c.callable.(type) {
+	case builtinFunc:
+		callable = x
+	case Callable:
+		callable = x
+	default:
+		callable_, err := runVal(c.callable, stack)
+		if err.EXISTS {
+			return nil, err
+		}
+		callable = callable_
 	}
 	args := []any{}
 	level := append(stack, scope{})

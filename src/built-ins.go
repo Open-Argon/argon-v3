@@ -3,7 +3,7 @@ package main
 var vars = scope{}
 
 func init() {
-	vars["vars"] = vars
+	vars["global"] = vars
 	vars["term"] = ArTerm
 	vars["true"] = true
 	vars["false"] = false
@@ -21,10 +21,33 @@ func init() {
 		}
 		return nil, ArErr{TYPE: "TypeError", message: "Cannot get length of " + typeof(a[0]), EXISTS: true}
 	}}
+	vars["map"] = builtinFunc{"map", func(a ...any) (any, ArErr) {
+		if len(a) == 0 {
+			return ArMap{}, ArErr{}
+		}
+		switch x := a[0].(type) {
+		case ArMap:
+			return x, ArErr{}
+		case string:
+			newmap := ArMap{}
+			for i, v := range x {
+				newmap[i] = string(v)
+			}
+			return newmap, ArErr{}
+		case []any:
+			newmap := ArMap{}
+			for i, v := range x {
+				newmap[i] = v
+			}
+			return newmap, ArErr{}
+		}
+		return nil, ArErr{TYPE: "TypeError", message: "Cannot create map from " + typeof(a[0]), EXISTS: true}
+	}}
 	vars["time"] = ArTime
 	vars["PI"] = PI
 	vars["π"] = PI
 	vars["e"] = e
 	sqrt := builtinFunc{"sqrt", ArgonSqrt}
 	vars["sqrt"] = sqrt
+	vars["thread"] = builtinFunc{"thread", ArThread}
 }

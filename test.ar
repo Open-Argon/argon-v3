@@ -1,4 +1,7 @@
-x = 10
-term.log(x)
-x = x+1
-term.log(x)
+let t = thread(f()=time.snooze(1))
+
+term.log("start")
+t.start()
+term.log('started')
+let val = t.join()
+term.log('joined', val)
