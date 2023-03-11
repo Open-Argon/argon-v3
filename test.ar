@@ -1,5 +1,6 @@
 f(x) = do
-    x = x + 1
-    x = x + 1
-    return x
-term.log(f(1))
+    y = number(input("what number? "))
+    return (z) = do
+        return maths.round(z) * y * x
+
+term.log(f(5)(70))

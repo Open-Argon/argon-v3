@@ -18,7 +18,7 @@ func isDoWrap(code UNPARSEcode) bool {
 }
 
 func parseDoWrap(code UNPARSEcode, index int, codelines []UNPARSEcode) (any, bool, ArErr, int) {
-	currentindent := len(code.code) - len(strings.TrimLeft(code.code, " "))
+	currentindent := len(code.realcode) - len(strings.TrimLeft(code.realcode, " "))
 	var setindent int = -1
 	var i = index + 1
 	translated := []any{}

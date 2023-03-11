@@ -30,7 +30,7 @@ func parseReturn(code UNPARSEcode, index int, codeline []UNPARSEcode) (CallJumpS
 		realcode: code.realcode,
 		line:     code.line,
 		path:     code.path,
-	}, index, codeline, 0)
+	}, index, codeline, 1)
 	return CallJumpStatment{
 		TYPE:  "return",
 		value: resp,
@@ -56,4 +56,13 @@ func runJumpStatment(code CallJumpStatment, stack stack) (any, ArErr) {
 		code:  code.code,
 		path:  code.path,
 	}, ArErr{}
+}
+
+func openJump(resp any) any {
+	switch x := resp.(type) {
+	case PassBackJumpStatment:
+		return x.value
+	default:
+		return resp
+	}
 }

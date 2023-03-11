@@ -193,11 +193,7 @@ func setVariableValue(v setVariable, stack stack) (any, ArErr) {
 		if err.EXISTS {
 			return nil, err
 		}
-		switch x := respp.(type) {
-		case PassBackJumpStatment:
-			respp = x.value
-		}
-		resp = respp
+		resp = openJump(respp)
 	}
 
 	if v.TYPE == "let" {
