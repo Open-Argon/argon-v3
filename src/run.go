@@ -50,6 +50,10 @@ func runVal(line any, stack stack) (any, ArErr) {
 		return runVal(x.VAL, stack)
 	case operationType:
 		return runOperation(x, stack)
+	case dowrap:
+		return runDoWrap(x, stack)
+	case CallJumpStatment:
+		return runJumpStatment(x, stack)
 	case ArDelete:
 		return runDelete(x, stack)
 	}

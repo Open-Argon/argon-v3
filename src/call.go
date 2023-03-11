@@ -38,7 +38,7 @@ func parseCall(code UNPARSEcode, index int, codelines []UNPARSEcode) (any, bool,
 			}
 			continue
 		}
-		resp, worked, _, _ := translateVal(UNPARSEcode{code: name, realcode: code.realcode, line: index + 1, path: code.path}, index, codelines, false)
+		resp, worked, _, _ := translateVal(UNPARSEcode{code: name, realcode: code.realcode, line: index + 1, path: code.path}, index, codelines, 0)
 		if !worked {
 			if i == len(splitby)-1 {
 				return nil, false, ArErr{"Syntax Error", "invalid callable", code.line, code.path, code.realcode, true}, 1
@@ -94,6 +94,10 @@ func runCall(c call, stack stack) (any, ArErr) {
 			level[param] = args[i]
 		}
 		resp, err := runVal(x.run, append(x.stack, level))
+		switch x := resp.(type) {
+		case PassBackJumpStatment:
+			resp = x.value
+		}
 		return resp, err
 	}
 	return nil, ArErr{"Runtime Error", "type '" + typeof(callable) + "' is not callable", c.line, c.path, c.code, true}

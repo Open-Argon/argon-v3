@@ -18,7 +18,7 @@ func getValuesFromLetter(str string, splitstr string, index int, codelines []UNP
 				arguments = append(arguments, nil)
 				temp = []string{}
 			} else {
-				resp, worked, _, _ := translateVal(UNPARSEcode{code: test, realcode: codelines[index].realcode, line: index + 1, path: codelines[index].path}, index, codelines, false)
+				resp, worked, _, _ := translateVal(UNPARSEcode{code: test, realcode: codelines[index].realcode, line: index + 1, path: codelines[index].path}, index, codelines, 0)
 				if worked {
 					arguments = append(arguments, resp)
 					temp = []string{}

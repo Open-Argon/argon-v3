@@ -24,7 +24,7 @@ func parseBrackets(code UNPARSEcode, index int, codeline []UNPARSEcode) (bracket
 		realcode: code.realcode,
 		line:     code.line,
 		path:     code.path,
-	}, index, codeline, false)
+	}, index, codeline, 0)
 	return brackets{
 		VAL:  resp,
 		line: code.line,

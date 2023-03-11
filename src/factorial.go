@@ -16,7 +16,7 @@ type factorial struct {
 func parseFactorial(code UNPARSEcode, index int, codeline []UNPARSEcode) (factorial, bool, ArErr, int) {
 	trim := strings.TrimSpace(code.code)
 	trim = trim[:len(trim)-1]
-	val, success, err, i := translateVal(UNPARSEcode{code: trim, realcode: code.realcode, line: 1, path: ""}, 0, []UNPARSEcode{}, false)
+	val, success, err, i := translateVal(UNPARSEcode{code: trim, realcode: code.realcode, line: 1, path: ""}, 0, []UNPARSEcode{}, 0)
 	if !success {
 		return factorial{}, false, err, i
 	}

@@ -403,7 +403,7 @@ func mapGetParse(code UNPARSEcode, index int, codelines []UNPARSEcode) (ArMapGet
 	split := strings.Split(trim, ".")
 	start := strings.Join(split[:len(split)-1], ".")
 	key := split[len(split)-1]
-	resp, worked, err, i := translateVal(UNPARSEcode{code: start, realcode: code.realcode, line: code.line, path: code.path}, index, codelines, false)
+	resp, worked, err, i := translateVal(UNPARSEcode{code: start, realcode: code.realcode, line: code.line, path: code.path}, index, codelines, 0)
 	if !worked {
 		return ArMapGet{}, false, err, i
 	}
@@ -444,7 +444,7 @@ func indexGetParse(code UNPARSEcode, index int, codelines []UNPARSEcode) (ArMapG
 				true,
 			}, 1
 		}
-		tival, worked, err, i := translateVal(UNPARSEcode{code: ti, realcode: code.realcode, line: code.line, path: code.path}, index, codelines, false)
+		tival, worked, err, i := translateVal(UNPARSEcode{code: ti, realcode: code.realcode, line: code.line, path: code.path}, index, codelines, 0)
 		if !worked {
 			if i == len(split)-1 {
 				return ArMapGet{}, false, err, i

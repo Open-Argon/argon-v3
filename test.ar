@@ -1,1 +1,5 @@
-range(1e10)
+f(x) = do
+    x = x + 1
+    x = x + 1
+    return x
+term.log(f(1))

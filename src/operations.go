@@ -70,7 +70,7 @@ func parseOperations(code UNPARSEcode, index int, codelines []UNPARSEcode) (oper
 							realcode: code.realcode,
 							line:     code.line,
 							path:     code.path,
-						}, index, codelines, false)
+						}, index, codelines, 0)
 
 					if success {
 						totalindex += respindex - 1
@@ -87,7 +87,7 @@ func parseOperations(code UNPARSEcode, index int, codelines []UNPARSEcode) (oper
 					realcode: code.realcode,
 					line:     code.line,
 					path:     code.path,
-				}, index, codelines, false)
+				}, index, codelines, 0)
 			if success {
 				totalindex += respindex - 1
 				values = append(values, resp)

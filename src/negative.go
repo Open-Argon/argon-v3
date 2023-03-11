@@ -21,7 +21,7 @@ func parseNegative(code UNPARSEcode, index int, codeline []UNPARSEcode) (negativ
 		realcode: code.realcode,
 		line:     code.line,
 		path:     code.path,
-	}, index, codeline, false)
+	}, index, codeline, 0)
 	return negative{
 		VAL:  resp,
 		line: code.line,

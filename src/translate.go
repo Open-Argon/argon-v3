@@ -1,5 +1,7 @@
 package main
 
+import "strings"
+
 type UNPARSEcode struct {
 	code     string
 	realcode string
@@ -8,19 +10,29 @@ type UNPARSEcode struct {
 }
 
 // returns (number | string | nil), success, error, step
-func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine bool) (any, bool, ArErr, int) {
+func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine int) (any, bool, ArErr, int) {
 
-	if isLine {
-		if isBlank(code) {
-			return nil, true, ArErr{}, 1
-		} else if isDeleteVariable(code) {
+	if isLine == 2 {
+		if isDeleteVariable(code) {
 			return parseDelete(code, index, codelines)
 		} else if isComment(code) {
 			resp, worked, err, step := parseComment(code, index, codelines)
 			if worked {
 				return resp, worked, err, step
 			}
+		} else if isReturn(code) {
+			return parseReturn(code, index, codelines)
 		}
+	}
+
+	if isLine >= 1 {
+		if isDoWrap(code) {
+			return parseDoWrap(code, index, codelines)
+		}
+	}
+
+	if isLine == 2 {
+		isLine = 1
 	}
 
 	if isBrackets(code) {
@@ -30,13 +42,13 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine b
 		}
 	}
 	if isSetVariable(code) {
-		setvar, worked, err, step := parseSetVariable(code, index, codelines)
+		setvar, worked, err, step := parseSetVariable(code, index, codelines, isLine)
 		if worked {
 			return setvar, worked, err, step
 		}
 	}
 	if isAutoAsignVariable(code) {
-		setvar, worked, err, step := parseAutoAsignVariable(code, index, codelines)
+		setvar, worked, err, step := parseAutoAsignVariable(code, index, codelines, isLine)
 		if worked {
 			return setvar, worked, err, step
 		}
@@ -75,13 +87,18 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine b
 func translate(codelines []UNPARSEcode) ([]any, ArErr) {
 	translated := []any{}
 	for i := 0; i < len(codelines); {
-		val, _, err, step := translateVal(codelines[i], i, codelines, true)
+		if isBlank(codelines[i]) {
+			i++
+			continue
+		}
+		currentindent := len(codelines[i].code) - len(strings.TrimLeft(codelines[i].code, " "))
+		if currentindent != 0 {
+			return nil, ArErr{"Syntax Error", "invalid indent", codelines[i].line, codelines[i].path, codelines[i].realcode, true}
+		}
+		val, _, err, step := translateVal(codelines[i], i, codelines, 2)
 		i += step
 		if err.EXISTS {
 			return nil, err
-		}
-		if val == nil {
-			continue
 		}
 		translated = append(translated, val)
 	}

@@ -65,7 +65,7 @@ func isVariable(code UNPARSEcode) bool {
 
 func parseVariable(code UNPARSEcode) (accessVariable, bool, ArErr, int) {
 	name := strings.TrimSpace(code.code)
-	return accessVariable{name: name, code: code.code, line: code.line, path: code.path}, true, ArErr{}, 1
+	return accessVariable{name: name, code: code.realcode, line: code.line, path: code.path}, true, ArErr{}, 1
 }
 
 func readVariable(v accessVariable, stack stack) (any, ArErr) {
@@ -112,13 +112,13 @@ func nameToTranslated(code UNPARSEcode, index int, lines []UNPARSEcode) (any, bo
 			realcode: code.realcode,
 			line:     code.line,
 			path:     code.path,
-		}, index, lines, false)
+		}, index, lines, 0)
 		return setFunction{toset: value, params: params}, success, err, i
 	}
-	return translateVal(code, index, lines, false)
+	return translateVal(code, index, lines, 0)
 }
 
-func parseSetVariable(code UNPARSEcode, index int, lines []UNPARSEcode) (setVariable, bool, ArErr, int) {
+func parseSetVariable(code UNPARSEcode, index int, lines []UNPARSEcode, isLine int) (setVariable, bool, ArErr, int) {
 	trim := strings.TrimSpace(code.code)
 	equalsplit := strings.SplitN(trim, "=", 2)
 	spacesplit := strings.SplitN(equalsplit[0], " ", 2)
@@ -128,9 +128,9 @@ func parseSetVariable(code UNPARSEcode, index int, lines []UNPARSEcode) (setVari
 	if blockedVariableNames[name] {
 		return setVariable{}, false, ArErr{"Naming Error", "\"" + name + "\" is a reserved keyword", code.line, code.path, code.realcode, true}, 1
 	}
-	toset, success, err, i := nameToTranslated(UNPARSEcode{code: name, realcode: code.realcode, line: code.line, path: code.path}, index, lines)
+	toset, success, err, namei := nameToTranslated(UNPARSEcode{code: name, realcode: code.realcode, line: code.line, path: code.path}, index, lines)
 	if err.EXISTS {
-		return setVariable{}, success, err, i
+		return setVariable{}, success, err, namei
 	}
 	switch toset.(type) {
 	case accessVariable:
@@ -145,14 +145,14 @@ func parseSetVariable(code UNPARSEcode, index int, lines []UNPARSEcode) (setVari
 	default:
 		return setVariable{}, false, ArErr{"Type Error", "can't set for non variable, did you mean '=='?", code.line, code.path, code.realcode, true}, 1
 	}
-	value, success, err, i := translateVal(UNPARSEcode{code: equalsplit[1], realcode: code.realcode, line: code.line, path: code.path}, index, lines, false)
+	value, success, err, i := translateVal(UNPARSEcode{code: equalsplit[1], realcode: code.realcode, line: code.line, path: code.path}, index, lines, isLine)
 	if !success {
 		return setVariable{}, false, err, i
 	}
-	return setVariable{TYPE: "let", toset: toset, value: value, function: function, params: params, line: code.line, code: code.code, path: code.path}, true, ArErr{}, i
+	return setVariable{TYPE: "let", toset: toset, value: value, function: function, params: params, line: code.line, code: code.code, path: code.path}, true, ArErr{}, i + namei - 1
 }
 
-func parseAutoAsignVariable(code UNPARSEcode, index int, lines []UNPARSEcode) (setVariable, bool, ArErr, int) {
+func parseAutoAsignVariable(code UNPARSEcode, index int, lines []UNPARSEcode, isLine int) (setVariable, bool, ArErr, int) {
 	trim := strings.TrimSpace(code.code)
 	equalsplit := strings.SplitN(trim, "=", 2)
 	name := strings.TrimSpace(equalsplit[0])
@@ -161,9 +161,9 @@ func parseAutoAsignVariable(code UNPARSEcode, index int, lines []UNPARSEcode) (s
 	if blockedVariableNames[name] {
 		return setVariable{}, false, ArErr{"Naming Error", "\"" + name + "\" is a reserved keyword", code.line, code.path, code.realcode, true}, 1
 	}
-	toset, success, err, i := nameToTranslated(UNPARSEcode{code: name, realcode: code.realcode, line: code.line, path: code.path}, index, lines)
+	toset, success, err, namei := nameToTranslated(UNPARSEcode{code: name, realcode: code.realcode, line: code.line, path: code.path}, index, lines)
 	if err.EXISTS {
-		return setVariable{}, success, err, i
+		return setVariable{}, success, err, namei
 	}
 	switch toset.(type) {
 	case accessVariable:
@@ -177,11 +177,11 @@ func parseAutoAsignVariable(code UNPARSEcode, index int, lines []UNPARSEcode) (s
 	default:
 		return setVariable{}, false, ArErr{"Type Error", "can't set for non variable, did you mean '=='?", code.line, code.path, code.realcode, true}, 1
 	}
-	value, success, err, i := translateVal(UNPARSEcode{code: equalsplit[1], realcode: code.realcode, line: code.line, path: code.path}, index, lines, false)
+	value, success, err, i := translateVal(UNPARSEcode{code: equalsplit[1], realcode: code.realcode, line: code.line, path: code.path}, index, lines, isLine)
 	if !success {
 		return setVariable{}, false, err, i
 	}
-	return setVariable{TYPE: "auto", toset: toset, value: value, function: function, params: params, line: code.line, code: code.code, path: code.path}, true, ArErr{}, i
+	return setVariable{TYPE: "auto", toset: toset, value: value, function: function, params: params, line: code.line, code: code.code, path: code.path}, true, ArErr{}, i + namei - 1
 }
 
 func setVariableValue(v setVariable, stack stack) (any, ArErr) {
@@ -192,6 +192,10 @@ func setVariableValue(v setVariable, stack stack) (any, ArErr) {
 		respp, err := runVal(v.value, stack)
 		if err.EXISTS {
 			return nil, err
+		}
+		switch x := respp.(type) {
+		case PassBackJumpStatment:
+			respp = x.value
 		}
 		resp = respp
 	}
@@ -238,7 +242,7 @@ func parseDelete(code UNPARSEcode, index int, lines []UNPARSEcode) (ArDelete, bo
 	if blockedVariableNames[name] {
 		return ArDelete{}, false, ArErr{"Naming Error", "\"" + name + "\" is a reserved keyword", code.line, code.path, code.realcode, true}, 1
 	}
-	toset, success, err, i := translateVal(UNPARSEcode{code: name, realcode: code.realcode, line: code.line, path: code.path}, index, lines, false)
+	toset, success, err, i := translateVal(UNPARSEcode{code: name, realcode: code.realcode, line: code.line, path: code.path}, index, lines, 0)
 
 	if !success {
 		return ArDelete{}, false, err, i

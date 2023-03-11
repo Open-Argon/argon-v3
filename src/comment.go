@@ -21,7 +21,7 @@ func parseComment(code UNPARSEcode, index int, codelines []UNPARSEcode) (any, bo
 	for i := 0; i < len(split)-1; i++ {
 		temp = append(temp, split[i])
 		joined := strings.Join(temp, "#")
-		resp, worked, _, s := translateVal(UNPARSEcode{code: joined, realcode: code.realcode, line: code.line, path: code.path}, index, codelines, true)
+		resp, worked, _, s := translateVal(UNPARSEcode{code: joined, realcode: code.realcode, line: code.line, path: code.path}, index, codelines, 0)
 		step += s - 1
 		if worked {
 			return resp, true, ArErr{}, step
