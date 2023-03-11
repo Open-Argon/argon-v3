@@ -56,7 +56,7 @@ func runDoWrap(d dowrap, stack stack, stacklevel int) (any, ArErr) {
 			return nil, err
 		}
 		switch x := val.(type) {
-		case PassBackJumpStatment:
+		case Return:
 			return x, ArErr{}
 		}
 	}

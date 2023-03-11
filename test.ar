@@ -1,13 +1,15 @@
-let ln(x) = do
+let maths = map()
+
+maths.ln(x) = do
     let n = 1e10
     return n * ((x^(1/n)) - 1)
 
 let __ln10cache = ln(10)
 
-let log(x) = do
+maths.log(x) = do
     return ln(x) / __ln10cache
 
-let logN(n,x) = do
+maths.logN(n,x) = do
     return ln(x) / ln(n)
 
-term.log(log(1000))
+term.log(maths.log(10000), array(maths))

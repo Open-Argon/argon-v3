@@ -40,6 +40,8 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine i
 		if worked {
 			return bracket, worked, err, step
 		}
+	} else if isnot(code) {
+		return parseNot(code, index, codelines, isLine)
 	}
 	if isSetVariable(code) {
 		setvar, worked, err, step := parseSetVariable(code, index, codelines, isLine)
@@ -97,7 +99,7 @@ func translate(codelines []UNPARSEcode) ([]any, ArErr) {
 		}
 		val, _, err, step := translateVal(codelines[i], i, codelines, 2)
 		switch val.(type) {
-		case CallJumpStatment:
+		case CallReturn:
 			return nil, ArErr{"Runtime Error", "Jump statment at top level", codelines[i].line, codelines[i].path, codelines[i].realcode, true}
 		}
 		i += step

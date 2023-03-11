@@ -27,6 +27,9 @@ var blockedVariableNames = map[string]bool{
 	"false":    true,
 	"null":     true,
 	"delete":   true,
+	"not":      true,
+	"and":      true,
+	"or":       true,
 }
 
 type accessVariable struct {

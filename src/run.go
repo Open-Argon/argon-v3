@@ -55,10 +55,12 @@ func runVal(line any, stack stack, stacklevel int) (any, ArErr) {
 		return runOperation(x, stack, stacklevel+1)
 	case dowrap:
 		return runDoWrap(x, stack, stacklevel+1)
-	case CallJumpStatment:
-		return runJumpStatment(x, stack, stacklevel+1)
+	case CallReturn:
+		return runReturn(x, stack, stacklevel+1)
 	case ArDelete:
 		return runDelete(x, stack, stacklevel+1)
+	case not:
+		return runNot(x, stack, stacklevel+1)
 	}
 	fmt.Println("unreachable", reflect.TypeOf(line))
 	panic("unreachable")
