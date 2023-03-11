@@ -24,7 +24,7 @@ func ArgonNumber(args ...any) (any, ArErr) {
 	switch x := args[0].(type) {
 	case string:
 		if !numberCompile.MatchString(x) {
-			return nil, ArErr{TYPE: "Number Error", message: "Cannot convert type '" + x + "' to a number", EXISTS: true}
+			return nil, ArErr{TYPE: "Conversion Error", message: "Cannot convert " + anyToArgon(x, true, true, 3, 0, false, 0) + " to a number", EXISTS: true}
 		}
 		N, _ := newNumber().SetString(x)
 		return N, ArErr{}
@@ -44,7 +44,7 @@ func ArgonNumber(args ...any) (any, ArErr) {
 
 func ArgonSqrt(a ...any) (any, ArErr) {
 	if len(a) == 0 {
-		return nil, ArErr{TYPE: "sqrt", message: "sqrt takes 1 argument",
+		return nil, ArErr{TYPE: "Runtime Error", message: "sqrt takes 1 argument",
 			EXISTS: true}
 	}
 	if typeof(a[0]) != "number" {
@@ -55,12 +55,12 @@ func ArgonSqrt(a ...any) (any, ArErr) {
 	r := a[0].(number)
 
 	if r.Sign() < 0 {
-		return nil, ArErr{TYPE: "sqrt", message: "sqrt takes a positive number",
+		return nil, ArErr{TYPE: "Runtime Error", message: "sqrt takes a positive number",
 			EXISTS: true}
 	}
 
 	var x big.Float
-	x.SetPrec(30) // I didn't figure out the 'Prec' part correctly, read the docs more carefully than I did and experiement
+	x.SetPrec(30)
 	x.SetRat(r)
 
 	var s big.Float

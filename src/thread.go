@@ -29,7 +29,7 @@ func ArThread(args ...any) (any, ArErr) {
 			hasrun = true
 			wg.Add(1)
 			go func() {
-				resp, err = runCall(call{tocall, []any{}, "", 0, ""}, currentscope)
+				resp, err = runCall(call{tocall, []any{}, "", 0, ""}, currentscope, 0)
 				wg.Done()
 			}()
 			return nil, ArErr{}

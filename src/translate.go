@@ -96,6 +96,10 @@ func translate(codelines []UNPARSEcode) ([]any, ArErr) {
 			return nil, ArErr{"Syntax Error", "invalid indent", codelines[i].line, codelines[i].path, codelines[i].realcode, true}
 		}
 		val, _, err, step := translateVal(codelines[i], i, codelines, 2)
+		switch val.(type) {
+		case CallJumpStatment:
+			return nil, ArErr{"Runtime Error", "Jump statment at top level", codelines[i].line, codelines[i].path, codelines[i].realcode, true}
+		}
 		i += step
 		if err.EXISTS {
 			return nil, err

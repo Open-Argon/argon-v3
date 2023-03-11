@@ -55,7 +55,7 @@ func parseCall(code UNPARSEcode, index int, codelines []UNPARSEcode) (any, bool,
 	return call{callable: callable, args: arguments, line: code.line, code: code.realcode, path: code.path}, true, ArErr{}, 1
 }
 
-func runCall(c call, stack stack) (any, ArErr) {
+func runCall(c call, stack stack, stacklevel int) (any, ArErr) {
 	var callable any
 	switch x := c.callable.(type) {
 	case builtinFunc:
@@ -63,7 +63,7 @@ func runCall(c call, stack stack) (any, ArErr) {
 	case Callable:
 		callable = x
 	default:
-		callable_, err := runVal(c.callable, stack)
+		callable_, err := runVal(c.callable, stack, stacklevel+1)
 		if err.EXISTS {
 			return nil, err
 		}
@@ -72,7 +72,7 @@ func runCall(c call, stack stack) (any, ArErr) {
 	args := []any{}
 	level := append(stack, scope{})
 	for _, arg := range c.args {
-		resp, err := runVal(arg, level)
+		resp, err := runVal(arg, level, stacklevel+1)
 		if err.EXISTS {
 			return nil, err
 		}
@@ -93,7 +93,7 @@ func runCall(c call, stack stack) (any, ArErr) {
 		for i, param := range x.params {
 			level[param] = args[i]
 		}
-		resp, err := runVal(x.run, append(x.stack, level))
+		resp, err := runVal(x.run, append(x.stack, level), stacklevel+1)
 		return openJump(resp), err
 	}
 	return nil, ArErr{"Runtime Error", "type '" + typeof(callable) + "' is not callable", c.line, c.path, c.code, true}

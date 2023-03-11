@@ -6,6 +6,12 @@ import (
 	"os/signal"
 )
 
+var endingWithDoCompiled = makeRegex(`.*do( )*`)
+
+func isEndingWithDo(str string) bool {
+	return endingWithDoCompiled.MatchString(str)
+}
+
 func shell() {
 	global := stack{vars, scope{}}
 	c := make(chan os.Signal, 1)
@@ -19,9 +25,23 @@ func shell() {
 		}
 	}()
 	for {
+		indo := false
+		totranslate := []UNPARSEcode{}
 		code := input("\x1b[38;5;240m>>> \x1b[0m\x1b[1;5;240m")
 		fmt.Print("\x1b[0m")
-		translated, translationerr := translate([]UNPARSEcode{{code, code, 1, "<shell>"}})
+		if isEndingWithDo(code) {
+			indo = true
+		}
+		totranslate = append(totranslate, UNPARSEcode{code, code, 1, "<shell>"})
+		for i := 2; indo; i++ {
+			code := input("\x1b[38;5;240m... \x1b[0m\x1b[1;5;240m")
+			fmt.Print("\x1b[0m")
+			totranslate = append(totranslate, UNPARSEcode{code, code, i, "<shell>"})
+			if code == "" {
+				indo = false
+			}
+		}
+		translated, translationerr := translate(totranslate)
 		count := len(translated)
 		if translationerr.EXISTS {
 			panicErr(translationerr)

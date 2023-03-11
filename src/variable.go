@@ -184,12 +184,12 @@ func parseAutoAsignVariable(code UNPARSEcode, index int, lines []UNPARSEcode, is
 	return setVariable{TYPE: "auto", toset: toset, value: value, function: function, params: params, line: code.line, code: code.code, path: code.path}, true, ArErr{}, i + namei - 1
 }
 
-func setVariableValue(v setVariable, stack stack) (any, ArErr) {
+func setVariableValue(v setVariable, stack stack, stacklevel int) (any, ArErr) {
 	var resp any
 	if v.function {
 		resp = Callable{v.params, v.value, v.code, stack, v.line}
 	} else {
-		respp, err := runVal(v.value, stack)
+		respp, err := runVal(v.value, stack, stacklevel+1)
 		if err.EXISTS {
 			return nil, err
 		}
@@ -212,11 +212,11 @@ func setVariableValue(v setVariable, stack stack) (any, ArErr) {
 			}
 			stack[len(stack)-1][x.name] = resp
 		case ArMapGet:
-			respp, err := runVal(x.VAL, stack)
+			respp, err := runVal(x.VAL, stack, stacklevel+1)
 			if err.EXISTS {
 				return nil, err
 			}
-			key, err := runVal(x.start, stack)
+			key, err := runVal(x.start, stack, stacklevel+1)
 			if err.EXISTS {
 				return nil, err
 			}
@@ -251,7 +251,7 @@ func parseDelete(code UNPARSEcode, index int, lines []UNPARSEcode) (ArDelete, bo
 	}, true, ArErr{}, i
 }
 
-func runDelete(d ArDelete, stack stack) (any, ArErr) {
+func runDelete(d ArDelete, stack stack, stacklevel int) (any, ArErr) {
 	switch x := d.value.(type) {
 	case accessVariable:
 		for i := len(stack) - 1; i >= 0; i-- {
@@ -262,11 +262,11 @@ func runDelete(d ArDelete, stack stack) (any, ArErr) {
 		}
 		return nil, ArErr{"Runtime Error", "variable \"" + x.name + "\" does not exist", d.line, d.path, d.code, true}
 	case ArMapGet:
-		respp, err := runVal(x.VAL, stack)
+		respp, err := runVal(x.VAL, stack, stacklevel+1)
 		if err.EXISTS {
 			return nil, err
 		}
-		key, err := runVal(x.start, stack)
+		key, err := runVal(x.start, stack, stacklevel+1)
 		if err.EXISTS {
 			return nil, err
 		}

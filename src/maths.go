@@ -61,4 +61,7 @@ var maths = ArMap{
 		return nil, ArErr{TYPE: "TypeError", message: "Cannot ceil '" + typeof(a[0]) + "'", EXISTS: true}
 	}},
 	"sqrt": builtinFunc{"sqrt", ArgonSqrt},
+	"ln":   builtinFunc{"ln", ArgonLn},
+	"log":  builtinFunc{"log", ArgonLog},
+	"logN": builtinFunc{"logN", ArgonLogN},
 }

@@ -16,7 +16,7 @@ type factorial struct {
 func parseFactorial(code UNPARSEcode, index int, codeline []UNPARSEcode) (factorial, bool, ArErr, int) {
 	trim := strings.TrimSpace(code.code)
 	trim = trim[:len(trim)-1]
-	val, success, err, i := translateVal(UNPARSEcode{code: trim, realcode: code.realcode, line: 1, path: ""}, 0, []UNPARSEcode{}, 0)
+	val, success, err, i := translateVal(UNPARSEcode{code: trim, realcode: code.realcode, line: code.line, path: code.path}, index, codeline, 0)
 	if !success {
 		return factorial{}, false, err, i
 	}
@@ -29,7 +29,11 @@ func isFactorial(code UNPARSEcode) bool {
 }
 
 func fact(n number) number {
-	if n.Cmp(newNumber().SetInt64(0)) == 0 {
+	if n.Cmp(newNumber().SetInt64(1000)) >= 0 {
+		return infinity
+	} else if n.Cmp(newNumber().SetInt64(0)) == -1 {
+		return newNumber().SetInt64(0)
+	} else if n.Cmp(newNumber().SetInt64(0)) == 0 {
 		return newNumber().SetInt64(1)
 	}
 	result := newNumber().SetInt64(1)
@@ -39,8 +43,8 @@ func fact(n number) number {
 	return result
 }
 
-func runFactorial(f factorial, stack stack) (any, ArErr) {
-	val, err := runVal(f.value, stack)
+func runFactorial(f factorial, stack stack, stacklevel int) (any, ArErr) {
+	val, err := runVal(f.value, stack, stacklevel+1)
 	if err.EXISTS {
 		return nil, err
 	}

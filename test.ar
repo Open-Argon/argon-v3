@@ -1,6 +1,13 @@
-f(x) = do
-    y = number(input("what number? "))
-    return (z) = do
-        return maths.round(z) * y * x
+let ln(x) = do
+    let n = 1e10
+    return n * ((x^(1/n)) - 1)
 
-term.log(f(5)(70))
+let __ln10cache = ln(10)
+
+let log(x) = do
+    return ln(x) / __ln10cache
+
+let logN(n,x) = do
+    return ln(x) / ln(n)
+
+term.log(log(1000))

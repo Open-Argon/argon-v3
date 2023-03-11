@@ -105,7 +105,7 @@ func parseOperations(code UNPARSEcode, index int, codelines []UNPARSEcode) (oper
 	return operationType{}, false, ArErr{}, 0
 }
 
-func compareValues(o operationType, stack stack) (bool, ArErr) {
+func compareValues(o operationType, stack stack, stacklevel int) (bool, ArErr) {
 	if len(o.values) != 2 {
 		return false, ArErr{
 			"Runtime Error",
@@ -119,6 +119,7 @@ func compareValues(o operationType, stack stack) (bool, ArErr) {
 	resp, err := runVal(
 		o.values[0],
 		stack,
+		stacklevel+1,
 	)
 	resp = classVal(resp)
 	if err.EXISTS {
@@ -128,6 +129,7 @@ func compareValues(o operationType, stack stack) (bool, ArErr) {
 	resp2, err := runVal(
 		o.values[1],
 		stack,
+		stacklevel+1,
 	)
 	resp2 = classVal(resp2)
 	if err.EXISTS {
@@ -198,11 +200,12 @@ func compareValues(o operationType, stack stack) (bool, ArErr) {
 	}
 }
 
-func calcNegative(o operationType, stack stack) (number, ArErr) {
+func calcNegative(o operationType, stack stack, stacklevel int) (number, ArErr) {
 
 	resp, err := runVal(
 		o.values[0],
 		stack,
+		stacklevel+1,
 	)
 	resp = classVal(resp)
 	if err.EXISTS {
@@ -223,6 +226,7 @@ func calcNegative(o operationType, stack stack) (number, ArErr) {
 		resp, err := runVal(
 			o.values[i],
 			stack,
+			stacklevel+1,
 		)
 		resp = classVal(resp)
 		if err.EXISTS {
@@ -244,11 +248,12 @@ func calcNegative(o operationType, stack stack) (number, ArErr) {
 	return output, ArErr{}
 }
 
-func calcDivide(o operationType, stack stack) (number, ArErr) {
+func calcDivide(o operationType, stack stack, stacklevel int) (number, ArErr) {
 
 	resp, err := runVal(
 		o.values[0],
 		stack,
+		stacklevel+1,
 	)
 	resp = classVal(resp)
 	if err.EXISTS {
@@ -269,6 +274,7 @@ func calcDivide(o operationType, stack stack) (number, ArErr) {
 		resp, err := runVal(
 			o.values[i],
 			stack,
+			stacklevel+1,
 		)
 		resp = classVal(resp)
 		if err.EXISTS {
@@ -290,11 +296,12 @@ func calcDivide(o operationType, stack stack) (number, ArErr) {
 	return output, ArErr{}
 }
 
-func calcAdd(o operationType, stack stack) (any, ArErr) {
+func calcAdd(o operationType, stack stack, stacklevel int) (any, ArErr) {
 
 	resp, err := runVal(
 		o.values[0],
 		stack,
+		stacklevel+1,
 	)
 	resp = classVal(resp)
 	if err.EXISTS {
@@ -310,6 +317,7 @@ func calcAdd(o operationType, stack stack) (any, ArErr) {
 		resp, err := runVal(
 			o.values[i],
 			stack,
+			stacklevel+1,
 		)
 		resp = classVal(resp)
 		if err.EXISTS {
@@ -328,11 +336,12 @@ func calcAdd(o operationType, stack stack) (any, ArErr) {
 	return output, ArErr{}
 }
 
-func calcMul(o operationType, stack stack) (any, ArErr) {
+func calcMul(o operationType, stack stack, stacklevel int) (any, ArErr) {
 
 	resp, err := runVal(
 		o.values[0],
 		stack,
+		stacklevel+1,
 	)
 	resp = classVal(resp)
 	if err.EXISTS {
@@ -348,6 +357,7 @@ func calcMul(o operationType, stack stack) (any, ArErr) {
 		resp, err := runVal(
 			o.values[i],
 			stack,
+			stacklevel+1,
 		)
 		resp = classVal(resp)
 		if err.EXISTS {
@@ -375,12 +385,13 @@ func calcMul(o operationType, stack stack) (any, ArErr) {
 	return output, ArErr{}
 }
 
-func calcAnd(o operationType, stack stack) (any, ArErr) {
+func calcAnd(o operationType, stack stack, stacklevel int) (any, ArErr) {
 	var output any = false
 	for i := 0; i < len(o.values); i++ {
 		resp, err := runVal(
 			o.values[i],
 			stack,
+			stacklevel+1,
 		)
 		resp = classVal(resp)
 		if err.EXISTS {
@@ -394,12 +405,13 @@ func calcAnd(o operationType, stack stack) (any, ArErr) {
 	return output, ArErr{}
 }
 
-func calcOr(o operationType, stack stack) (any, ArErr) {
+func calcOr(o operationType, stack stack, stacklevel int) (any, ArErr) {
 	var output any = false
 	for i := 0; i < len(o.values); i++ {
 		resp, err := runVal(
 			o.values[i],
 			stack,
+			stacklevel+1,
 		)
 		resp = classVal(resp)
 		if err.EXISTS {
@@ -422,7 +434,7 @@ func stringInSlice(a any, list []any) bool {
 	return false
 }
 
-func calcIn(o operationType, stack stack) (bool, ArErr) {
+func calcIn(o operationType, stack stack, stacklevel int) (bool, ArErr) {
 	if len(o.values) != 2 {
 		return false, ArErr{
 			"Runtime Error",
@@ -436,6 +448,7 @@ func calcIn(o operationType, stack stack) (bool, ArErr) {
 	resp, err := runVal(
 		o.values[0],
 		stack,
+		stacklevel+1,
 	)
 	resp = classVal(resp)
 	if err.EXISTS {
@@ -445,6 +458,7 @@ func calcIn(o operationType, stack stack) (bool, ArErr) {
 	resp2, err := runVal(
 		o.values[1],
 		stack,
+		stacklevel+1,
 	)
 	resp2 = classVal(resp2)
 	if err.EXISTS {
@@ -481,10 +495,11 @@ func equals(a any, b any) bool {
 	return reflect.DeepEqual(a, b)
 }
 
-func calcMod(o operationType, stack stack) (number, ArErr) {
+func calcMod(o operationType, stack stack, stacklevel int) (number, ArErr) {
 	resp, err := runVal(
 		o.values[0],
 		stack,
+		stacklevel+1,
 	)
 	resp = classVal(resp)
 	if err.EXISTS {
@@ -505,6 +520,7 @@ func calcMod(o operationType, stack stack) (number, ArErr) {
 		resp, err := runVal(
 			o.values[i],
 			stack,
+			stacklevel+1,
 		)
 		resp = classVal(resp)
 		if err.EXISTS {
@@ -528,17 +544,18 @@ func calcMod(o operationType, stack stack) (number, ArErr) {
 	return output, ArErr{}
 }
 
-func calcIntDiv(o operationType, stack stack) (number, ArErr) {
-	resp, err := calcDivide(o, stack)
+func calcIntDiv(o operationType, stack stack, stacklevel int) (number, ArErr) {
+	resp, err := calcDivide(o, stack, stacklevel+1)
 	x, _ := resp.Float64()
 	resp = newNumber().SetFloat64(math.Trunc(x))
 	return resp, err
 }
 
-func calcPower(o operationType, stack stack) (number, ArErr) {
+func calcPower(o operationType, stack stack, stacklevel int) (number, ArErr) {
 	resp, err := runVal(
 		o.values[0],
 		stack,
+		stacklevel+1,
 	)
 	resp = classVal(resp)
 	if err.EXISTS {
@@ -559,6 +576,7 @@ func calcPower(o operationType, stack stack) (number, ArErr) {
 		resp, err := runVal(
 			o.values[i],
 			stack,
+			stacklevel+1,
 		)
 		resp = classVal(resp)
 		if err.EXISTS {
@@ -585,44 +603,44 @@ func calcPower(o operationType, stack stack) (number, ArErr) {
 	return output, ArErr{}
 }
 
-func runOperation(o operationType, stack stack) (any, ArErr) {
+func runOperation(o operationType, stack stack, stacklevel int) (any, ArErr) {
 	switch o.operation {
 	case 0:
-		return calcAnd(o, stack)
+		return calcAnd(o, stack, stacklevel+1)
 	case 1:
-		return calcOr(o, stack)
+		return calcOr(o, stack, stacklevel+1)
 	case 2:
-		resp, err := calcIn(o, stack)
+		resp, err := calcIn(o, stack, stacklevel+1)
 		resp = !resp
 		return resp, err
 	case 3:
-		return calcIn(o, stack)
+		return calcIn(o, stack, stacklevel+1)
 	case 4:
-		return compareValues(o, stack)
+		return compareValues(o, stack, stacklevel+1)
 	case 5:
-		return compareValues(o, stack)
+		return compareValues(o, stack, stacklevel+1)
 	case 6:
-		return compareValues(o, stack)
+		return compareValues(o, stack, stacklevel+1)
 	case 7:
-		return compareValues(o, stack)
+		return compareValues(o, stack, stacklevel+1)
 	case 8:
-		return compareValues(o, stack)
+		return compareValues(o, stack, stacklevel+1)
 	case 9:
-		return compareValues(o, stack)
+		return compareValues(o, stack, stacklevel+1)
 	case 10:
-		return calcAdd(o, stack)
+		return calcAdd(o, stack, stacklevel+1)
 	case 11:
-		return calcNegative(o, stack)
+		return calcNegative(o, stack, stacklevel+1)
 	case 12:
-		return calcMul(o, stack)
+		return calcMul(o, stack, stacklevel+1)
 	case 13:
-		return calcMod(o, stack)
+		return calcMod(o, stack, stacklevel+1)
 	case 14:
-		return calcIntDiv(o, stack)
+		return calcIntDiv(o, stack, stacklevel+1)
 	case 15:
-		return calcDivide(o, stack)
+		return calcDivide(o, stack, stacklevel+1)
 	case 16:
-		return calcPower(o, stack)
+		return calcPower(o, stack, stacklevel+1)
 
 	}
 	panic("Unknown operation: " + fmt.Sprint(o.operation))

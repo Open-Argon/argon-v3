@@ -6,11 +6,14 @@ import (
 )
 
 // returns (number|string|nil), error
-func runVal(line any, stack stack) (any, ArErr) {
-	if len(stack) > 500 {
+func runVal(line any, stack stack, stacklevel int) (any, ArErr) {
+	if stacklevel > 10000 {
 		return nil, ArErr{
-			TYPE:    "Stack overflow",
-			message: "the stack has exceeded 500 levels",
+			TYPE:    "RuntimeError",
+			message: "stack overflow",
+			line:    0,
+			path:    "",
+			code:    "",
 			EXISTS:  true,
 		}
 	}
@@ -20,19 +23,19 @@ func runVal(line any, stack stack) (any, ArErr) {
 	case string:
 		return x, ArErr{}
 	case call:
-		return runCall(x, stack)
+		return runCall(x, stack, stacklevel+1)
 	case factorial:
-		return runFactorial(x, stack)
+		return runFactorial(x, stack, stacklevel+1)
 	case accessVariable:
 		return readVariable(x, stack)
 	case ArMapGet:
-		return mapGet(x, stack)
+		return mapGet(x, stack, stacklevel+1)
 	case ArClass:
 		return x.MAP, ArErr{}
 	case setVariable:
-		return setVariableValue(x, stack)
+		return setVariableValue(x, stack, stacklevel+1)
 	case negative:
-		resp, err := runVal(x.VAL, stack)
+		resp, err := runVal(x.VAL, stack, stacklevel+1)
 		resp = classVal(resp)
 		if err.EXISTS {
 			return nil, err
@@ -47,15 +50,15 @@ func runVal(line any, stack stack) (any, ArErr) {
 			EXISTS:  true,
 		}
 	case brackets:
-		return runVal(x.VAL, stack)
+		return runVal(x.VAL, stack, stacklevel+1)
 	case operationType:
-		return runOperation(x, stack)
+		return runOperation(x, stack, stacklevel+1)
 	case dowrap:
-		return runDoWrap(x, stack)
+		return runDoWrap(x, stack, stacklevel+1)
 	case CallJumpStatment:
-		return runJumpStatment(x, stack)
+		return runJumpStatment(x, stack, stacklevel+1)
 	case ArDelete:
-		return runDelete(x, stack)
+		return runDelete(x, stack, stacklevel+1)
 	}
 	fmt.Println("unreachable", reflect.TypeOf(line))
 	panic("unreachable")
@@ -65,7 +68,7 @@ func runVal(line any, stack stack) (any, ArErr) {
 func run(translated []any, stack stack) (any, ArErr, any) {
 	var output any = nil
 	for _, val := range translated {
-		val, err := runVal(val, stack)
+		val, err := runVal(val, stack, 0)
 		output = val
 		if err.EXISTS {
 			return nil, err, output

@@ -40,10 +40,10 @@ func parseReturn(code UNPARSEcode, index int, codeline []UNPARSEcode) (CallJumpS
 	}, worked, err, i
 }
 
-func runJumpStatment(code CallJumpStatment, stack stack) (any, ArErr) {
+func runJumpStatment(code CallJumpStatment, stack stack, stacklevel int) (any, ArErr) {
 	var val any
 	if code.value != nil {
-		v, err := runVal(code.value, stack)
+		v, err := runVal(code.value, stack, stacklevel+1)
 		if err.EXISTS {
 			return nil, err
 		}

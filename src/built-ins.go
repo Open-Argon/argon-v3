@@ -66,6 +66,7 @@ func init() {
 		return nil, ArErr{TYPE: "TypeError", message: "Cannot create array from '" + typeof(a[0]) + "'", EXISTS: true}
 	}}
 	vars["maths"] = maths
+	vars["math"] = maths
 	vars["time"] = ArTime
 	vars["PI"] = PI
 	vars["π"] = PI

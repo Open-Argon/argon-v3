@@ -28,8 +28,8 @@ type ArMapGet struct {
 	path          string
 }
 
-func mapGet(r ArMapGet, stack stack) (any, ArErr) {
-	resp, err := runVal(r.VAL, stack)
+func mapGet(r ArMapGet, stack stack, stacklevel int) (any, ArErr) {
+	resp, err := runVal(r.VAL, stack, stacklevel+1)
 	if err.EXISTS {
 		return nil, err
 	}
@@ -45,7 +45,7 @@ func mapGet(r ArMapGet, stack stack) (any, ArErr) {
 				true,
 			}
 		}
-		key, err := runVal(r.start, stack)
+		key, err := runVal(r.start, stack, stacklevel+1)
 		if err.EXISTS {
 			return nil, err
 		}
@@ -67,7 +67,7 @@ func mapGet(r ArMapGet, stack stack) (any, ArErr) {
 		step := 1
 
 		if !r.index {
-			key, err := runVal(r.start, stack)
+			key, err := runVal(r.start, stack, stacklevel+1)
 			if err.EXISTS {
 				return nil, err
 			}
@@ -76,7 +76,7 @@ func mapGet(r ArMapGet, stack stack) (any, ArErr) {
 			}
 		}
 		if r.start != nil {
-			sindex, err := runVal(r.start, stack)
+			sindex, err := runVal(r.start, stack, stacklevel+1)
 			if err.EXISTS {
 				return nil, err
 			}
@@ -105,7 +105,7 @@ func mapGet(r ArMapGet, stack stack) (any, ArErr) {
 			endindex = startindex + 1
 		}
 		if r.end != nil {
-			eindex, err := runVal(r.end, stack)
+			eindex, err := runVal(r.end, stack, stacklevel+1)
 			if err.EXISTS {
 				return nil, err
 			}
@@ -135,7 +135,7 @@ func mapGet(r ArMapGet, stack stack) (any, ArErr) {
 			endindex = len(m)
 		}
 		if r.step != nil {
-			step, err := runVal(r.step, stack)
+			step, err := runVal(r.step, stack, stacklevel+1)
 			if err.EXISTS {
 				return nil, err
 			}
@@ -214,7 +214,7 @@ func mapGet(r ArMapGet, stack stack) (any, ArErr) {
 				true,
 			}
 		}
-		key, err := runVal(r.start, stack)
+		key, err := runVal(r.start, stack, stacklevel+1)
 		if err.EXISTS {
 			return nil, err
 		}
@@ -235,7 +235,7 @@ func mapGet(r ArMapGet, stack stack) (any, ArErr) {
 		step := 1
 
 		if !r.index {
-			key, err := runVal(r.start, stack)
+			key, err := runVal(r.start, stack, stacklevel+1)
 			if err.EXISTS {
 				return nil, err
 			}
@@ -244,7 +244,7 @@ func mapGet(r ArMapGet, stack stack) (any, ArErr) {
 			}
 		}
 		if r.start != nil {
-			sindex, err := runVal(r.start, stack)
+			sindex, err := runVal(r.start, stack, stacklevel+1)
 			if err.EXISTS {
 				return nil, err
 			}
@@ -273,7 +273,7 @@ func mapGet(r ArMapGet, stack stack) (any, ArErr) {
 			endindex = startindex + 1
 		}
 		if r.end != nil {
-			eindex, err := runVal(r.end, stack)
+			eindex, err := runVal(r.end, stack, stacklevel+1)
 			if err.EXISTS {
 				return nil, err
 			}
@@ -303,7 +303,7 @@ func mapGet(r ArMapGet, stack stack) (any, ArErr) {
 			endindex = len(m)
 		}
 		if r.step != nil {
-			step, err := runVal(r.step, stack)
+			step, err := runVal(r.step, stack, stacklevel+1)
 			if err.EXISTS {
 				return nil, err
 			}
@@ -373,7 +373,7 @@ func mapGet(r ArMapGet, stack stack) (any, ArErr) {
 		return string(([]byte(m))[startindex:endindex:step]), ArErr{}
 	}
 
-	key, err := runVal(r.start, stack)
+	key, err := runVal(r.start, stack, stacklevel+1)
 	if err.EXISTS {
 		return nil, err
 	}
