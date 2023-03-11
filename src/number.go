@@ -6,12 +6,6 @@ import (
 	"strings"
 )
 
-type translateNumber struct {
-	number number
-	code   string
-	line   int
-}
-
 var numberCompile = makeRegex("( *)(-)?((([0-9]+(\\.[0-9]+)?)|(\\.[0-9]+))(e((\\-|\\+)?([0-9]+(\\.[0-9]+)?)))?)( *)")
 var binaryCompile = makeRegex("( *)(-)?(0b[10]+(.\\[10]+)?(e((\\-|\\+)?([0-9]+(\\.[0-9]+)?)))?)( *)")
 var hexCompile = makeRegex("( *)(-)?(0x[a-fA-F0-9]+(\\.[a-fA-F0-9]+)?)( *)")
@@ -53,32 +47,6 @@ func numberToString(num number, simplify bool) string {
 	x, _ := num.Float64()
 
 	return fmt.Sprint(x)
-}
-
-var superscript = map[byte]string{
-	'0': "⁰",
-	'1': "¹",
-	'2': "²",
-	'3': "³",
-	'4': "⁴",
-	'5': "⁵",
-	'6': "⁶",
-	'7': "⁷",
-	'8': "⁸",
-	'9': "⁹",
-}
-
-var subscript = map[byte]string{
-	'0': "₀",
-	'1': "₁",
-	'2': "₂",
-	'3': "₃",
-	'4': "₄",
-	'5': "₅",
-	'6': "₆",
-	'7': "₇",
-	'8': "₈",
-	'9': "₉",
 }
 
 // returns translateNumber, success, error

@@ -132,13 +132,13 @@ func parseSetVariable(code UNPARSEcode, index int, lines []UNPARSEcode, isLine i
 	if err.EXISTS {
 		return setVariable{}, success, err, namei
 	}
-	switch toset.(type) {
+	switch x := toset.(type) {
 	case accessVariable:
 		break
 	case setFunction:
 		function = true
-		params = toset.(setFunction).params
-		toset = toset.(setFunction).toset
+		params = x.params
+		toset = x.toset
 		if toset == nil {
 			return setVariable{}, false, ArErr{"Type Error", "can't set for non variable, did you mean to put 'let' before?", code.line, code.path, code.realcode, true}, 1
 		}
@@ -165,15 +165,15 @@ func parseAutoAsignVariable(code UNPARSEcode, index int, lines []UNPARSEcode, is
 	if err.EXISTS {
 		return setVariable{}, success, err, namei
 	}
-	switch toset.(type) {
+	switch x := toset.(type) {
 	case accessVariable:
 		break
 	case ArMapGet:
 		break
 	case setFunction:
 		function = true
-		params = toset.(setFunction).params
-		toset = toset.(setFunction).toset
+		params = x.params
+		toset = x.toset
 	default:
 		return setVariable{}, false, ArErr{"Type Error", "can't set for non variable, did you mean '=='?", code.line, code.path, code.realcode, true}, 1
 	}

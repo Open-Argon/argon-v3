@@ -11,15 +11,6 @@ func isString(code UNPARSEcode) bool {
 	return stringCompile.MatchString(code.code)
 }
 
-func toStringClass(str string) ArClass {
-	return ArClass{
-		value: str,
-		MAP: ArMap{
-			"length": len(str),
-		},
-	}
-}
-
 func unquoted(
 	str string,
 ) (string, error) {

@@ -24,7 +24,7 @@ func Ln(x number) number {
 }
 
 func ArgonLn(a ...any) (any, ArErr) {
-	if len(a) != 0 {
+	if len(a) != 1 {
 		return nil, ArErr{TYPE: "Runtime Error", message: "ln takes 1 argument, got " + fmt.Sprint(len(a)),
 			EXISTS: true}
 	}
