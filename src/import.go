@@ -44,7 +44,7 @@ func readFile(path string) []UNPARSEcode {
 	return output
 }
 
-func importMod(realpath string, origin string, main bool) ArErr {
+func importMod(realpath string, origin string, main bool) (scope, ArErr) {
 	extention := filepath.Ext(realpath)
 	path := realpath
 	if extention == "" {
@@ -52,11 +52,11 @@ func importMod(realpath string, origin string, main bool) ArErr {
 	}
 	ex, err := os.Getwd()
 	if err != nil {
-		return ArErr{"Import Error", err.Error(), 0, realpath, "", true}
+		return nil, ArErr{"Import Error", err.Error(), 0, realpath, "", true}
 	}
 	executable, err := os.Executable()
 	if err != nil {
-		return ArErr{"Import Error", err.Error(), 0, realpath, "", true}
+		return nil, ArErr{"Import Error", err.Error(), 0, realpath, "", true}
 	}
 	executable = filepath.Dir(executable)
 	isABS := filepath.IsAbs(path)
@@ -90,18 +90,18 @@ func importMod(realpath string, origin string, main bool) ArErr {
 	}
 
 	if !found {
-		return ArErr{"Import Error", "File does not exist: " + realpath, 0, realpath, "", true}
+		return nil, ArErr{"Import Error", "File does not exist: " + realpath, 0, realpath, "", true}
 	}
 	codelines := readFile(p)
 
 	translated, translationerr := translate(codelines)
 	if translationerr.EXISTS {
-		return translationerr
+		return nil, translationerr
 	}
 	global := scope{}
 	_, runimeErr, _ := run(translated, stack{vars, global})
 	if runimeErr.EXISTS {
-		return runimeErr
+		return nil, runimeErr
 	}
-	return ArErr{}
+	return global, ArErr{}
 }

@@ -23,7 +23,7 @@ func ArgonNumber(args ...any) (any, ArErr) {
 	}
 	switch x := args[0].(type) {
 	case string:
-		if !numberCompile.MatchString(x) {
+		if !isNumber(UNPARSEcode{code: x}) {
 			return nil, ArErr{TYPE: "Conversion Error", message: "Cannot convert " + anyToArgon(x, true, true, 3, 0, false, 0) + " to a number", EXISTS: true}
 		}
 		N, _ := newNumber().SetString(x)

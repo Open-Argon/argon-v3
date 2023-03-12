@@ -1,15 +1,9 @@
-let maths = map()
+a = array()
+i = 0
 
-maths.ln(x) = do
-    let n = 1e10
-    return n * ((x^(1/n)) - 1)
-
-let __ln10cache = ln(10)
-
-maths.log(x) = do
-    return ln(x) / __ln10cache
-
-maths.logN(n,x) = do
-    return ln(x) / ln(n)
-
-term.log(maths.log(10000), array(maths))
+forever do
+    a = append(a, i)
+    i = i + 1
+    if (i % 1000000 == 0) do
+        term.log(i)
+        break

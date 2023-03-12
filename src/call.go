@@ -67,6 +67,10 @@ func runCall(c call, stack stack, stacklevel int) (any, ArErr) {
 		if err.EXISTS {
 			return nil, err
 		}
+		switch x := callable_.(type) {
+		case ArMap:
+			callable_ = x["__call__"]
+		}
 		callable = callable_
 	}
 	args := []any{}
@@ -82,7 +86,15 @@ func runCall(c call, stack stack, stacklevel int) (any, ArErr) {
 	case builtinFunc:
 		resp, err := x.FUNC(args...)
 		if err.EXISTS {
-			err = ArErr{err.TYPE, err.message, c.line, c.path, c.code, true}
+			if err.line == 0 {
+				err.line = c.line
+			}
+			if err.path == "" {
+				err.path = c.path
+			}
+			if err.code == "" {
+				err.code = c.code
+			}
 		}
 		return resp, err
 	case Callable:
@@ -94,7 +106,7 @@ func runCall(c call, stack stack, stacklevel int) (any, ArErr) {
 			level[param] = args[i]
 		}
 		resp, err := runVal(x.run, append(x.stack, level), stacklevel+1)
-		return openJump(resp), err
+		return openReturn(resp), err
 	}
 	return nil, ArErr{"Runtime Error", "type '" + typeof(callable) + "' is not callable", c.line, c.path, c.code, true}
 }

@@ -5,21 +5,25 @@ import (
 	"math"
 	"strconv"
 	"strings"
+
+	"github.com/fatih/color"
+	"github.com/jwalton/go-supportscolor"
 )
 
-func anyToArgon(x any, quote bool, simplify bool, depth int, indent int, color bool, plain int) string {
+func anyToArgon(x any, quote bool, simplify bool, depth int, indent int, colored bool, plain int) string {
 	output := []string{}
 	maybenewline := ""
 	if plain == 1 {
 		maybenewline = "\n"
 	}
+	if colored {
+		colored = supportscolor.Stdout().SupportsColor
+	}
 	if depth == 0 {
-		if color {
-			output = append(output, "\x1b[38;5;240m")
-		}
-		output = append(output, "(...)")
-		if color {
-			output = append(output, "\x1b[0m")
+		if colored {
+			output = append(output, color.New(38).Sprint("(...)"))
+		} else {
+			output = append(output, "(...)")
 		}
 		return strings.Join(output, "")
 	}
@@ -29,15 +33,14 @@ func anyToArgon(x any, quote bool, simplify bool, depth int, indent int, color b
 			output = append(output, x)
 			break
 		}
-		if color {
-			output = append(output, "\x1b[33;5;240m")
-		}
-		output = append(output, strconv.Quote(x))
-		if color {
-			output = append(output, "\x1b[0m")
+		quoted := strconv.Quote(x)
+		if colored {
+			output = append(output, color.New(33).Sprint(quoted))
+		} else {
+			output = append(output, quoted)
 		}
 	case number:
-		if color {
+		if colored {
 			output = append(output, "\x1b[34;5;240m")
 		}
 		num, _ := x.Float64()
@@ -50,23 +53,23 @@ func anyToArgon(x any, quote bool, simplify bool, depth int, indent int, color b
 		} else {
 			output = append(output, numberToString(x, simplify))
 		}
-		if color {
+		if colored {
 			output = append(output, "\x1b[0m")
 		}
 	case bool:
-		if color {
+		if colored {
 			output = append(output, "\x1b[35;5;240m")
 		}
 		output = append(output, strconv.FormatBool(x))
-		if color {
+		if colored {
 			output = append(output, "\x1b[0m")
 		}
 	case nil:
-		if color {
+		if colored {
 			output = append(output, "\x1b[31;5;240m")
 		}
 		output = append(output, "null")
-		if color {
+		if colored {
 			output = append(output, "\x1b[0m")
 		}
 	case ArMap:
@@ -82,7 +85,7 @@ func anyToArgon(x any, quote bool, simplify bool, depth int, indent int, color b
 		}
 		output := []string{}
 		for _, key := range keys {
-			output = append(output, anyToArgon(key, true, true, depth, (indent+1)*plain, color, plain)+": "+anyToArgon(x[key], true, true, depth-1, indent+1, color, plain))
+			output = append(output, anyToArgon(key, true, true, depth, (indent+1)*plain, colored, plain)+": "+anyToArgon(x[key], true, true, depth-1, indent+1, colored, plain))
 		}
 		return "{" + maybenewline + (strings.Repeat("    ", (indent+1)*plain)) + strings.Join(output, ","+maybenewline+(strings.Repeat("    ", (indent+1)*plain))) + maybenewline + (strings.Repeat("    ", indent*plain)) + "}"
 	case ArArray:
@@ -93,42 +96,42 @@ func anyToArgon(x any, quote bool, simplify bool, depth int, indent int, color b
 		if simplify && len(x) >= 100 {
 			for i := 0; i < 10; i++ {
 				item := x[i]
-				output = append(output, anyToArgon(item, true, true, depth-1, indent+1, color, plain))
+				output = append(output, anyToArgon(item, true, true, depth-1, indent+1, colored, plain))
 			}
-			if color {
+			if colored {
 				output = append(output, "\x1b[38;5;240m(...)\x1b[0m")
 			} else {
 				output = append(output, "(...)")
 			}
 			for i := len(x) - 10; i < len(x); i++ {
 				item := x[i]
-				output = append(output, anyToArgon(item, true, true, depth-1, indent+1, color, plain))
+				output = append(output, anyToArgon(item, true, true, depth-1, indent+1, colored, plain))
 			}
 		} else {
 			for i := 0; i < len(x); i++ {
 				item := x[i]
-				output = append(output, anyToArgon(item, true, true, depth-1, indent+1, color, plain))
+				output = append(output, anyToArgon(item, true, true, depth-1, indent+1, colored, plain))
 			}
 		}
 		return "[" + maybenewline + (strings.Repeat("    ", (indent+1)*plain)) + strings.Join(output, ","+maybenewline+(strings.Repeat("    ", (indent+1)*plain))) + maybenewline + (strings.Repeat("    ", indent*plain)) + "]"
 	case builtinFunc:
-		if color {
+		if colored {
 			output = append(output, "\x1b[38;5;240m")
 		}
 		output = append(output, "<builtin function "+x.name+">")
-		if color {
+		if colored {
 			output = append(output, "\x1b[0m")
 		}
 	case Callable:
-		if color {
+		if colored {
 			output = append(output, "\x1b[38;5;240m")
 		}
 		output = append(output, "<function>")
-		if color {
+		if colored {
 			output = append(output, "\x1b[0m")
 		}
 	case ArClass:
-		return anyToArgon(x.value, quote, simplify, depth, indent, color, plain)
+		return anyToArgon(x.value, quote, simplify, depth, indent, colored, plain)
 	default:
 		return fmt.Sprint(x)
 	}

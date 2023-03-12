@@ -19,7 +19,7 @@ func main() {
 		shell()
 		os.Exit(0)
 	}
-	err := importMod(Args[0], ex, true)
+	_, err := importMod(Args[0], ex, true)
 	if err.EXISTS {
 		panicErr(err)
 		os.Exit(1)

@@ -65,6 +65,7 @@ func mapGet(r ArMapGet, stack stack, stacklevel int) (any, ArErr) {
 		startindex := 0
 		endindex := 1
 		step := 1
+		slice := false
 
 		if !r.index {
 			key, err := runVal(r.start, stack, stacklevel+1)
@@ -72,7 +73,15 @@ func mapGet(r ArMapGet, stack stack, stacklevel int) (any, ArErr) {
 				return nil, err
 			}
 			if key == "length" {
-				return len(m), ArErr{}
+				return newNumber().SetInt64(int64(len(m))), ArErr{}
+			}
+			return nil, ArErr{
+				"IndexError",
+				"index not found",
+				r.line,
+				r.path,
+				r.code,
+				true,
 			}
 		}
 		if r.start != nil {
@@ -119,6 +128,7 @@ func mapGet(r ArMapGet, stack stack, stacklevel int) (any, ArErr) {
 					true,
 				}
 			}
+			slice = true
 			num := eindex.(number)
 			if !num.IsInt() {
 				return nil, ArErr{
@@ -149,6 +159,7 @@ func mapGet(r ArMapGet, stack stack, stacklevel int) (any, ArErr) {
 					true,
 				}
 			}
+			slice = true
 			num := step.(number)
 			if !num.IsInt() {
 				return nil, ArErr{
@@ -202,6 +213,9 @@ func mapGet(r ArMapGet, stack stack, stacklevel int) (any, ArErr) {
 				true,
 			}
 		}
+		if !slice {
+			return m[startindex], ArErr{}
+		}
 		return m[startindex:endindex:step], ArErr{}
 	case ArClass:
 		if r.numberofindex > 1 {
@@ -240,7 +254,7 @@ func mapGet(r ArMapGet, stack stack, stacklevel int) (any, ArErr) {
 				return nil, err
 			}
 			if key == "length" {
-				return len(m), ArErr{}
+				return newNumber().SetInt64(int64(len(m))), ArErr{}
 			}
 		}
 		if r.start != nil {

@@ -1,8 +1,11 @@
 package main
 
-import "strings"
+import (
+	"strings"
+)
 
 var returnCompile = makeRegex(`( *)return( +)(.|\n)+`)
+var breakCompile = makeRegex(`( *)break( *)`)
 
 type CallReturn struct {
 	value any
@@ -18,8 +21,23 @@ type Return struct {
 	path  string
 }
 
+type CallBreak struct {
+	line int
+	code string
+	path string
+}
+type Break struct {
+	line int
+	code string
+	path string
+}
+
 func isReturn(code UNPARSEcode) bool {
 	return returnCompile.MatchString(code.code)
+}
+
+func isBreak(code UNPARSEcode) bool {
+	return breakCompile.MatchString(code.code)
 }
 
 func parseReturn(code UNPARSEcode, index int, codeline []UNPARSEcode) (CallReturn, bool, ArErr, int) {
@@ -54,11 +72,27 @@ func runReturn(code CallReturn, stack stack, stacklevel int) (any, ArErr) {
 	}, ArErr{}
 }
 
-func openJump(resp any) any {
+func openReturn(resp any) any {
 	switch x := resp.(type) {
 	case Return:
 		return x.value
 	default:
 		return resp
 	}
+}
+
+func parseBreak(code UNPARSEcode, index int, codeline []UNPARSEcode) (CallBreak, bool, ArErr, int) {
+	return CallBreak{
+		line: code.line,
+		code: code.realcode,
+		path: code.path,
+	}, true, ArErr{}, 1
+}
+
+func runBreak(code CallBreak, stack stack, stacklevel int) (any, ArErr) {
+	return Break{
+		line: code.line,
+		code: code.code,
+		path: code.path,
+	}, ArErr{}
 }

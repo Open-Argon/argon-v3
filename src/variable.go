@@ -2,6 +2,7 @@ package main
 
 import (
 	"strings"
+	"sync"
 )
 
 var variableCompile = makeRegex(`( *)([a-zA-Z_]|(\p{L}\p{M}*))([a-zA-Z0-9_]|(\p{L}\p{M}*))*( *)`)
@@ -9,6 +10,8 @@ var validname = makeRegex(`(.|\n)*(\(( *)((([a-zA-Z_]|(\p{L}\p{M}*))([a-zA-Z0-9_
 var setVariableCompile = makeRegex(`( *)(let( +))(.|\n)+( *)=(.|\n)+`)
 var autoAsignVariableCompile = makeRegex(`(.|\n)+=(.|\n)+`)
 var deleteVariableCompile = makeRegex(`( *)delete( +)(.|\n)+( *)`)
+
+var varMutex = sync.RWMutex{}
 
 var blockedVariableNames = map[string]bool{
 	"if":       true,
@@ -73,7 +76,10 @@ func parseVariable(code UNPARSEcode) (accessVariable, bool, ArErr, int) {
 
 func readVariable(v accessVariable, stack stack) (any, ArErr) {
 	for i := len(stack) - 1; i >= 0; i-- {
-		if val, ok := stack[i][v.name]; ok {
+		varMutex.RLock()
+		val, ok := stack[i][v.name]
+		varMutex.RUnlock()
+		if ok {
 			return val, ArErr{}
 		}
 	}
@@ -196,24 +202,36 @@ func setVariableValue(v setVariable, stack stack, stacklevel int) (any, ArErr) {
 		if err.EXISTS {
 			return nil, err
 		}
-		resp = openJump(respp)
+		resp = openReturn(respp)
 	}
 
 	if v.TYPE == "let" {
-		if _, ok := stack[len(stack)-1][v.toset.(accessVariable).name]; ok {
+		varMutex.RLock()
+		_, ok := stack[len(stack)-1][v.toset.(accessVariable).name]
+		varMutex.RUnlock()
+		if ok {
 			return nil, ArErr{"Runtime Error", "variable \"" + v.toset.(accessVariable).name + "\" already exists", v.line, v.path, v.code, true}
 		}
+		varMutex.Lock()
 		stack[len(stack)-1][v.toset.(accessVariable).name] = resp
+		varMutex.Unlock()
 	} else {
 		switch x := v.toset.(type) {
 		case accessVariable:
 			for i := len(stack) - 1; i >= 0; i-- {
-				if _, ok := stack[i][x.name]; ok {
+				varMutex.RLock()
+				_, ok := stack[i][x.name]
+				varMutex.RUnlock()
+				if ok {
+					varMutex.Lock()
 					stack[i][x.name] = resp
+					varMutex.Unlock()
 					return resp, ArErr{}
 				}
 			}
+			varMutex.Lock()
 			stack[len(stack)-1][x.name] = resp
+			varMutex.Unlock()
 		case ArMapGet:
 			respp, err := runVal(x.VAL, stack, stacklevel+1)
 			if err.EXISTS {
@@ -225,7 +243,9 @@ func setVariableValue(v setVariable, stack stack, stacklevel int) (any, ArErr) {
 			}
 			switch y := respp.(type) {
 			case ArMap:
+				varMutex.Lock()
 				y[key] = resp
+				varMutex.Unlock()
 			default:
 				return nil, ArErr{"Runtime Error", "can't set for non map", v.line, v.path, v.code, true}
 			}

@@ -1,15 +1,15 @@
 package main
 
-import "github.com/wadey/go-rounding"
+import (
+	"fmt"
+	"strings"
+)
 
 var vars = scope{}
 
 func init() {
 	vars["global"] = vars
 	vars["term"] = ArTerm
-	vars["true"] = true
-	vars["false"] = false
-	vars["null"] = nil
 	vars["input"] = builtinFunc{"input", ArgonInput}
 	vars["number"] = builtinFunc{"number", ArgonNumber}
 	vars["string"] = builtinFunc{"string", ArgonString}
@@ -36,9 +36,16 @@ func init() {
 				newmap[i] = string(v)
 			}
 			return newmap, ArErr{}
-		case []any:
+		case ArArray:
 			newmap := ArMap{}
 			for i, v := range x {
+				switch y := v.(type) {
+				case ArArray:
+					if len(y) == 2 {
+						newmap[y[0]] = y[1]
+						continue
+					}
+				}
 				newmap[i] = v
 			}
 			return newmap, ArErr{}
@@ -60,12 +67,18 @@ func init() {
 			return newarray, ArErr{}
 		case ArMap:
 			newarray := ArArray{}
-			for _, v := range x {
-				newarray = append(newarray, v)
+			for key, val := range x {
+				newarray = append(newarray, ArArray{key, val})
 			}
 			return newarray, ArErr{}
 		}
 		return nil, ArErr{TYPE: "TypeError", message: "Cannot create array from '" + typeof(a[0]) + "'", EXISTS: true}
+	}}
+	vars["boolean"] = builtinFunc{"boolean", func(a ...any) (any, ArErr) {
+		if len(a) == 0 {
+			return false, ArErr{}
+		}
+		return anyToBool(a[0]), ArErr{}
 	}}
 	vars["time"] = ArTime
 	vars["PI"] = PI
@@ -95,7 +108,7 @@ func init() {
 
 		switch x := a[0].(type) {
 		case number:
-			return rounding.Round(newNumber().Set(x), int(precision.Num().Int64()), rounding.HalfUp), ArErr{}
+			return round(newNumber().Set(x), int(precision.Num().Int64())), ArErr{}
 		}
 		return nil, ArErr{TYPE: "TypeError", message: "Cannot round '" + typeof(a[0]) + "'", EXISTS: true}
 	}}
@@ -106,11 +119,7 @@ func init() {
 		}
 		switch x := a[0].(type) {
 		case number:
-			n := newNumber().Set(x)
-			if n.Sign() < 0 {
-				return rounding.Round(n, 0, rounding.Up), ArErr{}
-			}
-			return rounding.Round(n, 0, rounding.Down), ArErr{}
+			return floor(x), ArErr{}
 		}
 		return nil, ArErr{TYPE: "TypeError", message: "Cannot floor '" + typeof(a[0]) + "'", EXISTS: true}
 	}}
@@ -122,13 +131,36 @@ func init() {
 
 		switch x := a[0].(type) {
 		case number:
-			n := newNumber().Set(x)
-			if n.Sign() < 0 {
-				return rounding.Round(n, 0, rounding.Down), ArErr{}
-			}
-			return rounding.Round(n, 0, rounding.Up), ArErr{}
+			return ceil(x), ArErr{}
 		}
 		return nil, ArErr{TYPE: "TypeError", message: "Cannot ceil '" + typeof(a[0]) + "'", EXISTS: true}
 	}}
+	vars["append"] = builtinFunc{"append", func(a ...any) (any, ArErr) {
+		if len(a) != 2 {
+			return nil, ArErr{TYPE: "append", message: "append takes 2 arguments, got " + fmt.Sprint(len(a)),
+				EXISTS: true}
+		}
+		switch x := a[0].(type) {
+		case ArArray:
+			return append(x, a[1]), ArErr{}
+		case string:
+			if typeof(a[1]) != "string" {
+				return nil, ArErr{TYPE: "TypeError", message: "Cannot append '" + typeof(a[1]) + "' to string", EXISTS: true}
+			}
+			return strings.Join([]string{x, a[1].(string)}, ""), ArErr{}
+		case ArMap:
+			if typeof(a[1]) != "array" {
+				return nil, ArErr{TYPE: "TypeError", message: "Cannot append '" + typeof(a[1]) + "' to map", EXISTS: true}
+			}
+			y := a[1].(ArArray)
+			if len(y) != 2 {
+				return nil, ArErr{TYPE: "TypeError", message: "Cannot append '" + typeof(a[1]) + "' to map", EXISTS: true}
+			}
+			x[y[0]] = y[1]
+			return x, ArErr{}
+		}
+		return nil, ArErr{TYPE: "TypeError", message: "Cannot append to '" + typeof(a[0]) + "'", EXISTS: true}
+	}}
 	vars["sqrt"] = builtinFunc{"sqrt", ArgonSqrt}
+	vars["random"] = ArRandom
 }

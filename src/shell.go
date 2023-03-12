@@ -29,9 +29,10 @@ func shell() {
 		totranslate := []UNPARSEcode{}
 		code := input("\x1b[38;5;240m>>> \x1b[0m\x1b[1;5;240m")
 		fmt.Print("\x1b[0m")
-		if isEndingWithDo(code) {
-			indo = true
+		if code == "" {
+			continue
 		}
+		indo = true
 		totranslate = append(totranslate, UNPARSEcode{code, code, 1, "<shell>"})
 		for i := 2; indo; i++ {
 			code := input("\x1b[38;5;240m... \x1b[0m\x1b[1;5;240m")
@@ -49,8 +50,7 @@ func shell() {
 		_, runimeErr, output := run(translated, global)
 		if runimeErr.EXISTS {
 			panicErr(runimeErr)
-		}
-		if count == 1 {
+		} else if count == 1 {
 			fmt.Println(anyToArgon(output, true, true, 3, 0, true, 1))
 		}
 	}

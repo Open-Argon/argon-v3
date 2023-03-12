@@ -58,6 +58,8 @@ func runDoWrap(d dowrap, stack stack, stacklevel int) (any, ArErr) {
 		switch x := val.(type) {
 		case Return:
 			return x, ArErr{}
+		case Break:
+			return x, ArErr{}
 		}
 	}
 	return nil, ArErr{}

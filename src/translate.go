@@ -1,6 +1,8 @@
 package main
 
-import "strings"
+import (
+	"strings"
+)
 
 type UNPARSEcode struct {
 	code     string
@@ -22,6 +24,14 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine i
 			}
 		} else if isReturn(code) {
 			return parseReturn(code, index, codelines)
+		} else if isBreak(code) {
+			return parseBreak(code, index, codelines)
+		} else if isIfStatement(code) {
+			return parseIfStatement(code, index, codelines)
+		} else if isWhileLoop(code) {
+			return parseWhileLoop(code, index, codelines)
+		} else if isForeverLoop(code) {
+			return parseForeverLoop(code, index, codelines)
 		}
 	}
 
@@ -73,7 +83,9 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine i
 			return call, worked, err, step
 		}
 	}
-	if isVariable(code) {
+	if isBoolean(code) {
+		return parseBoolean(code)
+	} else if isVariable(code) {
 		return parseVariable(code)
 	} else if isMapGet(code) {
 		return mapGetParse(code, index, codelines)
