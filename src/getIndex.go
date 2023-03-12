@@ -72,12 +72,13 @@ func mapGet(r ArMapGet, stack stack, stacklevel int) (any, ArErr) {
 			if err.EXISTS {
 				return nil, err
 			}
-			if key == "length" {
+			switch key {
+			case "length":
 				return newNumber().SetInt64(int64(len(m))), ArErr{}
 			}
 			return nil, ArErr{
 				"IndexError",
-				"index not found",
+				"" + anyToArgon(key, true, true, 3, 0, false, 0) + " does not exist in array",
 				r.line,
 				r.path,
 				r.code,
@@ -216,7 +217,8 @@ func mapGet(r ArMapGet, stack stack, stacklevel int) (any, ArErr) {
 		if !slice {
 			return m[startindex], ArErr{}
 		}
-		return m[startindex:endindex:step], ArErr{}
+		fmt.Println(startindex, endindex, step)
+		return m[startindex:endindex], ArErr{}
 	case ArClass:
 		if r.numberofindex > 1 {
 			return nil, ArErr{

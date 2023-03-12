@@ -162,5 +162,7 @@ func init() {
 		return nil, ArErr{TYPE: "TypeError", message: "Cannot append to '" + typeof(a[0]) + "'", EXISTS: true}
 	}}
 	vars["sqrt"] = builtinFunc{"sqrt", ArgonSqrt}
+	vars["file"] = ArFile
 	vars["random"] = ArRandom
+	vars["json"] = ArJSON
 }

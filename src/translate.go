@@ -87,6 +87,8 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine i
 		return parseBoolean(code)
 	} else if isVariable(code) {
 		return parseVariable(code)
+	} else if isArray(code) {
+		return parseArray(code, index, codelines)
 	} else if isMapGet(code) {
 		return mapGetParse(code, index, codelines)
 	} else if isIndexGet(code) {

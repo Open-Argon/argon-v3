@@ -67,6 +67,8 @@ func runVal(line any, stack stack, stacklevel int) (any, ArErr) {
 		return runIfStatement(x, stack, stacklevel+1)
 	case whileLoop:
 		return runWhileLoop(x, stack, stacklevel+1)
+	case CreateArray:
+		return runArray(x, stack, stacklevel+1)
 	case bool:
 		return x, ArErr{}
 	case nil:
