@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -14,7 +13,6 @@ type UNPARSEcode struct {
 
 // returns (number | string | nil), success, error, step
 func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine int) (any, bool, ArErr, int) {
-	fmt.Println(code)
 	if isLine == 2 {
 		if isDeleteVariable(code) {
 			return parseDelete(code, index, codelines)

@@ -7,8 +7,7 @@ import (
 
 // returns (number|string|nil), error
 func runVal(line any, stack stack, stacklevel int) (any, ArErr) {
-	fmt.Println(stack)
-	if stacklevel > 10000 {
+	if stacklevel >= 10000 {
 		return nil, ArErr{
 			TYPE:    "RuntimeError",
 			message: "stack overflow",

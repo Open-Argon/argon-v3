@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"strings"
 	"sync"
 )
@@ -164,7 +163,6 @@ func parseSetVariable(code UNPARSEcode, index int, lines []UNPARSEcode, isLine i
 }
 
 func parseAutoAsignVariable(code UNPARSEcode, index int, lines []UNPARSEcode, isLine int) (setVariable, bool, ArErr, int) {
-	fmt.Println("autoasign", code.code)
 	trim := strings.TrimSpace(code.code)
 	equalsplit := strings.SplitN(trim, "=", 2)
 	name := strings.TrimSpace(equalsplit[0])
@@ -193,7 +191,6 @@ func parseAutoAsignVariable(code UNPARSEcode, index int, lines []UNPARSEcode, is
 	if !success {
 		return setVariable{}, false, err, i
 	}
-	fmt.Println("autoasign", code.code, "success")
 	return setVariable{TYPE: "auto", toset: toset, value: value, function: function, params: params, line: code.line, code: code.code, path: code.path}, true, ArErr{}, i + namei - 1
 }
 
