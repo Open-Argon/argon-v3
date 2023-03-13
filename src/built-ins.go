@@ -165,4 +165,6 @@ func init() {
 	vars["file"] = ArFile
 	vars["random"] = ArRandom
 	vars["json"] = ArJSON
+	vars["sin"] = ArSin
+	vars["arcsin"] = ArArcsin
 }

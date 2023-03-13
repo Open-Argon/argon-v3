@@ -1,8 +1,4 @@
-a = array()
-i = 0
-
-forever do
-    a = append(a, i)
-    i = i + 1
-    if (i % 1000000 == 0) do
-        term.log(i)
+test = 10
+poo = do
+    term.log("ran")
+    return "lol"

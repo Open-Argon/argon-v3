@@ -6,98 +6,97 @@ import (
 
 var MicroSeconds = newNumber().SetInt64(1000000)
 
-func ArTimeClass(N time.Time) ArClass {
-	return ArClass{
-		newNumber().Quo(newNumber().SetInt64(N.UnixMicro()), MicroSeconds),
-		ArMap{
-			"year": builtinFunc{
-				"year",
-				func(a ...any) (any, ArErr) {
-					return newNumber().SetInt64(int64(N.Year())), ArErr{}
-				},
+func ArTimeClass(N time.Time) ArMap {
+	return ArMap{
+		"__value__": newNumber().Quo(newNumber().SetInt64(N.UnixMicro()), MicroSeconds),
+		"year": builtinFunc{
+			"year",
+			func(a ...any) (any, ArErr) {
+				return newNumber().SetInt64(int64(N.Year())), ArErr{}
 			},
-			"month": builtinFunc{
-				"month",
-				func(a ...any) (any, ArErr) {
-					return N.Month().String(), ArErr{}
-				},
+		},
+		"month": builtinFunc{
+			"month",
+			func(a ...any) (any, ArErr) {
+				return N.Month().String(), ArErr{}
 			},
-			"day": builtinFunc{
-				"day",
-				func(a ...any) (any, ArErr) {
-					return newNumber().SetInt64(int64(N.Day())), ArErr{}
-				},
+		},
+		"day": builtinFunc{
+			"day",
+			func(a ...any) (any, ArErr) {
+				return newNumber().SetInt64(int64(N.Day())), ArErr{}
 			},
-			"hour": builtinFunc{
-				"hour",
-				func(a ...any) (any, ArErr) {
-					return newNumber().SetInt64(int64(N.Hour())), ArErr{}
-				},
+		},
+		"hour": builtinFunc{
+			"hour",
+			func(a ...any) (any, ArErr) {
+				return newNumber().SetInt64(int64(N.Hour())), ArErr{}
 			},
-			"minute": builtinFunc{
-				"minute",
-				func(a ...any) (any, ArErr) {
-					return newNumber().SetInt64(int64(N.Minute())), ArErr{}
-				},
+		},
+		"minute": builtinFunc{
+			"minute",
+			func(a ...any) (any, ArErr) {
+				return newNumber().SetInt64(int64(N.Minute())), ArErr{}
 			},
-			"second": builtinFunc{
-				"second",
-				func(a ...any) (any, ArErr) {
-					return newNumber().SetInt64(int64(N.Second())), ArErr{}
-				},
+		},
+		"second": builtinFunc{
+			"second",
+			func(a ...any) (any, ArErr) {
+				return newNumber().SetInt64(int64(N.Second())), ArErr{}
 			},
-			"nanosecond": builtinFunc{
-				"nanosecond",
-				func(a ...any) (any, ArErr) {
-					return newNumber().SetInt64(int64(N.Nanosecond())), ArErr{}
-				},
+		},
+		"nanosecond": builtinFunc{
+			"nanosecond",
+			func(a ...any) (any, ArErr) {
+				return newNumber().SetInt64(int64(N.Nanosecond())), ArErr{}
 			},
-			"weekday": builtinFunc{
-				"weekday",
-				func(a ...any) (any, ArErr) {
-					return N.Weekday().String(), ArErr{}
-				},
+		},
+		"weekday": builtinFunc{
+			"weekday",
+			func(a ...any) (any, ArErr) {
+				return N.Weekday().String(), ArErr{}
 			},
-			"yearDay": builtinFunc{
-				"yearDay",
-				func(a ...any) (any, ArErr) {
-					return newNumber().SetInt64(int64(N.YearDay())), ArErr{}
-				},
+		},
+		"yearDay": builtinFunc{
+			"yearDay",
+			func(a ...any) (any, ArErr) {
+				return newNumber().SetInt64(int64(N.YearDay())), ArErr{}
 			},
-			"unix": builtinFunc{
-				"unix",
-				func(a ...any) (any, ArErr) {
-					return newNumber().SetInt64(N.Unix()), ArErr{}
-				},
+		},
+		"unix": builtinFunc{
+			"unix",
+			func(a ...any) (any, ArErr) {
+				return newNumber().SetInt64(N.Unix()), ArErr{}
 			},
-			"unixNano": builtinFunc{
-				"unixNano",
-				func(a ...any) (any, ArErr) {
-					return newNumber().SetInt64(N.UnixNano()), ArErr{}
-				},
+		},
+		"unixNano": builtinFunc{
+			"unixNano",
+			func(a ...any) (any, ArErr) {
+				return newNumber().SetInt64(N.UnixNano()), ArErr{}
 			},
-			"unixMilli": builtinFunc{
-				"unixMilli",
-				func(a ...any) (any, ArErr) {
-					return newNumber().SetInt64(N.UnixMilli()), ArErr{}
-				},
+		},
+		"unixMilli": builtinFunc{
+			"unixMilli",
+			func(a ...any) (any, ArErr) {
+				return newNumber().SetInt64(N.UnixMilli()), ArErr{}
 			},
-			"unixMicro": builtinFunc{
-				"unixMicro",
-				func(a ...any) (any, ArErr) {
-					return newNumber().SetInt64(N.UnixMicro()), ArErr{}
-				},
+		},
+		"unixMicro": builtinFunc{
+			"unixMicro",
+			func(a ...any) (any, ArErr) {
+				return newNumber().SetInt64(N.UnixMicro()), ArErr{}
 			},
-			"format": builtinFunc{
-				"date",
-				func(a ...any) (any, ArErr) {
-					if len(a) == 0 {
-						return N.Format(time.UnixDate), ArErr{}
-					}
-					return N.Format(a[0].(string)), ArErr{}
-				},
+		},
+		"format": builtinFunc{
+			"date",
+			func(a ...any) (any, ArErr) {
+				if len(a) == 0 {
+					return N.Format(time.UnixDate), ArErr{}
+				}
+				return N.Format(a[0].(string)), ArErr{}
 			},
-		}}
+		},
+	}
 }
 
 var ArTime = map[any]any{

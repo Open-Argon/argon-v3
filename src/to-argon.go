@@ -73,6 +73,9 @@ func anyToArgon(x any, quote bool, simplify bool, depth int, indent int, colored
 			output = append(output, "\x1b[0m")
 		}
 	case ArMap:
+		if _, ok := x["__value__"]; ok {
+			return anyToArgon(x["__value__"], quote, simplify, depth, indent, colored, plain)
+		}
 		if len(x) == 0 {
 			return "{}"
 		}
@@ -85,7 +88,22 @@ func anyToArgon(x any, quote bool, simplify bool, depth int, indent int, colored
 		}
 		output := []string{}
 		for _, key := range keys {
-			output = append(output, anyToArgon(key, true, true, depth, (indent+1)*plain, colored, plain)+": "+anyToArgon(x[key], true, true, depth-1, indent+1, colored, plain))
+			keyval := ""
+
+			if typeof(key) != "string" || !SpacelessVariableCompiled.MatchString(key.(string)) {
+				keyval = anyToArgon(key, true, true, depth-1, indent+1, colored, plain)
+			} else {
+				outputkeyval := []string{}
+				if colored {
+					outputkeyval = append(outputkeyval, "\x1b[36;5;240m")
+				}
+				outputkeyval = append(outputkeyval, key.(string))
+				if colored {
+					outputkeyval = append(outputkeyval, "\x1b[0m")
+				}
+				keyval = strings.Join(outputkeyval, "")
+			}
+			output = append(output, keyval+": "+anyToArgon(x[key], true, true, depth-1, indent+1, colored, plain))
 		}
 		return "{" + maybenewline + (strings.Repeat("    ", (indent+1)*plain)) + strings.Join(output, ","+maybenewline+(strings.Repeat("    ", (indent+1)*plain))) + maybenewline + (strings.Repeat("    ", indent*plain)) + "}"
 	case ArArray:
@@ -130,8 +148,6 @@ func anyToArgon(x any, quote bool, simplify bool, depth int, indent int, colored
 		if colored {
 			output = append(output, "\x1b[0m")
 		}
-	case ArClass:
-		return anyToArgon(x.value, quote, simplify, depth, indent, colored, plain)
 	default:
 		return fmt.Sprint(x)
 	}

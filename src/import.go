@@ -44,7 +44,7 @@ func readFile(path string) []UNPARSEcode {
 	return output
 }
 
-func importMod(realpath string, origin string, main bool) (scope, ArErr) {
+func importMod(realpath string, origin string) (scope, ArErr) {
 	extention := filepath.Ext(realpath)
 	path := realpath
 	if extention == "" {

@@ -41,6 +41,7 @@ func parse(str string) any {
 
 func stringify(obj any) (string, error) {
 	output := []string{}
+	obj = classVal(obj)
 	switch x := obj.(type) {
 	case ArMap:
 		for key, value := range x {
@@ -65,14 +66,13 @@ func stringify(obj any) (string, error) {
 	case string:
 		return strconv.Quote(x), nil
 	case number:
-		num, _ := x.Float64()
-		return strconv.FormatFloat(num, 'f', -1, 64), nil
+		return anyToArgon(x, true, false, 1, 0, false, 0), nil
 	case bool:
 		return strconv.FormatBool(x), nil
 	case nil:
 		return "null", nil
 	}
-	err := errors.New("Cannot stringify " + typeof(obj))
+	err := errors.New("Cannot stringify '" + typeof(obj) + "'")
 	return "", err
 }
 

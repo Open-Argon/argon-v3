@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"strings"
 )
 
@@ -13,7 +14,7 @@ type UNPARSEcode struct {
 
 // returns (number | string | nil), success, error, step
 func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine int) (any, bool, ArErr, int) {
-
+	fmt.Println(code)
 	if isLine == 2 {
 		if isDeleteVariable(code) {
 			return parseDelete(code, index, codelines)
@@ -32,6 +33,8 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine i
 			return parseWhileLoop(code, index, codelines)
 		} else if isForeverLoop(code) {
 			return parseForeverLoop(code, index, codelines)
+		} else if isGenericImport(code) {
+			return parseGenericImport(code, index, codelines)
 		}
 	}
 
@@ -95,6 +98,8 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine i
 		return indexGetParse(code, index, codelines)
 	} else if isString(code) {
 		return parseString(code)
+	} else if issquareroot(code) {
+		return parseSquareroot(code, index, codelines)
 	}
 	return nil, false, ArErr{"Syntax Error", "invalid syntax", code.line, code.path, code.realcode, true}, 1
 }

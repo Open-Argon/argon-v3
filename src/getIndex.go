@@ -8,11 +8,6 @@ import (
 type ArMap = map[any]any
 type ArArray = []any
 
-type ArClass struct {
-	value any
-	MAP   ArMap
-}
-
 var mapGetCompile = makeRegex(`(.|\n)+\.([a-zA-Z_]|(\p{L}\p{M}*))([a-zA-Z0-9_]|(\p{L}\p{M}*))*( *)`)
 var indexGetCompile = makeRegex(`(.|\n)+\[(.|\n)+\]( *)`)
 
@@ -219,32 +214,6 @@ func mapGet(r ArMapGet, stack stack, stacklevel int) (any, ArErr) {
 		}
 		fmt.Println(startindex, endindex, step)
 		return m[startindex:endindex], ArErr{}
-	case ArClass:
-		if r.numberofindex > 1 {
-			return nil, ArErr{
-				"IndexError",
-				"index not found",
-				r.line,
-				r.path,
-				r.code,
-				true,
-			}
-		}
-		key, err := runVal(r.start, stack, stacklevel+1)
-		if err.EXISTS {
-			return nil, err
-		}
-		if _, ok := m.MAP[key]; !ok {
-			return nil, ArErr{
-				"KeyError",
-				"key '" + fmt.Sprint(key) + "' not found",
-				r.line,
-				r.path,
-				r.code,
-				true,
-			}
-		}
-		return m.MAP[key], ArErr{}
 	case string:
 		startindex := 0
 		endindex := 1
@@ -404,8 +373,10 @@ func mapGet(r ArMapGet, stack stack, stacklevel int) (any, ArErr) {
 }
 
 func classVal(r any) any {
-	if _, ok := r.(ArClass); ok {
-		return r.(ArClass).value
+	if _, ok := r.(ArMap); ok {
+		if _, ok := r.(ArMap)["__value__"]; ok {
+			return r.(ArMap)["__value__"]
+		}
 	}
 	return r
 }

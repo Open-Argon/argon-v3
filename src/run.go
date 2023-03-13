@@ -7,6 +7,7 @@ import (
 
 // returns (number|string|nil), error
 func runVal(line any, stack stack, stacklevel int) (any, ArErr) {
+	fmt.Println(stack)
 	if stacklevel > 10000 {
 		return nil, ArErr{
 			TYPE:    "RuntimeError",
@@ -30,8 +31,6 @@ func runVal(line any, stack stack, stacklevel int) (any, ArErr) {
 		return readVariable(x, stack)
 	case ArMapGet:
 		return mapGet(x, stack, stacklevel+1)
-	case ArClass:
-		return x.MAP, ArErr{}
 	case setVariable:
 		return setVariableValue(x, stack, stacklevel+1)
 	case negative:
@@ -69,6 +68,10 @@ func runVal(line any, stack stack, stacklevel int) (any, ArErr) {
 		return runWhileLoop(x, stack, stacklevel+1)
 	case CreateArray:
 		return runArray(x, stack, stacklevel+1)
+	case squareroot:
+		return runSquareroot(x, stack, stacklevel+1)
+	case ArImport:
+		return runImport(x, stack, stacklevel+1)
 	case bool:
 		return x, ArErr{}
 	case nil:

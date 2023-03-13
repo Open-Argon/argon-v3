@@ -18,8 +18,6 @@ func anyToBool(x any) bool {
 		return true
 	case Callable:
 		return true
-	case ArClass:
-		return true
 	default:
 		return true
 	}
