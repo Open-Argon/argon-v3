@@ -1,4 +1,0 @@
-test = 10
-poo = do
-    term.log("ran")
-    return "lol"

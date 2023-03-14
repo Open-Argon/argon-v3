@@ -1,0 +1,4 @@
+cool_function() = do
+    term.log("this is a cool function")
+    time.snooze(1)
+    term.log("wow what a cool function")
