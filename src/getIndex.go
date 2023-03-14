@@ -211,21 +211,36 @@ func mapGet(r ArMapGet, stack stack, stacklevel int) (any, ArErr) {
 		}
 		if !slice {
 			return m[startindex], ArErr{}
+		} else if step == 1 {
+			return m[startindex:endindex], ArErr{}
 		}
-		fmt.Println(startindex, endindex, step)
-		return m[startindex:endindex], ArErr{}
+		output := ArArray{}
+		for i := startindex; i < endindex; i += step {
+			output = append(output, output[i])
+		}
+		return output, ArErr{}
 	case string:
 		startindex := 0
 		endindex := 1
 		step := 1
+		slice := false
 
 		if !r.index {
 			key, err := runVal(r.start, stack, stacklevel+1)
 			if err.EXISTS {
 				return nil, err
 			}
-			if key == "length" {
+			switch key {
+			case "length":
 				return newNumber().SetInt64(int64(len(m))), ArErr{}
+			}
+			return nil, ArErr{
+				"IndexError",
+				"" + anyToArgon(key, true, true, 3, 0, false, 0) + " does not exist in array",
+				r.line,
+				r.path,
+				r.code,
+				true,
 			}
 		}
 		if r.start != nil {
@@ -272,6 +287,7 @@ func mapGet(r ArMapGet, stack stack, stacklevel int) (any, ArErr) {
 					true,
 				}
 			}
+			slice = true
 			num := eindex.(number)
 			if !num.IsInt() {
 				return nil, ArErr{
@@ -302,6 +318,7 @@ func mapGet(r ArMapGet, stack stack, stacklevel int) (any, ArErr) {
 					true,
 				}
 			}
+			slice = true
 			num := step.(number)
 			if !num.IsInt() {
 				return nil, ArErr{
@@ -355,7 +372,17 @@ func mapGet(r ArMapGet, stack stack, stacklevel int) (any, ArErr) {
 				true,
 			}
 		}
-		return string(([]byte(m))[startindex:endindex:step]), ArErr{}
+    fmt.Println(startindex, endindex,step)
+		if !slice {
+			return string(m[startindex]), ArErr{}
+		} else if step == 1 {
+			return string(m[startindex:endindex]), ArErr{}
+		}
+		output := []byte{}
+		for i := startindex; i < endindex; i += step {
+			output = append(output, output[i])
+		}
+		return string(output), ArErr{}
 	}
 
 	key, err := runVal(r.start, stack, stacklevel+1)
@@ -421,6 +448,7 @@ func indexGetParse(code UNPARSEcode, index int, codelines []UNPARSEcode) (ArMapG
 			}
 			continue
 		}
+    fmt.Println(args)
 		if len(args) > 3 {
 			return ArMapGet{}, false, ArErr{
 				"SyntaxError",
