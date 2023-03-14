@@ -244,6 +244,10 @@ func setVariableValue(v setVariable, stack stack, stacklevel int) (any, ArErr) {
 			}
 			switch y := respp.(type) {
 			case ArMap:
+				keytype := typeof(key)
+				if keytype == "array" || keytype == "map" {
+					return nil, ArErr{TYPE: "TypeError", message: "Cannot use unhashable value as key: " + keytype, EXISTS: true}
+				}
 				varMutex.Lock()
 				y[key] = resp
 				varMutex.Unlock()

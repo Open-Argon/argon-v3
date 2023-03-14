@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"strings"
 )
 
@@ -11,15 +12,20 @@ type UNPARSEcode struct {
 	path     string
 }
 
-// returns (number | string | nil), success, error, step
 func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine int) (any, bool, ArErr, int) {
+	var (
+		resp   any   = nil
+		worked bool  = false
+		err    ArErr = ArErr{"Syntax Error", "invalid syntax", code.line, code.path, code.realcode, true}
+		i      int   = 1
+	)
 	if isLine == 2 {
 		if isDeleteVariable(code) {
 			return parseDelete(code, index, codelines)
 		} else if isComment(code) {
-			resp, worked, err, step := parseComment(code, index, codelines)
+			resp, worked, err, i = parseComment(code, index, codelines)
 			if worked {
-				return resp, worked, err, step
+				return resp, worked, err, i
 			}
 		} else if isReturn(code) {
 			return parseReturn(code, index, codelines)
@@ -47,30 +53,32 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine i
 	}
 
 	if isBrackets(code) {
-		bracket, worked, err, step := parseBrackets(code, index, codelines)
+		resp, worked, err, i = parseBrackets(code, index, codelines)
 		if worked {
-			return bracket, worked, err, step
+			return resp, worked, err, i
 		}
 	} else if isnot(code) {
 		return parseNot(code, index, codelines, isLine)
 	}
 	if isSetVariable(code) {
-		setvar, worked, err, step := parseSetVariable(code, index, codelines, isLine)
+		resp, worked, err, i = parseSetVariable(code, index, codelines, isLine)
 		if worked {
-			return setvar, worked, err, step
+			return resp, worked, err, i
 		}
 	}
 	if isAutoAsignVariable(code) {
-		setvar, worked, err, step := parseAutoAsignVariable(code, index, codelines, isLine)
+		resp, worked, err, i = parseAutoAsignVariable(code, index, codelines, isLine)
 		if worked {
-			return setvar, worked, err, step
+			return resp, worked, err, i
 		}
 	}
-	operation, worked, err, step := parseOperations(code, index, codelines)
-	if worked {
-		return operation, worked, err, step
-	} else if err.EXISTS {
-		return nil, worked, err, step
+	{
+		operation, worked, err, step := parseOperations(code, index, codelines)
+		if worked {
+			return operation, worked, err, step
+		} else if err.EXISTS {
+			return nil, worked, err, step
+		}
 	}
 	if isNumber(code) {
 		return parseNumber(code)
@@ -79,9 +87,9 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine i
 	} else if isFactorial(code) {
 		return parseFactorial(code, index, codelines)
 	} else if isCall(code) {
-		call, worked, err, step := parseCall(code, index, codelines)
+		resp, worked, err, i = parseCall(code, index, codelines)
 		if worked {
-			return call, worked, err, step
+			return resp, worked, err, i
 		}
 	}
 	if isBoolean(code) {
@@ -89,20 +97,28 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine i
 	} else if isVariable(code) {
 		return parseVariable(code)
 	} else if isArray(code) {
-		return parseArray(code, index, codelines)
-	} else if isMapGet(code) {
+		resp, worked, err, i = parseArray(code, index, codelines)
+		fmt.Println(resp, worked, err, i)
+		if worked {
+			return resp, worked, err, i
+		}
+	}
+	if isMapGet(code) {
 		return mapGetParse(code, index, codelines)
 	} else if isIndexGet(code) {
-		return indexGetParse(code, index, codelines)
-	} else if isString(code) {
+		resp, worked, err, i = indexGetParse(code, index, codelines)
+		if worked {
+			return resp, worked, err, i
+		}
+	}
+	if isString(code) {
 		return parseString(code)
 	} else if issquareroot(code) {
 		return parseSquareroot(code, index, codelines)
 	}
-	return nil, false, ArErr{"Syntax Error", "invalid syntax", code.line, code.path, code.realcode, true}, 1
+	return resp, worked, err, i
 }
 
-// returns [](number | string), error
 func translate(codelines []UNPARSEcode) ([]any, ArErr) {
 	translated := []any{}
 	for i := 0; i < len(codelines); {

@@ -433,6 +433,7 @@ func indexGetParse(code UNPARSEcode, index int, codelines []UNPARSEcode) (ArMapG
 		}
 		tival, worked, err, i := translateVal(UNPARSEcode{code: ti, realcode: code.realcode, line: code.line, path: code.path}, index, codelines, 0)
 		if !worked {
+			fmt.Println(err)
 			if i == len(split)-1 {
 				return ArMapGet{}, false, err, i
 			}

@@ -16,6 +16,8 @@ func typeof(val any) string {
 		return "function"
 	case ArMap:
 		return "map"
+	case ArArray:
+		return "array"
 	case accessVariable:
 		return "variable"
 	}

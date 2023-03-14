@@ -22,6 +22,9 @@ func getValuesFromLetter(str string, splitstr string, index int, codelines []UNP
 				if worked {
 					arguments = append(arguments, resp)
 					temp = []string{}
+					if i == len(commasplit)-1 {
+						return arguments, true, ArErr{}
+					}
 				} else if i == len(commasplit)-1 {
 					return nil, false, ArErr{"Syntax Error", "invalid argument", codelines[index].line, codelines[index].path, codelines[index].realcode, true}
 				}

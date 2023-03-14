@@ -91,7 +91,7 @@ func anyToArgon(x any, quote bool, simplify bool, depth int, indent int, colored
 			keyval := ""
 
 			if typeof(key) != "string" || !SpacelessVariableCompiled.MatchString(key.(string)) {
-				keyval = anyToArgon(key, true, true, depth-1, indent+1, colored, plain)
+				keyval = anyToArgon(key, true, true, depth, indent+1, colored, plain)
 			} else {
 				outputkeyval := []string{}
 				if colored {
