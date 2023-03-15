@@ -230,6 +230,129 @@ func ArArray(arr []any) ArObject {
 			return ArArray(newarr), ArErr{}
 		},
 	}
+	val.obj["filter"] = builtinFunc{
+		"filter",
+		func(args ...any) (any, ArErr) {
+			if len(args) != 1 {
+				return nil, ArErr{
+					TYPE:    "TypeError",
+					message: "missing argument",
+					EXISTS:  true,
+				}
+			}
+			if typeof(args[0]) != "function" {
+				return nil, ArErr{
+					TYPE:    "TypeError",
+					message: "argument must be a function",
+					EXISTS:  true,
+				}
+			}
+			newarr := []any{}
+			for _, v := range arr {
+				vv, err := runCall(call{
+					args[0],
+					[]any{v}, "", 0, "",
+				}, stack{vars, newscope()}, 0)
+				if err.EXISTS {
+					return nil, err
+				}
+				if anyToBool(vv) {
+					newarr = append(newarr, v)
+				}
+			}
+			return ArArray(newarr), ArErr{}
+		},
+	}
+	val.obj["reduce"] = builtinFunc{
+		"reduce",
+		func(args ...any) (any, ArErr) {
+			if len(args) != 2 {
+				return nil, ArErr{
+					TYPE:    "TypeError",
+					message: "missing argument",
+					EXISTS:  true,
+				}
+			}
+			if typeof(args[0]) != "function" {
+				return nil, ArErr{
+					TYPE:    "TypeError",
+					message: "argument must be a function",
+					EXISTS:  true,
+				}
+			}
+			if len(arr) == 0 {
+				return nil, ArErr{
+					TYPE:    "ValueError",
+					message: "array is empty",
+					EXISTS:  true,
+				}
+			}
+			v := args[1]
+			for _, vv := range arr {
+				var err ArErr
+				v, err = runCall(call{
+					args[0],
+					[]any{v, vv}, "", 0, "",
+				}, stack{vars, newscope()}, 0)
+				if err.EXISTS {
+					return nil, err
+				}
+			}
+			return v, ArErr{}
+		},
+	}
+	val.obj["join"] = builtinFunc{
+		"join",
+		func(args ...any) (any, ArErr) {
+			if len(args) != 1 {
+				return nil, ArErr{
+					TYPE:    "TypeError",
+					message: "missing argument",
+					EXISTS:  true,
+				}
+			}
+			if typeof(args[0]) != "string" {
+				return nil, ArErr{
+					TYPE:    "TypeError",
+					message: "argument must be a string",
+					EXISTS:  true,
+				}
+			}
+			output := []string{}
+			for _, v := range arr {
+				if typeof(v) != "string" {
+					return nil, ArErr{
+						TYPE:    "TypeError",
+						message: "array must be an array of strings",
+						EXISTS:  true,
+					}
+				}
+				output = append(output, v.(string))
+			}
+			return strings.Join(output, args[0].(string)), ArErr{}
+		},
+	}
+	val.obj["concat"] = builtinFunc{
+		"concat",
+		func(args ...any) (any, ArErr) {
+			if len(args) < 1 {
+				return nil, ArErr{
+					TYPE:    "TypeError",
+					message: "missing argument(s)",
+					EXISTS:  true,
+				}
+			}
+			if typeof(args[0]) != "array" {
+				return nil, ArErr{
+					TYPE:    "TypeError",
+					message: "argument must be an array",
+					EXISTS:  true,
+				}
+			}
+			newarr := append(arr, args[0].(ArObject).obj["__value__"].([]any)...)
+			return ArArray(newarr), ArErr{}
+		},
+	}
 	return val
 }
 
