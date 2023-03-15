@@ -7,10 +7,10 @@ import (
 	"os"
 )
 
-var ArFile = ArMap{
+var ArFile = Map(anymap{
 	"read":  builtinFunc{"read", ArRead},
 	"write": builtinFunc{"write", ArWrite},
-}
+})
 
 func readtext(file *os.File) (string, error) {
 	var buf bytes.Buffer
@@ -23,68 +23,68 @@ func readtext(file *os.File) (string, error) {
 
 func ArRead(args ...any) (any, ArErr) {
 	if len(args) != 1 {
-		return ArMap{}, ArErr{TYPE: "Runtime Error", message: "read takes 1 argument, got " + fmt.Sprint(len(args)), EXISTS: true}
+		return ArObject{}, ArErr{TYPE: "Runtime Error", message: "read takes 1 argument, got " + fmt.Sprint(len(args)), EXISTS: true}
 	}
 	if typeof(args[0]) != "string" {
-		return ArMap{}, ArErr{TYPE: "Runtime Error", message: "read takes a string not type '" + typeof(args[0]) + "'", EXISTS: true}
+		return ArObject{}, ArErr{TYPE: "Runtime Error", message: "read takes a string not type '" + typeof(args[0]) + "'", EXISTS: true}
 	}
 	filename := args[0].(string)
 	file, err := os.Open(filename)
 	if err != nil {
-		return ArMap{}, ArErr{TYPE: "Runtime Error", message: err.Error(), EXISTS: true}
+		return ArObject{}, ArErr{TYPE: "Runtime Error", message: err.Error(), EXISTS: true}
 	}
-	return ArMap{
+	return Map(anymap{
 		"text": builtinFunc{"text", func(...any) (any, ArErr) {
 			text, err := readtext(file)
 			if err != nil {
-				return ArMap{}, ArErr{TYPE: "Runtime Error", message: err.Error(), EXISTS: true}
+				return ArObject{}, ArErr{TYPE: "Runtime Error", message: err.Error(), EXISTS: true}
 			}
 			return text, ArErr{}
 		}},
 		"json": builtinFunc{"json", func(...any) (any, ArErr) {
 			text, err := readtext(file)
 			if err != nil {
-				return ArMap{}, ArErr{TYPE: "Runtime Error", message: err.Error(), EXISTS: true}
+				return ArObject{}, ArErr{TYPE: "Runtime Error", message: err.Error(), EXISTS: true}
 			}
 			return jsonparse(text), ArErr{}
 		}},
-	}, ArErr{}
+	}), ArErr{}
 }
 
 func ArWrite(args ...any) (any, ArErr) {
 	if len(args) != 1 {
-		return ArMap{}, ArErr{TYPE: "Runtime Error", message: "write takes 1 argument, got " + fmt.Sprint(len(args)), EXISTS: true}
+		return ArObject{}, ArErr{TYPE: "Runtime Error", message: "write takes 1 argument, got " + fmt.Sprint(len(args)), EXISTS: true}
 	}
 	if typeof(args[0]) != "string" {
-		return ArMap{}, ArErr{TYPE: "Runtime Error", message: "write takes a string not type '" + typeof(args[0]) + "'", EXISTS: true}
+		return ArObject{}, ArErr{TYPE: "Runtime Error", message: "write takes a string not type '" + typeof(args[0]) + "'", EXISTS: true}
 	}
 	filename := args[0].(string)
 	file, err := os.Create(filename)
 	if err != nil {
-		return ArMap{}, ArErr{TYPE: "Runtime Error", message: err.Error(), EXISTS: true}
+		return ArObject{}, ArErr{TYPE: "Runtime Error", message: err.Error(), EXISTS: true}
 	}
-	return ArMap{
+	return Map(anymap{
 		"text": builtinFunc{"text", func(args ...any) (any, ArErr) {
 			if len(args) != 1 {
-				return ArMap{}, ArErr{TYPE: "Runtime Error", message: "text takes 1 argument, got " + fmt.Sprint(len(args)), EXISTS: true}
+				return ArObject{}, ArErr{TYPE: "Runtime Error", message: "text takes 1 argument, got " + fmt.Sprint(len(args)), EXISTS: true}
 			}
 			if typeof(args[0]) != "string" {
-				return ArMap{}, ArErr{TYPE: "Runtime Error", message: "text takes a string not type '" + typeof(args[0]) + "'", EXISTS: true}
+				return ArObject{}, ArErr{TYPE: "Runtime Error", message: "text takes a string not type '" + typeof(args[0]) + "'", EXISTS: true}
 			}
 			file.Write([]byte(args[0].(string)))
 			return nil, ArErr{}
 		}},
 		"json": builtinFunc{"json", func(args ...any) (any, ArErr) {
 			if len(args) != 1 {
-				return ArMap{}, ArErr{TYPE: "Runtime Error", message: "json takes 1 argument, got " + fmt.Sprint(len(args)), EXISTS: true}
+				return ArObject{}, ArErr{TYPE: "Runtime Error", message: "json takes 1 argument, got " + fmt.Sprint(len(args)), EXISTS: true}
 			}
 			jsonstr, err := jsonstringify(args[0], 0)
 			if err != nil {
-				return ArMap{}, ArErr{TYPE: "Runtime Error", message: err.Error(), EXISTS: true}
+				return ArObject{}, ArErr{TYPE: "Runtime Error", message: err.Error(), EXISTS: true}
 			}
 			file.Write([]byte(jsonstr))
 			return nil, ArErr{}
 		}},
-	}, ArErr{}
+	}), ArErr{}
 
 }

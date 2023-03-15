@@ -8,6 +8,9 @@ import (
 	"path/filepath"
 )
 
+var imported = make(map[string]ArObject)
+var importing = make(map[string]bool)
+
 func FileExists(filename string) bool {
 	if _, err := os.Stat(filename); err == nil {
 		return true
@@ -44,7 +47,7 @@ func readFile(path string) []UNPARSEcode {
 	return output
 }
 
-func importMod(realpath string, origin string) (scope, ArErr) {
+func importMod(realpath string, origin string, main bool) (ArObject, ArErr) {
 	extention := filepath.Ext(realpath)
 	path := realpath
 	if extention == "" {
@@ -52,13 +55,13 @@ func importMod(realpath string, origin string) (scope, ArErr) {
 	}
 	ex, err := os.Getwd()
 	if err != nil {
-		return nil, ArErr{"Import Error", err.Error(), 0, realpath, "", true}
+		return ArObject{}, ArErr{TYPE: "Import Error", message: "Could not get working directory", EXISTS: true}
 	}
-	executable, err := os.Executable()
+	exc, err := os.Executable()
 	if err != nil {
-		return nil, ArErr{"Import Error", err.Error(), 0, realpath, "", true}
+		return ArObject{}, ArErr{TYPE: "Import Error", message: "Could not get executable", EXISTS: true}
 	}
-	executable = filepath.Dir(executable)
+	executable := filepath.Dir(exc)
 	isABS := filepath.IsAbs(path)
 	var pathsToTest []string
 	if isABS {
@@ -90,18 +93,52 @@ func importMod(realpath string, origin string) (scope, ArErr) {
 	}
 
 	if !found {
-		return nil, ArErr{"Import Error", "File does not exist: " + realpath, 0, realpath, "", true}
+		return ArObject{}, ArErr{TYPE: "Import Error", message: "File does not exist: " + realpath, EXISTS: true}
+	} else if importing[p] {
+		return ArObject{}, ArErr{TYPE: "Import Error", message: "Circular import: " + realpath, EXISTS: true}
+	} else if _, ok := imported[p]; ok {
+		return imported[p], ArErr{}
 	}
+	importing[p] = true
 	codelines := readFile(p)
 
 	translated, translationerr := translate(codelines)
 	if translationerr.EXISTS {
-		return nil, translationerr
+		return ArObject{}, translationerr
 	}
-	global := scope{}
-	_, runimeErr, _ := run(translated, stack{vars, global})
+	ArgsArArray := []any{}
+	for _, arg := range Args[1:] {
+		ArgsArArray = append(ArgsArArray, arg)
+	}
+	global := newscope()
+	localvars := Map(anymap{
+		"program": Map(anymap{
+			"args":   ArArray(ArgsArArray),
+			"origin": origin,
+			"import": builtinFunc{"import", func(args ...any) (any, ArErr) {
+				if len(args) != 1 {
+					return nil, ArErr{"Import Error", "Invalid number of arguments", 0, realpath, "", true}
+				}
+				if _, ok := args[0].(string); !ok {
+					return nil, ArErr{"Import Error", "Invalid argument type", 0, realpath, "", true}
+				}
+				return importMod(args[0].(string), filepath.Dir(p), false)
+			}},
+			"cwd": ex,
+			"exc": exc,
+			"file": Map(anymap{
+				"name": filepath.Base(p),
+				"path": p,
+			}),
+			"main":  main,
+			"scope": global,
+		}),
+	})
+	_, runimeErr, _ := run(translated, stack{vars, localvars, global})
+	importing[p] = false
 	if runimeErr.EXISTS {
-		return nil, runimeErr
+		return ArObject{}, runimeErr
 	}
+	imported[p] = global
 	return global, ArErr{}
 }

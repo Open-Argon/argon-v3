@@ -78,7 +78,7 @@ func parseVariable(code UNPARSEcode) (accessVariable, bool, ArErr, int) {
 func readVariable(v accessVariable, stack stack) (any, ArErr) {
 	for i := len(stack) - 1; i >= 0; i-- {
 		varMutex.RLock()
-		val, ok := stack[i][v.name]
+		val, ok := stack[i].obj[v.name]
 		varMutex.RUnlock()
 		if ok {
 			return val, ArErr{}
@@ -208,30 +208,30 @@ func setVariableValue(v setVariable, stack stack, stacklevel int) (any, ArErr) {
 
 	if v.TYPE == "let" {
 		varMutex.RLock()
-		_, ok := stack[len(stack)-1][v.toset.(accessVariable).name]
+		_, ok := stack[len(stack)-1].obj[v.toset.(accessVariable).name]
 		varMutex.RUnlock()
 		if ok {
 			return nil, ArErr{"Runtime Error", "variable \"" + v.toset.(accessVariable).name + "\" already exists", v.line, v.path, v.code, true}
 		}
 		varMutex.Lock()
-		stack[len(stack)-1][v.toset.(accessVariable).name] = resp
+		stack[len(stack)-1].obj[v.toset.(accessVariable).name] = resp
 		varMutex.Unlock()
 	} else {
 		switch x := v.toset.(type) {
 		case accessVariable:
 			for i := len(stack) - 1; i >= 0; i-- {
 				varMutex.RLock()
-				_, ok := stack[i][x.name]
+				_, ok := stack[i].obj[x.name]
 				varMutex.RUnlock()
 				if ok {
 					varMutex.Lock()
-					stack[i][x.name] = resp
+					stack[i].obj[x.name] = resp
 					varMutex.Unlock()
 					return ThrowOnNonLoop(resp, ArErr{})
 				}
 			}
 			varMutex.Lock()
-			stack[len(stack)-1][x.name] = resp
+			stack[len(stack)-1].obj[x.name] = resp
 			varMutex.Unlock()
 		case ArMapGet:
 			respp, err := runVal(x.VAL, stack, stacklevel+1)
@@ -246,12 +246,12 @@ func setVariableValue(v setVariable, stack stack, stacklevel int) (any, ArErr) {
 				return nil, err
 			}
 			switch y := respp.(type) {
-			case ArMap:
+			case ArObject:
 				if isUnhashable(key) {
 					return nil, ArErr{"Runtime Error", "can't use unhashable type as map key: " + typeof(key), v.line, v.path, v.code, true}
 				}
 				varMutex.Lock()
-				y[key] = resp
+				y.obj[key] = resp
 				varMutex.Unlock()
 			default:
 				return nil, ArErr{"Runtime Error", "can't set for non map", v.line, v.path, v.code, true}
@@ -285,8 +285,8 @@ func runDelete(d ArDelete, stack stack, stacklevel int) (any, ArErr) {
 	switch x := d.value.(type) {
 	case accessVariable:
 		for i := len(stack) - 1; i >= 0; i-- {
-			if _, ok := stack[i][x.name]; ok {
-				delete(stack[i], x.name)
+			if _, ok := stack[i].obj[x.name]; ok {
+				delete(stack[i].obj, x.name)
 				return nil, ArErr{}
 			}
 		}
@@ -304,8 +304,14 @@ func runDelete(d ArDelete, stack stack, stacklevel int) (any, ArErr) {
 			return nil, err
 		}
 		switch y := respp.(type) {
-		case ArMap:
-			delete(y, key)
+		case ArObject:
+			if y.TYPE == "array" {
+				return nil, ArErr{"Runtime Error", "can't delete from array", d.line, d.path, d.code, true}
+			}
+			if isUnhashable(key) {
+				return nil, ArErr{"Runtime Error", "can't use unhashable type as map key: " + typeof(key), d.line, d.path, d.code, true}
+			}
+			delete(y.obj, key)
 		default:
 			return nil, ArErr{"Runtime Error", "can't delete for non map", d.line, d.path, d.code, true}
 		}

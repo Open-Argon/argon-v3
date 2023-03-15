@@ -118,7 +118,7 @@ func parseIfStatement(code UNPARSEcode, index int, codeline []UNPARSEcode) (ifst
 
 func runIfStatement(code ifstatement, stack stack, stacklevel int) (any, ArErr) {
 	for _, condition := range code.conditions {
-		newstack := append(stack, scope{})
+		newstack := append(stack, newscope())
 		resp, err := runVal(condition.condition, newstack, stacklevel+1)
 		if err.EXISTS {
 			return nil, err
@@ -128,7 +128,7 @@ func runIfStatement(code ifstatement, stack stack, stacklevel int) (any, ArErr) 
 		}
 	}
 	if code.ELSE != nil {
-		return runVal(code.ELSE, append(stack, scope{}), stacklevel+1)
+		return runVal(code.ELSE, append(stack, newscope()), stacklevel+1)
 	}
 	return nil, ArErr{}
 }

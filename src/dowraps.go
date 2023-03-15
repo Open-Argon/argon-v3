@@ -49,7 +49,7 @@ func parseDoWrap(code UNPARSEcode, index int, codelines []UNPARSEcode) (any, boo
 }
 
 func runDoWrap(d dowrap, stack stack, stacklevel int) (any, ArErr) {
-	newstack := append(stack, scope{})
+	newstack := append(stack, newscope())
 	for _, v := range d.run {
 		val, err := runVal(v, newstack, stacklevel+1)
 		if err.EXISTS {

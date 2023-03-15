@@ -1,8 +1,5 @@
-i = 0
-output = []
+x = map()
+x.poo = 10
 
-while (i < 1000) do
-    output = append(output, i)
-    i = i + 1
-
-file.write('output.json').json(output)
+y = [x,x,x]
+term.log(y)

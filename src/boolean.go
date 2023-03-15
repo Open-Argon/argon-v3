@@ -12,8 +12,11 @@ func anyToBool(x any) bool {
 		return x
 	case nil:
 		return false
-	case ArMap:
-		return len(x) != 0
+	case ArObject:
+		if x.TYPE == "array" {
+			return len(x.obj["__value__"].([]any)) != 0
+		}
+		return len(x.obj) != 0
 	case builtinFunc:
 		return true
 	case Callable:

@@ -56,21 +56,30 @@ func runImport(importOBJ ArImport, stack stack, stacklevel int) (any, ArErr) {
 	if e != nil {
 		return nil, ArErr{"File Error", "could not get current working directory", importOBJ.line, importOBJ.path, importOBJ.code, true}
 	}
-	stackMap, err := importMod(path, ex)
+	stackMap, err := importMod(path, ex, false)
 	if err.EXISTS {
+		if err.line == 0 {
+			err.line = importOBJ.line
+		}
+		if err.path == "" {
+			err.path = importOBJ.path
+		}
+		if err.code == "" {
+			err.code = importOBJ.code
+		}
 		return nil, err
 	}
 	switch x := importOBJ.values.(type) {
 	case []string:
 		for _, v := range x {
-			val, ok := stackMap[v]
+			val, ok := stackMap.obj[v]
 			if !ok {
 				return nil, ArErr{"Import Error", "could not find value " + anyToArgon(v, true, false, 3, 0, false, 0) + " in module " + anyToArgon(path, true, false, 3, 0, false, 0), importOBJ.line, importOBJ.path, importOBJ.code, true}
 			}
-			stack[len(stack)-1][v] = val
+			stack[len(stack)-1].obj[v] = val
 		}
 	case string:
-		stack[len(stack)-1][x] = stackMap
+		stack[len(stack)-1].obj[x] = stackMap
 	}
 	return nil, ArErr{}
 }

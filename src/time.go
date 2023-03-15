@@ -6,8 +6,8 @@ import (
 
 var MicroSeconds = newNumber().SetInt64(1000000)
 
-func ArTimeClass(N time.Time) ArMap {
-	return ArMap{
+func ArTimeClass(N time.Time) ArObject {
+	return Map(anymap{
 		"__value__": newNumber().Quo(newNumber().SetInt64(N.UnixMicro()), MicroSeconds),
 		"year": builtinFunc{
 			"year",
@@ -96,10 +96,10 @@ func ArTimeClass(N time.Time) ArMap {
 				return N.Format(a[0].(string)), ArErr{}
 			},
 		},
-	}
+	})
 }
 
-var ArTime = map[any]any{
+var ArTime = Map(anymap{
 	"snooze": builtinFunc{"snooze", func(a ...any) (any, ArErr) {
 		if len(a) > 0 {
 			float, _ := a[0].(number).Float64()
@@ -212,4 +212,4 @@ var ArTime = map[any]any{
 		}
 	},
 	},
-}
+})

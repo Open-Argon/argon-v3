@@ -5,15 +5,19 @@ import (
 	"strings"
 )
 
-type ArMap = map[any]any
-type ArArray = []any
+type ArObject struct {
+	TYPE string
+	obj  anymap
+}
+
+type anymap map[any]any
 
 var mapGetCompile = makeRegex(`(.|\n)+\.([a-zA-Z_]|(\p{L}\p{M}*))([a-zA-Z0-9_]|(\p{L}\p{M}*))*( *)`)
 var indexGetCompile = makeRegex(`(.|\n)+\[(.|\n)+\]( *)`)
 
 type ArMapGet struct {
 	VAL   any
-	args  ArArray
+	args  []any
 	index bool
 	line  int
 	code  string
@@ -26,7 +30,14 @@ func mapGet(r ArMapGet, stack stack, stacklevel int) (any, ArErr) {
 		return nil, err
 	}
 	switch m := resp.(type) {
-	case ArMap:
+	case ArObject:
+		switch m.TYPE {
+		case "array":
+			resp, err := getFromArArray(m, r, stack, stacklevel+1)
+			if !err.EXISTS {
+				return resp, err
+			}
+		}
 		if len(r.args) > 1 {
 			return nil, ArErr{
 				"IndexError",
@@ -51,7 +62,7 @@ func mapGet(r ArMapGet, stack stack, stacklevel int) (any, ArErr) {
 				true,
 			}
 		}
-		if _, ok := m[key]; !ok {
+		if _, ok := m.obj[key]; !ok {
 			return nil, ArErr{
 				"KeyError",
 				"key '" + fmt.Sprint(key) + "' not found",
@@ -61,12 +72,15 @@ func mapGet(r ArMapGet, stack stack, stacklevel int) (any, ArErr) {
 				true,
 			}
 		}
-		return m[key], ArErr{}
-
-	case ArArray:
-		return getFromArArray(m, r, stack, stacklevel)
+		return potentialAnyArrayToArArray(m.obj[key]), ArErr{}
 	case string:
-		return getFromString(m, r, stack, stacklevel)
+		if val, ok := r.args[0].(string); !r.index && ok {
+			switch val {
+			case "length":
+				return len(m), ArErr{}
+			}
+		}
+		return getFromString(m, r, stack, stacklevel+1)
 	}
 
 	key, err := runVal(r.args[0], stack, stacklevel+1)
@@ -84,9 +98,9 @@ func mapGet(r ArMapGet, stack stack, stacklevel int) (any, ArErr) {
 }
 
 func classVal(r any) any {
-	if _, ok := r.(ArMap); ok {
-		if _, ok := r.(ArMap)["__value__"]; ok {
-			return r.(ArMap)["__value__"]
+	if j, ok := r.(ArObject); ok {
+		if _, ok := j.obj["__value__"]; ok {
+			return j.obj["__value__"]
 		}
 	}
 	return r
@@ -105,7 +119,7 @@ func mapGetParse(code UNPARSEcode, index int, codelines []UNPARSEcode) (ArMapGet
 	if !worked {
 		return ArMapGet{}, false, err, i
 	}
-	return ArMapGet{resp, ArArray{key}, false, code.line, code.realcode, code.path}, true, ArErr{}, 1
+	return ArMapGet{resp, []any{key}, false, code.line, code.realcode, code.path}, true, ArErr{}, 1
 }
 
 func isIndexGet(code UNPARSEcode) bool {
@@ -126,7 +140,6 @@ func indexGetParse(code UNPARSEcode, index int, codelines []UNPARSEcode) (ArMapG
 			}
 			continue
 		}
-		fmt.Println(args)
 		if len(args) > 3 {
 			return ArMapGet{}, false, ArErr{
 				"SyntaxError",
@@ -161,7 +174,7 @@ func isUnhashable(val any) bool {
 	return keytype == "array" || keytype == "map"
 }
 
-func getFromArArray(m []any, r ArMapGet, stack stack, stacklevel int) (ArArray, ArErr) {
+func getFromArArray(m ArObject, r ArMapGet, stack stack, stacklevel int) (ArObject, ArErr) {
 	var (
 		start int = 0
 		end   any = nil
@@ -170,12 +183,12 @@ func getFromArArray(m []any, r ArMapGet, stack stack, stacklevel int) (ArArray, 
 	{
 		startval, err := runVal(r.args[0], stack, stacklevel+1)
 		if err.EXISTS {
-			return nil, err
+			return ArObject{}, err
 		}
 		if startval == nil {
 			start = 0
-		} else if typeof(startval) != "number" && !startval.(number).IsInt() {
-			return nil, ArErr{
+		} else if typeof(startval) != "number" || !startval.(number).IsInt() {
+			return ArObject{}, ArErr{
 				"TypeError",
 				"slice index must be an integer",
 				r.line,
@@ -190,12 +203,12 @@ func getFromArArray(m []any, r ArMapGet, stack stack, stacklevel int) (ArArray, 
 	if len(r.args) > 1 {
 		endval, err := runVal(r.args[1], stack, stacklevel+1)
 		if err.EXISTS {
-			return nil, err
+			return ArObject{}, err
 		}
 		if endval == nil {
-			end = len(m)
+			end = m.obj["length"]
 		} else if typeof(endval) != "number" && !endval.(number).IsInt() {
-			return nil, ArErr{
+			return ArObject{}, ArErr{
 				"TypeError",
 				"slice ending index must be an integer",
 				r.line,
@@ -210,12 +223,12 @@ func getFromArArray(m []any, r ArMapGet, stack stack, stacklevel int) (ArArray, 
 	if len(r.args) > 2 {
 		stepval, err := runVal(r.args[2], stack, stacklevel+1)
 		if err.EXISTS {
-			return nil, err
+			return ArObject{}, err
 		}
 		if stepval == nil {
 			step = 1
 		} else if typeof(stepval) != "number" && !stepval.(number).IsInt() {
-			return nil, ArErr{
+			return ArObject{}, ArErr{
 				"TypeError",
 				"slice step must be an integer",
 				r.line,
@@ -228,29 +241,27 @@ func getFromArArray(m []any, r ArMapGet, stack stack, stacklevel int) (ArArray, 
 		}
 	}
 	if start < 0 {
-		start = len(m) + start
+		start = m.obj["length"].(int) + start
 	}
 	if _, ok := end.(int); ok && end.(int) < 0 {
-		end = len(m) + end.(int)
+		end = m.obj["length"].(int) + end.(int)
 	}
-
-	fmt.Println(start, end, step)
 	if end == nil {
-		return ArArray{m[start]}, ArErr{}
+		return ArArray([]any{m.obj["__value__"].([]any)[start]}), ArErr{}
 	} else if step == 1 {
-		return m[start:end.(int)], ArErr{}
+		return ArArray([]any{m.obj["__value__"].([]any)[start:end.(int)]}), ArErr{}
 	} else {
-		output := ArArray{}
+		output := []any{}
 		if step > 0 {
 			for i := start; i < end.(int); i += step {
-				output = append(output, m[i])
+				output = append(output, m.obj["__value__"].([]any)[i])
 			}
 		} else {
 			for i := end.(int) - 1; i >= start; i += step {
-				output = append(output, m[i])
+				output = append(output, m.obj["__value__"].([]any)[i])
 			}
 		}
-		return (output), ArErr{}
+		return ArArray(output), ArErr{}
 	}
 }
 
@@ -267,7 +278,7 @@ func getFromString(m string, r ArMapGet, stack stack, stacklevel int) (string, A
 		}
 		if startval == nil {
 			start = 0
-		} else if typeof(startval) != "number" && !startval.(number).IsInt() {
+		} else if typeof(startval) != "number" || !startval.(number).IsInt() {
 			return "", ArErr{
 				"TypeError",
 				"slice index must be an integer",
@@ -326,8 +337,6 @@ func getFromString(m string, r ArMapGet, stack stack, stacklevel int) (string, A
 	if _, ok := end.(int); ok && end.(int) < 0 {
 		end = len(m) + end.(int)
 	}
-
-	fmt.Println(start, end, step)
 	if end == nil {
 		return string(m[start]), ArErr{}
 	} else if step == 1 {

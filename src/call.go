@@ -15,6 +15,14 @@ type call struct {
 	path     string
 }
 
+type Callable struct {
+	params []string
+	run    any
+	code   string
+	stack  stack
+	line   int
+}
+
 func isCall(code UNPARSEcode) bool {
 	return callCompile.MatchString(code.code)
 }
@@ -30,7 +38,7 @@ func parseCall(code UNPARSEcode, index int, codelines []UNPARSEcode) (any, bool,
 	for i := 1; i < len(splitby); i++ {
 		name := strings.Join(splitby[0:i], "(")
 		argstr := strings.Join(splitby[i:], "(")
-		args, success, argserr := getValuesFromLetter(argstr, ",", index, codelines, true)
+		args, success, argserr := getValuesFromLetter(argstr, ",", index, codelines, false)
 		arguments = args
 		if !success {
 			if i == len(splitby)-1 {
@@ -68,13 +76,13 @@ func runCall(c call, stack stack, stacklevel int) (any, ArErr) {
 			return nil, err
 		}
 		switch x := callable_.(type) {
-		case ArMap:
-			callable_ = x["__call__"]
+		case ArObject:
+			callable_ = x.obj["__call__"]
 		}
 		callable = callable_
 	}
 	args := []any{}
-	level := append(stack, scope{})
+	level := append(stack, newscope())
 	for _, arg := range c.args {
 		resp, err := runVal(arg, level, stacklevel+1)
 		if err.EXISTS {
@@ -101,9 +109,9 @@ func runCall(c call, stack stack, stacklevel int) (any, ArErr) {
 		if len(x.params) != len(args) {
 			return nil, ArErr{"Runtime Error", "expected " + fmt.Sprint(len(x.params)) + " arguments, got " + fmt.Sprint(len(args)), c.line, c.path, c.code, true}
 		}
-		level := scope{}
+		level := newscope()
 		for i, param := range x.params {
-			level[param] = args[i]
+			level.obj[param] = args[i]
 		}
 		resp, err := runVal(x.run, append(x.stack, level), stacklevel+1)
 		return ThrowOnNonLoop(openReturn(resp), err)

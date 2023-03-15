@@ -72,17 +72,17 @@ func anyToArgon(x any, quote bool, simplify bool, depth int, indent int, colored
 		if colored {
 			output = append(output, "\x1b[0m")
 		}
-	case ArMap:
-		if _, ok := x["__value__"]; ok {
-			return anyToArgon(x["__value__"], quote, simplify, depth, indent, colored, plain)
+	case ArObject:
+		if x.TYPE == "array" {
+			return anyToArgon(x.obj["__value__"], quote, simplify, depth, indent, colored, plain)
 		}
-		if len(x) == 0 {
+		if len(x.obj) == 0 {
 			return "{}"
 		}
-		keys := make([]any, len(x))
+		keys := make([]any, len(x.obj))
 
 		i := 0
-		for k := range x {
+		for k := range x.obj {
 			keys[i] = k
 			i++
 		}
@@ -103,13 +103,11 @@ func anyToArgon(x any, quote bool, simplify bool, depth int, indent int, colored
 				}
 				keyval = strings.Join(outputkeyval, "")
 			}
-			output = append(output, keyval+": "+anyToArgon(x[key], true, true, depth-1, indent+1, colored, plain))
+			output = append(output, keyval+": "+anyToArgon(x.obj[key], true, true, depth-1, indent+1, colored, plain))
 		}
 		return "{" + maybenewline + (strings.Repeat("    ", (indent+1)*plain)) + strings.Join(output, ","+maybenewline+(strings.Repeat("    ", (indent+1)*plain))) + maybenewline + (strings.Repeat("    ", indent*plain)) + "}"
-	case ArArray:
-		if len(x) == 0 {
-			return "[]"
-		}
+	case []any:
+		singleline := len(x) <= 3
 		output := []string{}
 		if simplify && len(x) >= 100 {
 			for i := 0; i < 10; i++ {
@@ -128,8 +126,16 @@ func anyToArgon(x any, quote bool, simplify bool, depth int, indent int, colored
 		} else {
 			for i := 0; i < len(x); i++ {
 				item := x[i]
-				output = append(output, anyToArgon(item, true, true, depth-1, indent+1, colored, plain))
+				converted := anyToArgon(item, true, true, depth-1, indent+1, colored, plain)
+				if singleline && strings.Contains(converted, "\n") {
+					singleline = false
+				}
+				output = append(output, converted)
 			}
+		}
+
+		if singleline {
+			return "[" + strings.Join(output, ", ") + "]"
 		}
 		return "[" + maybenewline + (strings.Repeat("    ", (indent+1)*plain)) + strings.Join(output, ","+maybenewline+(strings.Repeat("    ", (indent+1)*plain))) + maybenewline + (strings.Repeat("    ", indent*plain)) + "]"
 	case builtinFunc:

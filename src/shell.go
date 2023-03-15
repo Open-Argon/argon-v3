@@ -7,7 +7,7 @@ import (
 )
 
 func shell() {
-	global := stack{vars, scope{}}
+	global := stack{vars, newscope()}
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
 	go func() {

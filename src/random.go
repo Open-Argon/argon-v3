@@ -49,7 +49,7 @@ func randomRange(args ...any) (any, ArErr) {
 	return rand, ArErr{}
 }
 
-var ArRandom = ArMap{
+var ArRandom = Map(anymap{
 	"__call__": builtinFunc{"random", func(args ...any) (any, ArErr) {
 		if len(args) != 0 {
 			return nil, ArErr{
@@ -68,7 +68,7 @@ var ArRandom = ArMap{
 		return round(resp.(number), 0), ArErr{}
 	}},
 	"range": builtinFunc{"range", randomRange},
-}
+})
 
 func init() {
 	rand.Seed(

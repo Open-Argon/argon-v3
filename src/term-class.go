@@ -5,9 +5,9 @@ import (
 	"time"
 )
 
-var timing = ArMap{}
+var timing = anymap{}
 
-var plain = ArMap{
+var plain = Map(anymap{
 	"log": builtinFunc{"log", func(args ...any) (any, ArErr) {
 		output := []any{}
 		for i := 0; i < len(args); i++ {
@@ -32,9 +32,9 @@ var plain = ArMap{
 		fmt.Println(output...)
 		return nil, ArErr{}
 	}},
-}
+})
 
-var ArTerm = ArMap{
+var ArTerm = Map(anymap{
 	"log": builtinFunc{"log", func(args ...any) (any, ArErr) {
 		output := []any{}
 		for i := 0; i < len(args); i++ {
@@ -103,4 +103,4 @@ var ArTerm = ArMap{
 		fmt.Printf("\x1b[%dm%s\x1b[0m", 34, fmt.Sprint(anyToArgon(id, false, true, 3, 0, false, 0), ": ", timesince)+"\n")
 		return nil, ArErr{}
 	}},
-}
+})

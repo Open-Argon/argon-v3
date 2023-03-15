@@ -11,17 +11,13 @@ import (
 func convertToArgon(obj any) any {
 	switch x := obj.(type) {
 	case map[string]interface{}:
-		newmap := ArMap{}
+		newmap := Map(anymap{})
 		for key, value := range x {
-			newmap[key] = convertToArgon(value)
+			newmap.obj[key] = convertToArgon(value)
 		}
 		return newmap
-	case ArArray:
-		newarray := ArArray{}
-		for _, value := range x {
-			newarray = append(newarray, convertToArgon(value))
-		}
-		return newarray
+	case []any:
+		return ArArray(x)
 	case string:
 		return x
 	case float64:
@@ -47,8 +43,18 @@ func jsonstringify(obj any, level int) (string, error) {
 	output := []string{}
 	obj = classVal(obj)
 	switch x := obj.(type) {
-	case ArMap:
-		for key, value := range x {
+	case ArObject:
+		if x.TYPE == "array" {
+			for _, value := range x.obj["__value__"].([]any) {
+				str, err := jsonstringify(value, level+1)
+				if err != nil {
+					return "", err
+				}
+				output = append(output, str)
+			}
+			return "[" + strings.Join(output, ", ") + "]", nil
+		}
+		for key, value := range x.obj {
 			str, err := jsonstringify(value, level+1)
 			if err != nil {
 				return "", err
@@ -56,7 +62,7 @@ func jsonstringify(obj any, level int) (string, error) {
 			output = append(output, ""+strconv.Quote(anyToArgon(key, false, true, 3, 0, false, 0))+": "+str)
 		}
 		return "{" + strings.Join(output, ", ") + "}", nil
-	case ArArray:
+	case []any:
 		for _, value := range x {
 			str, err := jsonstringify(value, level+1)
 			if err != nil {
@@ -82,24 +88,24 @@ func jsonstringify(obj any, level int) (string, error) {
 	return "", err
 }
 
-var ArJSON = ArMap{
+var ArJSON = Map(anymap{
 	"parse": builtinFunc{"parse", func(args ...any) (any, ArErr) {
 		if len(args) == 0 {
-			return ArMap{}, ArErr{TYPE: "Runtime Error", message: "parse takes 1 argument", EXISTS: true}
+			return nil, ArErr{TYPE: "Runtime Error", message: "parse takes 1 argument", EXISTS: true}
 		}
 		if typeof(args[0]) != "string" {
-			return ArMap{}, ArErr{TYPE: "Runtime Error", message: "parse takes a string not a '" + typeof(args[0]) + "'", EXISTS: true}
+			return nil, ArErr{TYPE: "Runtime Error", message: "parse takes a string not a '" + typeof(args[0]) + "'", EXISTS: true}
 		}
 		return jsonparse(args[0].(string)), ArErr{}
 	}},
 	"stringify": builtinFunc{"stringify", func(args ...any) (any, ArErr) {
 		if len(args) == 0 {
-			return ArMap{}, ArErr{TYPE: "Runtime Error", message: "stringify takes 1 argument", EXISTS: true}
+			return nil, ArErr{TYPE: "Runtime Error", message: "stringify takes 1 argument", EXISTS: true}
 		}
 		str, err := jsonstringify(args[0], 0)
 		if err != nil {
-			return ArMap{}, ArErr{TYPE: "Runtime Error", message: err.Error(), EXISTS: true}
+			return nil, ArErr{TYPE: "Runtime Error", message: err.Error(), EXISTS: true}
 		}
 		return str, ArErr{}
 	}},
-}
+})

@@ -7,8 +7,14 @@ import (
 // args without the program path
 var Args = os.Args[1:]
 
-type scope = ArMap
-type stack = []scope
+type stack = []ArObject
+
+func newscope() ArObject {
+	return ArObject{
+		TYPE: "map",
+		obj:  make(anymap),
+	}
+}
 
 func main() {
 	ex, e := os.Getwd()
@@ -19,7 +25,7 @@ func main() {
 		shell()
 		os.Exit(0)
 	}
-	_, err := importMod(Args[0], ex)
+	_, err := importMod(Args[0], ex, true)
 	if err.EXISTS {
 		panicErr(err)
 		os.Exit(1)

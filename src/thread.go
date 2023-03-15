@@ -17,11 +17,11 @@ func ArThread(args ...any) (any, ArErr) {
 	}
 	var resp any
 	var err ArErr
-	currentscope := stack{vars, scope{}}
+	currentscope := stack{vars, newscope()}
 	hasrun := false
 	joined := false
 	var wg sync.WaitGroup
-	threaMap := ArMap{
+	threadMap := Map(anymap{
 		"start": builtinFunc{"start", func(args ...any) (any, ArErr) {
 			if hasrun {
 				return nil, ArErr{TYPE: "Runtime Error", message: "Cannot start a thread twice", EXISTS: true}
@@ -44,6 +44,6 @@ func ArThread(args ...any) (any, ArErr) {
 			wg.Wait()
 			return resp, err
 		}},
-	}
-	return threaMap, ArErr{}
+	})
+	return threadMap, ArErr{}
 }
