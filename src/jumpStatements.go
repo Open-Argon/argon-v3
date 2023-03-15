@@ -6,6 +6,7 @@ import (
 
 var returnCompile = makeRegex(`( *)return( +)(.|\n)+`)
 var breakCompile = makeRegex(`( *)break( *)`)
+var continueCompile = makeRegex(`( *)continue( *)`)
 
 type CallReturn struct {
 	value any
@@ -20,13 +21,12 @@ type Return struct {
 	code  string
 	path  string
 }
-
-type CallBreak struct {
+type Break struct {
 	line int
 	code string
 	path string
 }
-type Break struct {
+type Continue struct {
 	line int
 	code string
 	path string
@@ -38,6 +38,10 @@ func isReturn(code UNPARSEcode) bool {
 
 func isBreak(code UNPARSEcode) bool {
 	return breakCompile.MatchString(code.code)
+}
+
+func isContinue(code UNPARSEcode) bool {
+	return continueCompile.MatchString(code.code)
 }
 
 func parseReturn(code UNPARSEcode, index int, codeline []UNPARSEcode) (CallReturn, bool, ArErr, int) {
@@ -81,18 +85,29 @@ func openReturn(resp any) any {
 	}
 }
 
-func parseBreak(code UNPARSEcode, index int, codeline []UNPARSEcode) (CallBreak, bool, ArErr, int) {
-	return CallBreak{
+func parseBreak(code UNPARSEcode) (Break, bool, ArErr, int) {
+	return Break{
 		line: code.line,
 		code: code.realcode,
 		path: code.path,
 	}, true, ArErr{}, 1
 }
 
-func runBreak(code CallBreak, stack stack, stacklevel int) (any, ArErr) {
-	return Break{
+func parseContinue(code UNPARSEcode) (Continue, bool, ArErr, int) {
+	return Continue{
 		line: code.line,
-		code: code.code,
+		code: code.realcode,
 		path: code.path,
-	}, ArErr{}
+	}, true, ArErr{}, 1
+}
+
+func ThrowOnNonLoop(val any, err ArErr) (any, ArErr) {
+	switch x := val.(type) {
+	case Break:
+		return nil, ArErr{"Break Error", "break can only be used in loops", x.line, x.path, x.code, true}
+	case Continue:
+		return nil, ArErr{"Continue Error", "continue can only be used in loops", x.line, x.path, x.code, true}
+	default:
+		return x, err
+	}
 }

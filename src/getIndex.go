@@ -12,15 +12,12 @@ var mapGetCompile = makeRegex(`(.|\n)+\.([a-zA-Z_]|(\p{L}\p{M}*))([a-zA-Z0-9_]|(
 var indexGetCompile = makeRegex(`(.|\n)+\[(.|\n)+\]( *)`)
 
 type ArMapGet struct {
-	VAL           any
-	start         any
-	end           any
-	step          any
-	index         bool
-	numberofindex int
-	line          int
-	code          string
-	path          string
+	VAL   any
+	args  ArArray
+	index bool
+	line  int
+	code  string
+	path  string
 }
 
 func mapGet(r ArMapGet, stack stack, stacklevel int) (any, ArErr) {
@@ -30,7 +27,7 @@ func mapGet(r ArMapGet, stack stack, stacklevel int) (any, ArErr) {
 	}
 	switch m := resp.(type) {
 	case ArMap:
-		if r.numberofindex > 1 {
+		if len(r.args) > 1 {
 			return nil, ArErr{
 				"IndexError",
 				"index not found",
@@ -40,9 +37,19 @@ func mapGet(r ArMapGet, stack stack, stacklevel int) (any, ArErr) {
 				true,
 			}
 		}
-		key, err := runVal(r.start, stack, stacklevel+1)
+		key, err := runVal(r.args[0], stack, stacklevel+1)
 		if err.EXISTS {
 			return nil, err
+		}
+		if isUnhashable(key) {
+			return nil, ArErr{
+				"TypeError",
+				"unhashable type: '" + typeof(key) + "'",
+				r.line,
+				r.path,
+				r.code,
+				true,
+			}
 		}
 		if _, ok := m[key]; !ok {
 			return nil, ArErr{
@@ -57,335 +64,12 @@ func mapGet(r ArMapGet, stack stack, stacklevel int) (any, ArErr) {
 		return m[key], ArErr{}
 
 	case ArArray:
-		startindex := 0
-		endindex := 1
-		step := 1
-		slice := false
-
-		if !r.index {
-			key, err := runVal(r.start, stack, stacklevel+1)
-			if err.EXISTS {
-				return nil, err
-			}
-			switch key {
-			case "length":
-				return newNumber().SetInt64(int64(len(m))), ArErr{}
-			}
-			return nil, ArErr{
-				"IndexError",
-				"" + anyToArgon(key, true, true, 3, 0, false, 0) + " does not exist in array",
-				r.line,
-				r.path,
-				r.code,
-				true,
-			}
-		}
-		if r.start != nil {
-			sindex, err := runVal(r.start, stack, stacklevel+1)
-			if err.EXISTS {
-				return nil, err
-			}
-			if typeof(sindex) != "number" {
-				return nil, ArErr{
-					"TypeError",
-					"index must be a number",
-					r.line,
-					r.path,
-					r.code,
-					true,
-				}
-			}
-			num := sindex.(number)
-			if !num.IsInt() {
-				return nil, ArErr{
-					"TypeError",
-					"index must be an integer",
-					r.line,
-					r.path,
-					r.code,
-					true,
-				}
-			}
-			startindex = int(num.Num().Int64())
-			endindex = startindex + 1
-		}
-		if r.end != nil {
-			eindex, err := runVal(r.end, stack, stacklevel+1)
-			if err.EXISTS {
-				return nil, err
-			}
-			if typeof(eindex) != "number" {
-				return nil, ArErr{
-					"TypeError",
-					"ending index must be a number",
-					r.line,
-					r.path,
-					r.code,
-					true,
-				}
-			}
-			slice = true
-			num := eindex.(number)
-			if !num.IsInt() {
-				return nil, ArErr{
-					"TypeError",
-					"ending index must be an integer",
-					r.line,
-					r.path,
-					r.code,
-					true,
-				}
-			}
-			endindex = int(num.Num().Int64())
-		} else if r.numberofindex > 1 {
-			endindex = len(m)
-		}
-		if r.step != nil {
-			step, err := runVal(r.step, stack, stacklevel+1)
-			if err.EXISTS {
-				return nil, err
-			}
-			if typeof(step) != "number" {
-				return nil, ArErr{
-					"TypeError",
-					"step must be a number",
-					r.line,
-					r.path,
-					r.code,
-					true,
-				}
-			}
-			slice = true
-			num := step.(number)
-			if !num.IsInt() {
-				return nil, ArErr{
-					"TypeError",
-					"step must be an integer",
-					r.line,
-					r.path,
-					r.code,
-					true,
-				}
-			}
-			step = int(num.Num().Int64())
-		}
-		if startindex < 0 {
-			startindex = len(m) + startindex
-		}
-		if endindex < 0 {
-			endindex = len(m) + endindex
-		}
-		if step < 0 {
-			step = -step
-			startindex, endindex = endindex, startindex
-		}
-		if startindex < 0 || startindex >= len(m) {
-			return nil, ArErr{
-				"IndexError",
-				"index '" + fmt.Sprint(startindex) + "' out of range",
-				r.line,
-				r.path,
-				r.code,
-				true,
-			}
-		}
-		if endindex < 0 || endindex > len(m) {
-			return nil, ArErr{
-				"IndexError",
-				"index '" + fmt.Sprint(endindex) + "' out of range",
-				r.line,
-				r.path,
-				r.code,
-				true,
-			}
-		}
-		if step == 0 {
-			return nil, ArErr{
-				"ValueError",
-				"step cannot be 0",
-				r.line,
-				r.path,
-				r.code,
-				true,
-			}
-		}
-		if !slice {
-			return m[startindex], ArErr{}
-		} else if step == 1 {
-			return m[startindex:endindex], ArErr{}
-		}
-		output := ArArray{}
-		for i := startindex; i < endindex; i += step {
-			output = append(output, output[i])
-		}
-		return output, ArErr{}
+		return getFromArArray(m, r, stack, stacklevel)
 	case string:
-		startindex := 0
-		endindex := 1
-		step := 1
-		slice := false
-
-		if !r.index {
-			key, err := runVal(r.start, stack, stacklevel+1)
-			if err.EXISTS {
-				return nil, err
-			}
-			switch key {
-			case "length":
-				return newNumber().SetInt64(int64(len(m))), ArErr{}
-			}
-			return nil, ArErr{
-				"IndexError",
-				"" + anyToArgon(key, true, true, 3, 0, false, 0) + " does not exist in array",
-				r.line,
-				r.path,
-				r.code,
-				true,
-			}
-		}
-		if r.start != nil {
-			sindex, err := runVal(r.start, stack, stacklevel+1)
-			if err.EXISTS {
-				return nil, err
-			}
-			if typeof(sindex) != "number" {
-				return nil, ArErr{
-					"TypeError",
-					"index must be a number",
-					r.line,
-					r.path,
-					r.code,
-					true,
-				}
-			}
-			num := sindex.(number)
-			if !num.IsInt() {
-				return nil, ArErr{
-					"TypeError",
-					"index must be an integer",
-					r.line,
-					r.path,
-					r.code,
-					true,
-				}
-			}
-			startindex = int(num.Num().Int64())
-			endindex = startindex + 1
-		}
-		if r.end != nil {
-			eindex, err := runVal(r.end, stack, stacklevel+1)
-			if err.EXISTS {
-				return nil, err
-			}
-			if typeof(eindex) != "number" {
-				return nil, ArErr{
-					"TypeError",
-					"ending index must be a number",
-					r.line,
-					r.path,
-					r.code,
-					true,
-				}
-			}
-			slice = true
-			num := eindex.(number)
-			if !num.IsInt() {
-				return nil, ArErr{
-					"TypeError",
-					"ending index must be an integer",
-					r.line,
-					r.path,
-					r.code,
-					true,
-				}
-			}
-			endindex = int(num.Num().Int64())
-		} else if r.numberofindex > 1 {
-			endindex = len(m)
-		}
-		if r.step != nil {
-			step, err := runVal(r.step, stack, stacklevel+1)
-			if err.EXISTS {
-				return nil, err
-			}
-			if typeof(step) != "number" {
-				return nil, ArErr{
-					"TypeError",
-					"step must be a number",
-					r.line,
-					r.path,
-					r.code,
-					true,
-				}
-			}
-			slice = true
-			num := step.(number)
-			if !num.IsInt() {
-				return nil, ArErr{
-					"TypeError",
-					"step must be an integer",
-					r.line,
-					r.path,
-					r.code,
-					true,
-				}
-			}
-			step = int(num.Num().Int64())
-		}
-		if startindex < 0 {
-			startindex = len(m) + startindex
-		}
-		if endindex < 0 {
-			endindex = len(m) + endindex
-		}
-		if step < 0 {
-			step = -step
-			startindex, endindex = endindex, startindex
-		}
-		if startindex < 0 || startindex >= len(m) {
-			return nil, ArErr{
-				"IndexError",
-				"index '" + fmt.Sprint(startindex) + "' out of range",
-				r.line,
-				r.path,
-				r.code,
-				true,
-			}
-		}
-		if endindex < 0 || endindex > len(m) {
-			return nil, ArErr{
-				"IndexError",
-				"index '" + fmt.Sprint(endindex) + "' out of range",
-				r.line,
-				r.path,
-				r.code,
-				true,
-			}
-		}
-		if step == 0 {
-			return nil, ArErr{
-				"ValueError",
-				"step cannot be 0",
-				r.line,
-				r.path,
-				r.code,
-				true,
-			}
-		}
-    fmt.Println(startindex, endindex,step)
-		if !slice {
-			return string(m[startindex]), ArErr{}
-		} else if step == 1 {
-			return string(m[startindex:endindex]), ArErr{}
-		}
-		output := []byte{}
-		for i := startindex; i < endindex; i += step {
-			output = append(output, output[i])
-		}
-		return string(output), ArErr{}
+		return getFromString(m, r, stack, stacklevel)
 	}
 
-	key, err := runVal(r.start, stack, stacklevel+1)
+	key, err := runVal(r.args[0], stack, stacklevel+1)
 	if err.EXISTS {
 		return nil, err
 	}
@@ -421,8 +105,7 @@ func mapGetParse(code UNPARSEcode, index int, codelines []UNPARSEcode) (ArMapGet
 	if !worked {
 		return ArMapGet{}, false, err, i
 	}
-	k := key
-	return ArMapGet{resp, k, nil, nil, false, 1, code.line, code.realcode, code.path}, true, ArErr{}, 1
+	return ArMapGet{resp, ArArray{key}, false, code.line, code.realcode, code.path}, true, ArErr{}, 1
 }
 
 func isIndexGet(code UNPARSEcode) bool {
@@ -433,11 +116,6 @@ func indexGetParse(code UNPARSEcode, index int, codelines []UNPARSEcode) (ArMapG
 	trim := strings.TrimSpace(code.code)
 	trim = trim[:len(trim)-1]
 	split := strings.Split(trim, "[")
-	var toindex any
-	var start any
-	var end any
-	var step any
-	numberofindexs := 0
 	for i := 1; i < len(split); i++ {
 		ti := strings.Join(split[:i], "[")
 		innerbrackets := strings.Join(split[i:], "[")
@@ -448,7 +126,7 @@ func indexGetParse(code UNPARSEcode, index int, codelines []UNPARSEcode) (ArMapG
 			}
 			continue
 		}
-    fmt.Println(args)
+		fmt.Println(args)
 		if len(args) > 3 {
 			return ArMapGet{}, false, ArErr{
 				"SyntaxError",
@@ -461,33 +139,210 @@ func indexGetParse(code UNPARSEcode, index int, codelines []UNPARSEcode) (ArMapG
 		}
 		tival, worked, err, i := translateVal(UNPARSEcode{code: ti, realcode: code.realcode, line: code.line, path: code.path}, index, codelines, 0)
 		if !worked {
-			fmt.Println(err)
 			if i == len(split)-1 {
 				return ArMapGet{}, false, err, i
 			}
 			continue
 		}
-		numberofindexs = len(args)
-		if len(args) >= 1 {
-			toindex = tival
-			start = args[0]
+		return ArMapGet{tival, args, true, code.line, code.realcode, code.path}, true, ArErr{}, 1
+	}
+	return ArMapGet{}, false, ArErr{
+		"SyntaxError",
+		"invalid index get",
+		code.line,
+		code.path,
+		code.realcode,
+		true,
+	}, 1
+}
+
+func isUnhashable(val any) bool {
+	keytype := typeof(val)
+	return keytype == "array" || keytype == "map"
+}
+
+func getFromArArray(m []any, r ArMapGet, stack stack, stacklevel int) (ArArray, ArErr) {
+	var (
+		start int = 0
+		end   any = nil
+		step  int = 1
+	)
+	{
+		startval, err := runVal(r.args[0], stack, stacklevel+1)
+		if err.EXISTS {
+			return nil, err
 		}
-		if len(args) >= 2 {
-			end = args[1]
-		}
-		if len(args) >= 3 {
-			step = args[2]
+		if startval == nil {
+			start = 0
+		} else if typeof(startval) != "number" && !startval.(number).IsInt() {
+			return nil, ArErr{
+				"TypeError",
+				"slice index must be an integer",
+				r.line,
+				r.path,
+				r.code,
+				true,
+			}
+		} else {
+			start = int(startval.(number).Num().Int64())
 		}
 	}
-	if toindex == nil {
-		return ArMapGet{}, false, ArErr{
-			"SyntaxError",
-			"invalid index get",
-			code.line,
-			code.path,
-			code.realcode,
-			true,
-		}, 1
+	if len(r.args) > 1 {
+		endval, err := runVal(r.args[1], stack, stacklevel+1)
+		if err.EXISTS {
+			return nil, err
+		}
+		if endval == nil {
+			end = len(m)
+		} else if typeof(endval) != "number" && !endval.(number).IsInt() {
+			return nil, ArErr{
+				"TypeError",
+				"slice ending index must be an integer",
+				r.line,
+				r.path,
+				r.code,
+				true,
+			}
+		} else {
+			end = int(endval.(number).Num().Int64())
+		}
 	}
-	return ArMapGet{toindex, start, end, step, true, numberofindexs, code.line, code.realcode, code.path}, true, ArErr{}, 1
+	if len(r.args) > 2 {
+		stepval, err := runVal(r.args[2], stack, stacklevel+1)
+		if err.EXISTS {
+			return nil, err
+		}
+		if stepval == nil {
+			step = 1
+		} else if typeof(stepval) != "number" && !stepval.(number).IsInt() {
+			return nil, ArErr{
+				"TypeError",
+				"slice step must be an integer",
+				r.line,
+				r.path,
+				r.code,
+				true,
+			}
+		} else {
+			step = int(stepval.(number).Num().Int64())
+		}
+	}
+	if start < 0 {
+		start = len(m) + start
+	}
+	if _, ok := end.(int); ok && end.(int) < 0 {
+		end = len(m) + end.(int)
+	}
+
+	fmt.Println(start, end, step)
+	if end == nil {
+		return ArArray{m[start]}, ArErr{}
+	} else if step == 1 {
+		return m[start:end.(int)], ArErr{}
+	} else {
+		output := ArArray{}
+		if step > 0 {
+			for i := start; i < end.(int); i += step {
+				output = append(output, m[i])
+			}
+		} else {
+			for i := end.(int) - 1; i >= start; i += step {
+				output = append(output, m[i])
+			}
+		}
+		return (output), ArErr{}
+	}
+}
+
+func getFromString(m string, r ArMapGet, stack stack, stacklevel int) (string, ArErr) {
+	var (
+		start int = 0
+		end   any = nil
+		step  int = 1
+	)
+	{
+		startval, err := runVal(r.args[0], stack, stacklevel+1)
+		if err.EXISTS {
+			return "", err
+		}
+		if startval == nil {
+			start = 0
+		} else if typeof(startval) != "number" && !startval.(number).IsInt() {
+			return "", ArErr{
+				"TypeError",
+				"slice index must be an integer",
+				r.line,
+				r.path,
+				r.code,
+				true,
+			}
+		} else {
+			start = int(startval.(number).Num().Int64())
+		}
+	}
+	if len(r.args) > 1 {
+		endval, err := runVal(r.args[1], stack, stacklevel+1)
+		if err.EXISTS {
+			return "", err
+		}
+		if endval == nil {
+			end = len(m)
+		} else if typeof(endval) != "number" && !endval.(number).IsInt() {
+			return "", ArErr{
+				"TypeError",
+				"slice ending index must be an integer",
+				r.line,
+				r.path,
+				r.code,
+				true,
+			}
+		} else {
+			end = int(endval.(number).Num().Int64())
+		}
+	}
+	if len(r.args) > 2 {
+		stepval, err := runVal(r.args[2], stack, stacklevel+1)
+		if err.EXISTS {
+			return "", err
+		}
+		if stepval == nil {
+			step = 1
+		} else if typeof(stepval) != "number" && !stepval.(number).IsInt() {
+			return "", ArErr{
+				"TypeError",
+				"slice step must be an integer",
+				r.line,
+				r.path,
+				r.code,
+				true,
+			}
+		} else {
+			step = int(stepval.(number).Num().Int64())
+		}
+	}
+	if start < 0 {
+		start = len(m) + start
+	}
+	if _, ok := end.(int); ok && end.(int) < 0 {
+		end = len(m) + end.(int)
+	}
+
+	fmt.Println(start, end, step)
+	if end == nil {
+		return string(m[start]), ArErr{}
+	} else if step == 1 {
+		return m[start:end.(int)], ArErr{}
+	} else {
+		output := []byte{}
+		if step > 0 {
+			for i := start; i < end.(int); i += step {
+				output = append(output, m[i])
+			}
+		} else {
+			for i := end.(int) - 1; i >= start; i += step {
+				output = append(output, m[i])
+			}
+		}
+		return string(output), ArErr{}
+	}
 }

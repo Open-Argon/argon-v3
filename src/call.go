@@ -106,7 +106,7 @@ func runCall(c call, stack stack, stacklevel int) (any, ArErr) {
 			level[param] = args[i]
 		}
 		resp, err := runVal(x.run, append(x.stack, level), stacklevel+1)
-		return openReturn(resp), err
+		return ThrowOnNonLoop(openReturn(resp), err)
 	}
 	return nil, ArErr{"Runtime Error", "type '" + typeof(callable) + "' is not callable", c.line, c.path, c.code, true}
 }

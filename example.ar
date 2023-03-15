@@ -1,3 +1,8 @@
-import "cool_module" as cool
+i = 0
+output = []
 
-cool.cool_function()
+while (i < 1000) do
+    output = append(output, i)
+    i = i + 1
+
+file.write('output.json').json(output)

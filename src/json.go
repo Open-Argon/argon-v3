@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"math"
 	"strconv"
 	"strings"
 )
@@ -33,19 +34,22 @@ func convertToArgon(obj any) any {
 	return nil
 }
 
-func parse(str string) any {
+func jsonparse(str string) any {
 	var jsonMap any
 	json.Unmarshal([]byte(str), &jsonMap)
 	return convertToArgon(jsonMap)
 }
 
-func stringify(obj any) (string, error) {
+func jsonstringify(obj any, level int) (string, error) {
+	if level > 100 {
+		return "", errors.New("json stringify error: too many levels")
+	}
 	output := []string{}
 	obj = classVal(obj)
 	switch x := obj.(type) {
 	case ArMap:
 		for key, value := range x {
-			str, err := stringify(value)
+			str, err := jsonstringify(value, level+1)
 			if err != nil {
 				return "", err
 			}
@@ -53,20 +57,22 @@ func stringify(obj any) (string, error) {
 		}
 		return "{" + strings.Join(output, ", ") + "}", nil
 	case ArArray:
-		output = append(output, "[")
 		for _, value := range x {
-			str, err := stringify(value)
+			str, err := jsonstringify(value, level+1)
 			if err != nil {
 				return "", err
 			}
 			output = append(output, str)
 		}
-		output = append(output, "]")
-		return strings.Join(output, ", "), nil
+		return "[" + strings.Join(output, ", ") + "]", nil
 	case string:
 		return strconv.Quote(x), nil
 	case number:
-		return anyToArgon(x, true, false, 1, 0, false, 0), nil
+		num, _ := x.Float64()
+		if math.IsNaN(num) || math.IsInf(num, 0) {
+			return "null", nil
+		}
+		return numberToString(x, false), nil
 	case bool:
 		return strconv.FormatBool(x), nil
 	case nil:
@@ -84,13 +90,13 @@ var ArJSON = ArMap{
 		if typeof(args[0]) != "string" {
 			return ArMap{}, ArErr{TYPE: "Runtime Error", message: "parse takes a string not a '" + typeof(args[0]) + "'", EXISTS: true}
 		}
-		return parse(args[0].(string)), ArErr{}
+		return jsonparse(args[0].(string)), ArErr{}
 	}},
 	"stringify": builtinFunc{"stringify", func(args ...any) (any, ArErr) {
 		if len(args) == 0 {
 			return ArMap{}, ArErr{TYPE: "Runtime Error", message: "stringify takes 1 argument", EXISTS: true}
 		}
-		str, err := stringify(args[0])
+		str, err := jsonstringify(args[0], 0)
 		if err != nil {
 			return ArMap{}, ArErr{TYPE: "Runtime Error", message: err.Error(), EXISTS: true}
 		}

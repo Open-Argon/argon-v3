@@ -42,9 +42,8 @@ func init() {
 				switch y := v.(type) {
 				case ArArray:
 					if len(y) == 2 {
-						keytype := typeof(y[0])
-						if keytype == "array" || keytype == "map" {
-							return nil, ArErr{TYPE: "TypeError", message: "Cannot use unhashable value as key: " + keytype, EXISTS: true}
+						if isUnhashable(y[0]) {
+							return nil, ArErr{TYPE: "TypeError", message: "Cannot use unhashable value as key: " + typeof(y[0]), EXISTS: true}
 						}
 						newmap[y[0]] = y[1]
 						continue

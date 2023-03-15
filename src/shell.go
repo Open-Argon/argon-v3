@@ -6,12 +6,6 @@ import (
 	"os/signal"
 )
 
-var endingWithDoCompiled = makeRegex(`.*do( )*`)
-
-func isEndingWithDo(str string) bool {
-	return endingWithDoCompiled.MatchString(str)
-}
-
 func shell() {
 	global := stack{vars, scope{}}
 	c := make(chan os.Signal, 1)

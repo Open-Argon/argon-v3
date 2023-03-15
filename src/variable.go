@@ -227,7 +227,7 @@ func setVariableValue(v setVariable, stack stack, stacklevel int) (any, ArErr) {
 					varMutex.Lock()
 					stack[i][x.name] = resp
 					varMutex.Unlock()
-					return resp, ArErr{}
+					return ThrowOnNonLoop(resp, ArErr{})
 				}
 			}
 			varMutex.Lock()
@@ -238,15 +238,17 @@ func setVariableValue(v setVariable, stack stack, stacklevel int) (any, ArErr) {
 			if err.EXISTS {
 				return nil, err
 			}
-			key, err := runVal(x.start, stack, stacklevel+1)
+			if len(x.args) != 1 {
+				return nil, ArErr{"Runtime Error", "cannot set by slice", v.line, v.path, v.code, true}
+			}
+			key, err := runVal(x.args[0], stack, stacklevel+1)
 			if err.EXISTS {
 				return nil, err
 			}
 			switch y := respp.(type) {
 			case ArMap:
-				keytype := typeof(key)
-				if keytype == "array" || keytype == "map" {
-					return nil, ArErr{TYPE: "TypeError", message: "Cannot use unhashable value as key: " + keytype, EXISTS: true}
+				if isUnhashable(key) {
+					return nil, ArErr{"Runtime Error", "can't use unhashable type as map key: " + typeof(key), v.line, v.path, v.code, true}
 				}
 				varMutex.Lock()
 				y[key] = resp
@@ -256,7 +258,7 @@ func setVariableValue(v setVariable, stack stack, stacklevel int) (any, ArErr) {
 			}
 		}
 	}
-	return resp, ArErr{}
+	return ThrowOnNonLoop(resp, ArErr{})
 }
 
 func parseDelete(code UNPARSEcode, index int, lines []UNPARSEcode) (ArDelete, bool, ArErr, int) {
@@ -294,7 +296,10 @@ func runDelete(d ArDelete, stack stack, stacklevel int) (any, ArErr) {
 		if err.EXISTS {
 			return nil, err
 		}
-		key, err := runVal(x.start, stack, stacklevel+1)
+		if len(x.args) != 1 {
+			return nil, ArErr{"Runtime Error", "can't delete by slice", d.line, d.path, d.code, true}
+		}
+		key, err := runVal(x.args[0], stack, stacklevel+1)
 		if err.EXISTS {
 			return nil, err
 		}

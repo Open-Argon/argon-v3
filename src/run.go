@@ -7,32 +7,64 @@ import (
 
 // returns (number|string|nil), error
 func runVal(line any, stack stack, stacklevel int) (any, ArErr) {
-	if stacklevel >= 10000 {
-		return nil, ArErr{
-			TYPE:    "RuntimeError",
-			message: "stack overflow",
-			line:    0,
-			path:    "",
-			code:    "",
-			EXISTS:  true,
-		}
-	}
+	var (
+		linenum       = 0
+		path          = ""
+		code          = ""
+		stackoverflow = stacklevel >= 10000
+	)
 	switch x := line.(type) {
 	case number:
 		return x, ArErr{}
 	case string:
 		return x, ArErr{}
 	case call:
+		if stackoverflow {
+			linenum = x.line
+			path = x.path
+			code = x.code
+			break
+		}
 		return runCall(x, stack, stacklevel+1)
 	case factorial:
+		if stackoverflow {
+			linenum = x.line
+			path = x.path
+			code = x.code
+			break
+		}
 		return runFactorial(x, stack, stacklevel+1)
 	case accessVariable:
+		if stackoverflow {
+			linenum = x.line
+			path = x.path
+			code = x.code
+			break
+		}
 		return readVariable(x, stack)
 	case ArMapGet:
+		if stackoverflow {
+			linenum = x.line
+			path = x.path
+			code = x.code
+			break
+		}
 		return mapGet(x, stack, stacklevel+1)
 	case setVariable:
+		if stackoverflow {
+			linenum = x.line
+			path = x.path
+			code = x.code
+			break
+		}
 		return setVariableValue(x, stack, stacklevel+1)
 	case negative:
+		if stackoverflow {
+			linenum = x.line
+			path = x.path
+			code = x.code
+			break
+		}
 		resp, err := runVal(x.VAL, stack, stacklevel+1)
 		resp = classVal(resp)
 		if err.EXISTS {
@@ -48,33 +80,123 @@ func runVal(line any, stack stack, stacklevel int) (any, ArErr) {
 			EXISTS:  true,
 		}
 	case brackets:
+		if stackoverflow {
+			linenum = x.line
+			path = x.path
+			code = x.code
+			break
+		}
 		return runVal(x.VAL, stack, stacklevel+1)
 	case operationType:
+		if stackoverflow {
+			linenum = x.line
+			path = x.path
+			code = x.code
+			break
+		}
 		return runOperation(x, stack, stacklevel+1)
 	case dowrap:
+		if stackoverflow {
+			linenum = x.line
+			path = x.path
+			code = x.code
+			break
+		}
 		return runDoWrap(x, stack, stacklevel+1)
 	case CallReturn:
+		if stackoverflow {
+			linenum = x.line
+			path = x.path
+			code = x.code
+			break
+		}
 		return runReturn(x, stack, stacklevel+1)
-	case CallBreak:
-		return runBreak(x, stack, stacklevel+1)
+	case Break:
+		if stackoverflow {
+			linenum = x.line
+			path = x.path
+			code = x.code
+			break
+		}
+		return x, ArErr{}
+	case Continue:
+		if stackoverflow {
+			linenum = x.line
+			path = x.path
+			code = x.code
+			break
+		}
+		return x, ArErr{}
 	case ArDelete:
+		if stackoverflow {
+			linenum = x.line
+			path = x.path
+			code = x.code
+			break
+		}
 		return runDelete(x, stack, stacklevel+1)
 	case not:
+		if stackoverflow {
+			linenum = x.line
+			path = x.path
+			code = x.code
+			break
+		}
 		return runNot(x, stack, stacklevel+1)
 	case ifstatement:
+		if stackoverflow {
+			linenum = x.line
+			path = x.path
+			code = x.code
+			break
+		}
 		return runIfStatement(x, stack, stacklevel+1)
 	case whileLoop:
+		if stackoverflow {
+			linenum = x.line
+			path = x.path
+			code = x.code
+			break
+		}
 		return runWhileLoop(x, stack, stacklevel+1)
 	case CreateArray:
+		if stackoverflow {
+			linenum = x.line
+			path = x.path
+			code = x.code
+			break
+		}
 		return runArray(x, stack, stacklevel+1)
 	case squareroot:
+		if stackoverflow {
+			linenum = x.line
+			path = x.path
+			code = x.code
+			break
+		}
 		return runSquareroot(x, stack, stacklevel+1)
 	case ArImport:
+		if stackoverflow {
+			linenum = x.line
+			path = x.path
+			code = x.code
+			break
+		}
 		return runImport(x, stack, stacklevel+1)
 	case bool:
 		return x, ArErr{}
 	case nil:
 		return nil, ArErr{}
+	}
+	if stackoverflow {
+		return nil, ArErr{
+			TYPE:    "RuntimeError",
+			message: "stack overflow",
+			line:    linenum,
+			path:    path,
+			code:    code,
+			EXISTS:  true,
+		}
 	}
 	fmt.Println("unreachable", reflect.TypeOf(line))
 	panic("unreachable")

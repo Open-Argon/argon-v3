@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -30,7 +29,9 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine i
 		} else if isReturn(code) {
 			return parseReturn(code, index, codelines)
 		} else if isBreak(code) {
-			return parseBreak(code, index, codelines)
+			return parseBreak(code)
+		} else if isContinue(code) {
+			return parseContinue(code)
 		} else if isIfStatement(code) {
 			return parseIfStatement(code, index, codelines)
 		} else if isWhileLoop(code) {
@@ -98,7 +99,6 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine i
 		return parseVariable(code)
 	} else if isArray(code) {
 		resp, worked, err, i = parseArray(code, index, codelines)
-		fmt.Println(resp, worked, err, i)
 		if worked {
 			return resp, worked, err, i
 		}

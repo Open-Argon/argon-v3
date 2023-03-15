@@ -125,6 +125,8 @@ func runWhileLoop(loop whileLoop, stack stack, stacklevel int) (any, ArErr) {
 			return x, ArErr{}
 		case Break:
 			return nil, ArErr{}
+		case Continue:
+			continue
 		}
 	}
 	return nil, ArErr{}

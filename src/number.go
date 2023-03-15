@@ -44,6 +44,7 @@ func numberToString(num number, simplify bool) string {
 			return fmt.Sprint(num, "π")
 		}
 	}
+
 	x, _ := num.Float64()
 
 	return fmt.Sprint(x)
