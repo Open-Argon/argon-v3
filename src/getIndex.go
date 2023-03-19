@@ -37,6 +37,11 @@ func mapGet(r ArMapGet, stack stack, stacklevel int) (any, ArErr) {
 			if !err.EXISTS {
 				return resp, err
 			}
+		case "string":
+			resp, err := getFromString(m.obj["__value__"].(string), r, stack, stacklevel+1)
+			if !err.EXISTS {
+				return ArString(resp), err
+			}
 		}
 		if len(r.args) > 1 {
 			return nil, ArErr{
@@ -52,6 +57,7 @@ func mapGet(r ArMapGet, stack stack, stacklevel int) (any, ArErr) {
 		if err.EXISTS {
 			return nil, err
 		}
+		key = ArValidToAny(key)
 		if isUnhashable(key) {
 			return nil, ArErr{
 				"TypeError",
@@ -72,15 +78,7 @@ func mapGet(r ArMapGet, stack stack, stacklevel int) (any, ArErr) {
 				true,
 			}
 		}
-		return potentialAnyArrayToArArray(m.obj[key]), ArErr{}
-	case string:
-		if val, ok := r.args[0].(string); !r.index && ok {
-			switch val {
-			case "length":
-				return len(m), ArErr{}
-			}
-		}
-		return getFromString(m, r, stack, stacklevel+1)
+		return AnyToArValid(m.obj[key]), ArErr{}
 	}
 
 	key, err := runVal(r.args[0], stack, stacklevel+1)
@@ -95,15 +93,6 @@ func mapGet(r ArMapGet, stack stack, stacklevel int) (any, ArErr) {
 		r.code,
 		true,
 	}
-}
-
-func classVal(r any) any {
-	if j, ok := r.(ArObject); ok {
-		if _, ok := j.obj["__value__"]; ok {
-			return j.obj["__value__"]
-		}
-	}
-	return r
 }
 
 func isMapGet(code UNPARSEcode) bool {
@@ -174,7 +163,7 @@ func isUnhashable(val any) bool {
 	return keytype == "array" || keytype == "map"
 }
 
-func getFromArArray(m ArObject, r ArMapGet, stack stack, stacklevel int) (ArObject, ArErr) {
+func getFromArArray(m ArObject, r ArMapGet, stack stack, stacklevel int) (any, ArErr) {
 	var (
 		start int = 0
 		end   any = nil
@@ -247,7 +236,7 @@ func getFromArArray(m ArObject, r ArMapGet, stack stack, stacklevel int) (ArObje
 		end = m.obj["length"].(int) + end.(int)
 	}
 	if end == nil {
-		return ArArray([]any{m.obj["__value__"].([]any)[start]}), ArErr{}
+		return m.obj["__value__"].([]any)[start], ArErr{}
 	} else if step == 1 {
 		return ArArray([]any{m.obj["__value__"].([]any)[start:end.(int)]}), ArErr{}
 	} else {

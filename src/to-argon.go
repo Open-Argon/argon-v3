@@ -11,6 +11,7 @@ import (
 )
 
 func anyToArgon(x any, quote bool, simplify bool, depth int, indent int, colored bool, plain int) string {
+	x = ArValidToAny(x)
 	output := []string{}
 	maybenewline := ""
 	if plain == 1 {
@@ -72,17 +73,14 @@ func anyToArgon(x any, quote bool, simplify bool, depth int, indent int, colored
 		if colored {
 			output = append(output, "\x1b[0m")
 		}
-	case ArObject:
-		if x.TYPE == "array" {
-			return anyToArgon(x.obj["__value__"], quote, simplify, depth, indent, colored, plain)
-		}
-		if len(x.obj) == 0 {
+	case anymap:
+		if len(x) == 0 {
 			return "{}"
 		}
-		keys := make([]any, len(x.obj))
+		keys := make([]any, len(x))
 
 		i := 0
-		for k := range x.obj {
+		for k := range x {
 			keys[i] = k
 			i++
 		}
@@ -103,7 +101,7 @@ func anyToArgon(x any, quote bool, simplify bool, depth int, indent int, colored
 				}
 				keyval = strings.Join(outputkeyval, "")
 			}
-			output = append(output, keyval+": "+anyToArgon(x.obj[key], true, true, depth-1, indent+1, colored, plain))
+			output = append(output, keyval+": "+anyToArgon(x[key], true, true, depth-1, indent+1, colored, plain))
 		}
 		return "{" + maybenewline + (strings.Repeat("    ", (indent+1)*plain)) + strings.Join(output, ","+maybenewline+(strings.Repeat("    ", (indent+1)*plain))) + maybenewline + (strings.Repeat("    ", indent*plain)) + "}"
 	case []any:

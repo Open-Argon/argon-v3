@@ -5,7 +5,7 @@ import (
 	"math"
 )
 
-var N = newNumber().SetInt64(1e10)
+var N = newNumber().SetInt64(1e6)
 
 func Ln(x number) number {
 	output := newNumber()

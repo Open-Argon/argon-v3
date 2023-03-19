@@ -7,7 +7,7 @@ import (
 var MicroSeconds = newNumber().SetInt64(1000000)
 
 func ArTimeClass(N time.Time) ArObject {
-	return Map(anymap{
+	return Class(anymap{
 		"__value__": newNumber().Quo(newNumber().SetInt64(N.UnixMicro()), MicroSeconds),
 		"year": builtinFunc{
 			"year",

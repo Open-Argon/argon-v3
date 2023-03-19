@@ -1,23 +1,22 @@
 package main
 
 func typeof(val any) string {
-	switch x := val.(type) {
+	switch val.(type) {
 	case number:
 		return "number"
-	case string:
-		return "string"
 	case nil:
 		return "null"
 	case bool:
 		return "boolean"
+	case string:
+		return "string"
+	case anymap:
+		return "array"
 	case Callable:
 		return "function"
 	case builtinFunc:
 		return "function"
 	case ArObject:
-		if x.TYPE == "array" {
-			return "array"
-		}
 		return "map"
 	case accessVariable:
 		return "variable"

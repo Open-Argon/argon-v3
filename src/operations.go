@@ -121,7 +121,7 @@ func compareValues(o operationType, stack stack, stacklevel int) (bool, ArErr) {
 		stack,
 		stacklevel+1,
 	)
-	resp = classVal(resp)
+	resp = ArValidToAny(resp)
 	if err.EXISTS {
 		return false, err
 	}
@@ -131,7 +131,7 @@ func compareValues(o operationType, stack stack, stacklevel int) (bool, ArErr) {
 		stack,
 		stacklevel+1,
 	)
-	resp2 = classVal(resp2)
+	resp2 = ArValidToAny(resp2)
 	if err.EXISTS {
 		return false, err
 	}
@@ -207,7 +207,7 @@ func calcNegative(o operationType, stack stack, stacklevel int) (number, ArErr) 
 		stack,
 		stacklevel+1,
 	)
-	resp = classVal(resp)
+	resp = ArValidToAny(resp)
 	if err.EXISTS {
 		return nil, err
 	}
@@ -228,7 +228,7 @@ func calcNegative(o operationType, stack stack, stacklevel int) (number, ArErr) 
 			stack,
 			stacklevel+1,
 		)
-		resp = classVal(resp)
+		resp = ArValidToAny(resp)
 		if err.EXISTS {
 			return nil, err
 		}
@@ -255,7 +255,7 @@ func calcDivide(o operationType, stack stack, stacklevel int) (number, ArErr) {
 		stack,
 		stacklevel+1,
 	)
-	resp = classVal(resp)
+	resp = ArValidToAny(resp)
 	if err.EXISTS {
 		return nil, err
 	}
@@ -276,7 +276,7 @@ func calcDivide(o operationType, stack stack, stacklevel int) (number, ArErr) {
 			stack,
 			stacklevel+1,
 		)
-		resp = classVal(resp)
+		resp = ArValidToAny(resp)
 		if err.EXISTS {
 			return nil, err
 		}
@@ -303,7 +303,7 @@ func calcAdd(o operationType, stack stack, stacklevel int) (any, ArErr) {
 		stack,
 		stacklevel+1,
 	)
-	resp = classVal(resp)
+	resp = ArValidToAny(resp)
 	if err.EXISTS {
 		return nil, err
 	}
@@ -319,7 +319,7 @@ func calcAdd(o operationType, stack stack, stacklevel int) (any, ArErr) {
 			stack,
 			stacklevel+1,
 		)
-		resp = classVal(resp)
+		resp = ArValidToAny(resp)
 		if err.EXISTS {
 			return nil, err
 		}
@@ -333,7 +333,7 @@ func calcAdd(o operationType, stack stack, stacklevel int) (any, ArErr) {
 		}
 
 	}
-	return output, ArErr{}
+	return AnyToArValid(output), ArErr{}
 }
 
 func calcMul(o operationType, stack stack, stacklevel int) (any, ArErr) {
@@ -343,7 +343,7 @@ func calcMul(o operationType, stack stack, stacklevel int) (any, ArErr) {
 		stack,
 		stacklevel+1,
 	)
-	resp = classVal(resp)
+	resp = ArValidToAny(resp)
 	if err.EXISTS {
 		return nil, err
 	}
@@ -359,7 +359,7 @@ func calcMul(o operationType, stack stack, stacklevel int) (any, ArErr) {
 			stack,
 			stacklevel+1,
 		)
-		resp = classVal(resp)
+		resp = ArValidToAny(resp)
 		if err.EXISTS {
 			return nil, err
 		}
@@ -393,7 +393,7 @@ func calcAnd(o operationType, stack stack, stacklevel int) (any, ArErr) {
 			stack,
 			stacklevel+1,
 		)
-		resp = classVal(resp)
+		resp = ArValidToAny(resp)
 		if err.EXISTS {
 			return nil, err
 		}
@@ -413,7 +413,7 @@ func calcOr(o operationType, stack stack, stacklevel int) (any, ArErr) {
 			stack,
 			stacklevel+1,
 		)
-		resp = classVal(resp)
+		resp = ArValidToAny(resp)
 		if err.EXISTS {
 			return nil, err
 		}
@@ -450,7 +450,7 @@ func calcIn(o operationType, stack stack, stacklevel int) (bool, ArErr) {
 		stack,
 		stacklevel+1,
 	)
-	resp = classVal(resp)
+	resp = ArValidToAny(resp)
 	if err.EXISTS {
 		return false, err
 	}
@@ -460,7 +460,7 @@ func calcIn(o operationType, stack stack, stacklevel int) (bool, ArErr) {
 		stack,
 		stacklevel+1,
 	)
-	resp2 = classVal(resp2)
+	resp2 = ArValidToAny(resp2)
 	if err.EXISTS {
 		return false, err
 	}
@@ -501,7 +501,7 @@ func calcMod(o operationType, stack stack, stacklevel int) (number, ArErr) {
 		stack,
 		stacklevel+1,
 	)
-	resp = classVal(resp)
+	resp = ArValidToAny(resp)
 	if err.EXISTS {
 		return nil, err
 	}
@@ -522,7 +522,7 @@ func calcMod(o operationType, stack stack, stacklevel int) (number, ArErr) {
 			stack,
 			stacklevel+1,
 		)
-		resp = classVal(resp)
+		resp = ArValidToAny(resp)
 		if err.EXISTS {
 			return nil, err
 		}
@@ -557,7 +557,7 @@ func calcPower(o operationType, stack stack, stacklevel int) (number, ArErr) {
 		stack,
 		stacklevel+1,
 	)
-	resp = classVal(resp)
+	resp = ArValidToAny(resp)
 	if err.EXISTS {
 		return nil, err
 	}
@@ -578,7 +578,7 @@ func calcPower(o operationType, stack stack, stacklevel int) (number, ArErr) {
 			stack,
 			stacklevel+1,
 		)
-		resp = classVal(resp)
+		resp = ArValidToAny(resp)
 		if err.EXISTS {
 			return nil, err
 		}

@@ -11,12 +11,15 @@ import (
 func convertToArgon(obj any) any {
 	switch x := obj.(type) {
 	case map[string]interface{}:
-		newmap := Map(anymap{})
+		newmap := anymap{}
 		for key, value := range x {
-			newmap.obj[key] = convertToArgon(value)
+			newmap[key] = convertToArgon(value)
 		}
-		return newmap
+		return Map(newmap)
 	case []any:
+		for i, value := range x {
+			x[i] = convertToArgon(value)
+		}
 		return ArArray(x)
 	case string:
 		return x
@@ -41,19 +44,9 @@ func jsonstringify(obj any, level int) (string, error) {
 		return "", errors.New("json stringify error: too many levels")
 	}
 	output := []string{}
-	obj = classVal(obj)
+	obj = ArValidToAny(obj)
 	switch x := obj.(type) {
 	case ArObject:
-		if x.TYPE == "array" {
-			for _, value := range x.obj["__value__"].([]any) {
-				str, err := jsonstringify(value, level+1)
-				if err != nil {
-					return "", err
-				}
-				output = append(output, str)
-			}
-			return "[" + strings.Join(output, ", ") + "]", nil
-		}
 		for key, value := range x.obj {
 			str, err := jsonstringify(value, level+1)
 			if err != nil {

@@ -5,7 +5,8 @@ import (
 	"sync"
 )
 
-var SpacelessVariableCompiled = makeRegex(`([a-zA-Z_]|(\p{L}\p{M}*))([a-zA-Z0-9_]|(\p{L}\p{M}*))*`)
+var spacelessVariable = `([a-zA-Z_]|(\p{L}\p{M}*))([a-zA-Z0-9_]|(\p{L}\p{M}*))*`
+var SpacelessVariableCompiled = makeRegex(spacelessVariable)
 var variableCompile = makeRegex(`( *)([a-zA-Z_]|(\p{L}\p{M}*))([a-zA-Z0-9_]|(\p{L}\p{M}*))*( *)`)
 var validname = makeRegex(`(.|\n)*(\(( *)((([a-zA-Z_]|(\p{L}\p{M}*))([a-zA-Z0-9_]|(\p{L}\p{M}*))*)(( *)\,( *)([a-zA-Z_]|(\p{L}\p{M}*))([a-zA-Z0-9_]|(\p{L}\p{M}*))*)*)?( *)\))`)
 var setVariableCompile = makeRegex(`( *)(let( +))(.|\n)+( *)=(.|\n)+`)
@@ -242,6 +243,7 @@ func setVariableValue(v setVariable, stack stack, stacklevel int) (any, ArErr) {
 				return nil, ArErr{"Runtime Error", "cannot set by slice", v.line, v.path, v.code, true}
 			}
 			key, err := runVal(x.args[0], stack, stacklevel+1)
+			key = ArValidToAny(key)
 			if err.EXISTS {
 				return nil, err
 			}

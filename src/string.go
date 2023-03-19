@@ -41,3 +41,32 @@ func parseString(code UNPARSEcode) (string, bool, ArErr, int) {
 
 	return unquoted, true, ArErr{}, 1
 }
+
+func ArString(str string) ArObject {
+	obj := ArObject{
+		"string",
+		anymap{
+			"__value__": str,
+			"length":    newNumber().SetUint64(uint64(len(str))),
+		},
+	}
+	obj.obj["append"] = builtinFunc{
+		"append",
+		func(a ...any) (any, ArErr) {
+			if len(a) == 0 {
+				return nil, ArErr{"TypeError", "expected 1 or more argument, got 0", 0, "", "", true}
+			}
+			output := []string{str}
+			for _, v := range a {
+				if typeof(v) != "string" {
+					return nil, ArErr{"TypeError", "expected string, got " + typeof(v), 0, "", "", true}
+				}
+				output = append(output, v.(string))
+			}
+			str = strings.Join(output, "")
+			obj.obj["__value__"] = str
+			obj.obj["length"] = newNumber().SetUint64(uint64(len(str)))
+			return nil, ArErr{}
+		}}
+	return obj
+}

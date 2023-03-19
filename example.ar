@@ -1,5 +1,8 @@
-x = map()
-x.poo = 10
+let password = do
+    let password = passwordInput("set password: ")
+    while (password.length < 8) do
+        term.log("password must be longer then 8 characters!")
+        password = passwordInput("set password: ")
+    return password
 
-y = [x,x,x]
-term.log(y)
+term.log("your password is", password)

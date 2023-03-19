@@ -37,7 +37,7 @@ setting variables returns the value, which can be used.
 example:
 
 ```javascript
-if (x = 10) > 5 do
+if ((x = 10) > 5) do
     term.log(x, 'is bigger than 5')
 ```
 
@@ -98,10 +98,10 @@ example:
 
 ```javascript
 let password = do
-    let password = input("set password: ")
-    while len(password) < 8 do
-        log("password must be longer then 8 characters!")
-        password = input("set password: ")
+    let password = passwordInput("set password: ")
+    while (password.length < 8) do
+        term.log("password must be longer then 8 characters!")
+        password = passwordInput("set password: ")
     return password
 
 term.log("your password is", password)

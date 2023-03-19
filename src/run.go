@@ -17,7 +17,7 @@ func runVal(line any, stack stack, stacklevel int) (any, ArErr) {
 	case number:
 		return x, ArErr{}
 	case string:
-		return x, ArErr{}
+		return ArString(x), ArErr{}
 	case call:
 		if stackoverflow {
 			linenum = x.line
@@ -66,7 +66,7 @@ func runVal(line any, stack stack, stacklevel int) (any, ArErr) {
 			break
 		}
 		resp, err := runVal(x.VAL, stack, stacklevel+1)
-		resp = classVal(resp)
+		resp = AnyToArValid(resp)
 		if err.EXISTS {
 			return nil, err
 		}

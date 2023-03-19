@@ -1,6 +1,8 @@
 package main
 
-import "strings"
+import (
+	"strings"
+)
 
 var arrayCompile = makeRegex(`( *)\[(.|\n)*\]( *)`)
 
@@ -20,7 +22,7 @@ func ArArray(arr []any) ArObject {
 		"array",
 		anymap{
 			"__value__": arr,
-			"length":    len(arr),
+			"length":    newNumber().SetUint64(uint64(len(arr))),
 		},
 	}
 	val.obj["remove"] = builtinFunc{
@@ -56,7 +58,7 @@ func ArArray(arr []any) ArObject {
 				}
 			}
 			arr = append(arr[:num], arr[num+1:]...)
-			val.obj["length"] = len(arr)
+			val.obj["length"] = newNumber().SetUint64(uint64(len(arr)))
 			val.obj["__value__"] = arr
 			return nil, ArErr{}
 		}}
@@ -71,7 +73,7 @@ func ArArray(arr []any) ArObject {
 				}
 			}
 			arr = append(arr, args...)
-			val.obj["length"] = len(arr)
+			val.obj["length"] = newNumber().SetUint64(uint64(len(arr)))
 			val.obj["__value__"] = arr
 			return nil, ArErr{}
 		},
@@ -109,7 +111,7 @@ func ArArray(arr []any) ArObject {
 				}
 			}
 			arr = append(arr[:num], append(args[1:], arr[num:]...)...)
-			val.obj["length"] = len(arr)
+			val.obj["length"] = newNumber().SetUint64(uint64(len(arr)))
 			val.obj["__value__"] = arr
 			return nil, ArErr{}
 		},
@@ -149,13 +151,13 @@ func ArArray(arr []any) ArObject {
 				}
 				v := arr[num]
 				arr = append(arr[:num], arr[num+1:]...)
-				val.obj["length"] = len(arr)
+				val.obj["length"] = newNumber().SetUint64(uint64(len(arr)))
 				val.obj["__value__"] = arr
 				return v, ArErr{}
 			}
 			v := arr[len(arr)-1]
 			arr = arr[:len(arr)-1]
-			val.obj["length"] = len(arr)
+			val.obj["length"] = newNumber().SetUint64(uint64(len(arr)))
 			val.obj["__value__"] = arr
 			return v, ArErr{}
 		},
@@ -171,7 +173,7 @@ func ArArray(arr []any) ArObject {
 				}
 			}
 			arr = []any{}
-			val.obj["length"] = len(arr)
+			val.obj["length"] = newNumber().SetUint64(uint64(len(arr)))
 			val.obj["__value__"] = arr
 			return nil, ArErr{}
 		},
@@ -194,6 +196,66 @@ func ArArray(arr []any) ArObject {
 				}
 			}
 			arr = append(arr, args[0].(ArObject).obj["__value__"].([]any)...)
+			val.obj["length"] = len(arr)
+			val.obj["__value__"] = arr
+			return nil, ArErr{}
+		},
+	}
+	val.obj["sort"] = builtinFunc{
+		"sort",
+		func(args ...any) (any, ArErr) {
+			if len(args) > 2 {
+				return nil, ArErr{
+					TYPE:    "TypeError",
+					message: "too many arguments",
+					EXISTS:  true,
+				}
+			}
+			reverse := false
+			if len(args) >= 1 {
+				if typeof(args[0]) != "boolean" {
+					return nil, ArErr{
+						TYPE:    "TypeError",
+						message: "argument must be a boolean",
+						EXISTS:  true,
+					}
+				}
+				reverse = args[0].(bool)
+			}
+			if len(args) == 2 {
+				if typeof(args[1]) != "function" {
+					return nil, ArErr{
+						TYPE:    "TypeError",
+						message: "argument must be a function",
+						EXISTS:  true,
+					}
+				}
+				output, err := quickSort(arr, func(a any) (any, ArErr) {
+					return runCall(call{
+						args[1],
+						[]any{a}, "", 0, "",
+					}, stack{vars, newscope()}, 0)
+				})
+				if err.EXISTS {
+					return nil, err
+				}
+				arr = output
+				val.obj["length"] = len(arr)
+				val.obj["__value__"] = arr
+				return nil, ArErr{}
+			}
+			output, err := quickSort(arr, func(a any) (any, ArErr) {
+				return a, ArErr{}
+			})
+			if err.EXISTS {
+				return nil, err
+			}
+			if reverse {
+				for i, j := 0, len(output)-1; i < j; i, j = i+1, j-1 {
+					output[i], output[j] = output[j], output[i]
+				}
+			}
+			arr = output
 			val.obj["length"] = len(arr)
 			val.obj["__value__"] = arr
 			return nil, ArErr{}
@@ -320,6 +382,7 @@ func ArArray(arr []any) ArObject {
 			}
 			output := []string{}
 			for _, v := range arr {
+				v = ArValidToAny(v)
 				if typeof(v) != "string" {
 					return nil, ArErr{
 						TYPE:    "TypeError",
@@ -329,7 +392,7 @@ func ArArray(arr []any) ArObject {
 				}
 				output = append(output, v.(string))
 			}
-			return strings.Join(output, args[0].(string)), ArErr{}
+			return ArString(strings.Join(output, args[0].(string))), ArErr{}
 		},
 	}
 	val.obj["concat"] = builtinFunc{
@@ -354,15 +417,6 @@ func ArArray(arr []any) ArObject {
 		},
 	}
 	return val
-}
-
-func potentialAnyArrayToArArray(arr any) any {
-	switch arr := arr.(type) {
-	case []any:
-		return ArArray(arr)
-	default:
-		return arr
-	}
 }
 
 func parseArray(code UNPARSEcode, index int, codelines []UNPARSEcode) (any, bool, ArErr, int) {

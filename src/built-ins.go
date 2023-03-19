@@ -6,21 +6,10 @@ func init() {
 	vars.obj["global"] = vars
 	vars.obj["term"] = ArTerm
 	vars.obj["input"] = builtinFunc{"input", ArgonInput}
+	vars.obj["passwordInput"] = builtinFunc{"passwordInput", ArgonPassworInput}
 	vars.obj["number"] = builtinFunc{"number", ArgonNumber}
 	vars.obj["string"] = builtinFunc{"string", ArgonString}
 	vars.obj["infinity"] = infinity
-	vars.obj["length"] = builtinFunc{"length", func(a ...any) (any, ArErr) {
-		switch x := a[0].(type) {
-		case string:
-			return len(x), ArErr{}
-		case ArObject:
-			if x.TYPE == "array" {
-				return len(x.obj["__value__"].([]any)), ArErr{}
-			}
-			return len(x.obj), ArErr{}
-		}
-		return nil, ArErr{TYPE: "TypeError", message: "Cannot get length of " + typeof(a[0]), EXISTS: true}
-	}}
 	vars.obj["map"] = builtinFunc{"map", func(a ...any) (any, ArErr) {
 		if len(a) == 0 {
 			return Map(anymap{}), ArErr{}
@@ -48,7 +37,7 @@ func init() {
 		case string:
 			newmap := anymap{}
 			for i, v := range x {
-				newmap[i] = string(v)
+				newmap[i] = ArString(string(v))
 			}
 			return Map(newmap), ArErr{}
 		}
@@ -62,7 +51,7 @@ func init() {
 		case string:
 			newarray := []any{}
 			for _, v := range x {
-				newarray = append(newarray, string(v))
+				newarray = append(newarray, ArString(string(v)))
 			}
 			return ArArray(newarray), ArErr{}
 		case ArObject:
@@ -139,7 +128,7 @@ func init() {
 		return nil, ArErr{TYPE: "TypeError", message: "Cannot ceil '" + typeof(a[0]) + "'", EXISTS: true}
 	}}
 	vars.obj["sqrt"] = builtinFunc{"sqrt", ArgonSqrt}
-	vars.obj["file"] = ArFile
+	vars.obj["open"] = builtinFunc{"open", ArOpen}
 	vars.obj["random"] = ArRandom
 	vars.obj["json"] = ArJSON
 	vars.obj["sin"] = ArSin
