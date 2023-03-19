@@ -249,12 +249,27 @@ func setVariableValue(v setVariable, stack stack, stacklevel int) (any, ArErr) {
 			}
 			switch y := respp.(type) {
 			case ArObject:
-				if isUnhashable(key) {
-					return nil, ArErr{"Runtime Error", "can't use unhashable type as map key: " + typeof(key), v.line, v.path, v.code, true}
+				if y.TYPE != "map" {
+					if _, ok := y.obj["__setindex__"]; ok {
+						callable := y.obj["__setindex__"]
+						r := ArValidToAny(resp)
+						_, err := runCall(call{
+							callable: callable,
+							args:     []any{key, r},
+							line:     v.line,
+							path:     v.path,
+							code:     v.code,
+						}, stack, stacklevel+1)
+						return nil, err
+					}
+				} else {
+					if isUnhashable(key) {
+						return nil, ArErr{"Runtime Error", "can't use unhashable type as map key: " + typeof(key), v.line, v.path, v.code, true}
+					}
+					varMutex.Lock()
+					y.obj[key] = resp
+					varMutex.Unlock()
 				}
-				varMutex.Lock()
-				y.obj[key] = resp
-				varMutex.Unlock()
 			default:
 				return nil, ArErr{"Runtime Error", "can't set for non map", v.line, v.path, v.code, true}
 			}

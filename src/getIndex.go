@@ -31,16 +31,19 @@ func mapGet(r ArMapGet, stack stack, stacklevel int) (any, ArErr) {
 	}
 	switch m := resp.(type) {
 	case ArObject:
-		switch m.TYPE {
-		case "array":
-			resp, err := getFromArArray(m, r, stack, stacklevel+1)
-			if !err.EXISTS {
-				return resp, err
-			}
-		case "string":
-			resp, err := getFromString(m.obj["__value__"].(string), r, stack, stacklevel+1)
-			if !err.EXISTS {
-				return ArString(resp), err
+		if r.index && m.TYPE != "map" {
+			if _, ok := m.obj["__getindex__"]; ok {
+				callable := m.obj["__getindex__"]
+				resp, err := runCall(call{
+					callable: callable,
+					args:     r.args,
+					line:     r.line,
+					path:     r.path,
+					code:     r.code,
+				}, stack, stacklevel+1)
+				if !err.EXISTS {
+					return resp, ArErr{}
+				}
 			}
 		}
 		if len(r.args) > 1 {
@@ -251,96 +254,5 @@ func getFromArArray(m ArObject, r ArMapGet, stack stack, stacklevel int) (any, A
 			}
 		}
 		return ArArray(output), ArErr{}
-	}
-}
-
-func getFromString(m string, r ArMapGet, stack stack, stacklevel int) (string, ArErr) {
-	var (
-		start int = 0
-		end   any = nil
-		step  int = 1
-	)
-	{
-		startval, err := runVal(r.args[0], stack, stacklevel+1)
-		if err.EXISTS {
-			return "", err
-		}
-		if startval == nil {
-			start = 0
-		} else if typeof(startval) != "number" || !startval.(number).IsInt() {
-			return "", ArErr{
-				"TypeError",
-				"slice index must be an integer",
-				r.line,
-				r.path,
-				r.code,
-				true,
-			}
-		} else {
-			start = int(startval.(number).Num().Int64())
-		}
-	}
-	if len(r.args) > 1 {
-		endval, err := runVal(r.args[1], stack, stacklevel+1)
-		if err.EXISTS {
-			return "", err
-		}
-		if endval == nil {
-			end = len(m)
-		} else if typeof(endval) != "number" && !endval.(number).IsInt() {
-			return "", ArErr{
-				"TypeError",
-				"slice ending index must be an integer",
-				r.line,
-				r.path,
-				r.code,
-				true,
-			}
-		} else {
-			end = int(endval.(number).Num().Int64())
-		}
-	}
-	if len(r.args) > 2 {
-		stepval, err := runVal(r.args[2], stack, stacklevel+1)
-		if err.EXISTS {
-			return "", err
-		}
-		if stepval == nil {
-			step = 1
-		} else if typeof(stepval) != "number" && !stepval.(number).IsInt() {
-			return "", ArErr{
-				"TypeError",
-				"slice step must be an integer",
-				r.line,
-				r.path,
-				r.code,
-				true,
-			}
-		} else {
-			step = int(stepval.(number).Num().Int64())
-		}
-	}
-	if start < 0 {
-		start = len(m) + start
-	}
-	if _, ok := end.(int); ok && end.(int) < 0 {
-		end = len(m) + end.(int)
-	}
-	if end == nil {
-		return string(m[start]), ArErr{}
-	} else if step == 1 {
-		return m[start:end.(int)], ArErr{}
-	} else {
-		output := []byte{}
-		if step > 0 {
-			for i := start; i < end.(int); i += step {
-				output = append(output, m[i])
-			}
-		} else {
-			for i := end.(int) - 1; i >= start; i += step {
-				output = append(output, m[i])
-			}
-		}
-		return string(output), ArErr{}
 	}
 }

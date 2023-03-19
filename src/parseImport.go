@@ -45,6 +45,7 @@ func parseGenericImport(code UNPARSEcode, index int, codeline []UNPARSEcode) (Ar
 
 func runImport(importOBJ ArImport, stack stack, stacklevel int) (any, ArErr) {
 	val, err := runVal(importOBJ.filePath, stack, stacklevel+1)
+	val = ArValidToAny(val)
 	if err.EXISTS {
 		return nil, err
 	}

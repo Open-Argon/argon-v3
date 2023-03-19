@@ -1,8 +1,19 @@
-let password = do
-    let password = passwordInput("set password: ")
-    while (password.length < 8) do
-        term.log("password must be longer then 8 characters!")
-        password = passwordInput("set password: ")
-    return password
+let getInitials(name) = do
+    name = name.upper()
+    namesplit = name.split(" ")
+    i = 0
+    while (i < namesplit.length) do
+        namesplit[i] = namesplit[i][0]
+        i = i + 1
+    return namesplit.join("")
 
-term.log("your password is", password)
+name = "william bell"
+term.log(getInitials(name))
+term.log(name)
+
+let addLastName(name) = do
+    name.append(" Bell")
+
+name = "William"
+addLastName(name)
+term.log(name)

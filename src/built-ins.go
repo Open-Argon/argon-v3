@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 var vars = Map(anymap{})
 
 func init() {
@@ -133,4 +135,20 @@ func init() {
 	vars.obj["json"] = ArJSON
 	vars.obj["sin"] = ArSin
 	vars.obj["arcsin"] = ArArcsin
+	vars.obj["dir"] = builtinFunc{"dir", func(a ...any) (any, ArErr) {
+		fmt.Println(a)
+		if len(a) == 0 {
+			return ArArray([]any{}), ArErr{}
+		}
+		t := AnyToArValid(a[0])
+		switch x := t.(type) {
+		case ArObject:
+			newarray := []any{}
+			for key := range x.obj {
+				newarray = append(newarray, key)
+			}
+			return ArArray(newarray), ArErr{}
+		}
+		return ArArray([]any{}), ArErr{}
+	}}
 }

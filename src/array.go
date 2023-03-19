@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"strings"
 )
 
@@ -25,6 +26,122 @@ func ArArray(arr []any) ArObject {
 			"length":    newNumber().SetUint64(uint64(len(arr))),
 		},
 	}
+	val.obj["__setindex__"] = builtinFunc{
+		"__setindex__",
+		func(a ...any) (any, ArErr) {
+			if len(a) != 2 {
+				return nil, ArErr{
+					TYPE:    "TypeError",
+					message: "expected 2 arguments, got " + fmt.Sprint(len(a)),
+					EXISTS:  true,
+				}
+			}
+			if typeof(a[0]) != "number" {
+				return nil, ArErr{
+					TYPE:    "TypeError",
+					message: "index must be a number",
+					EXISTS:  true,
+				}
+			}
+			if !a[0].(number).IsInt() {
+				return nil, ArErr{
+					TYPE:    "TypeError",
+					message: "index must be an integer",
+					EXISTS:  true,
+				}
+			}
+			num := int(a[0].(number).Num().Int64())
+			if num < 0 || num >= len(arr) {
+				return nil, ArErr{
+					TYPE:    "IndexError",
+					message: "index out of range",
+					EXISTS:  true,
+				}
+			}
+			arr[num] = a[1]
+			return nil, ArErr{}
+		},
+	}
+	val.obj["__getindex__"] = builtinFunc{
+		"__getindex__",
+		func(a ...any) (any, ArErr) {
+			// a[0] is start
+			// a[1] is end
+			// a[2] is step
+			if len(a) < 0 || len(a) > 3 {
+				return nil, ArErr{"TypeError", "expected 1 to 3 arguments, got " + fmt.Sprint(len(a)), 0, "", "", true}
+			}
+			var (
+				start int = 0
+				end   any = nil
+				step  int = 1
+			)
+			{
+				if a[0] == nil {
+					start = 0
+				} else if typeof(a[0]) != "number" || !a[0].(number).IsInt() {
+					return "", ArErr{
+						TYPE:    "TypeError",
+						message: "slice index must be an integer",
+						EXISTS:  true,
+					}
+				} else {
+					start = int(a[0].(number).Num().Int64())
+				}
+			}
+			if len(a) > 1 {
+				if a[1] == nil {
+					end = len(arr)
+				} else if typeof(a[1]) != "number" || !a[1].(number).IsInt() {
+					return "", ArErr{
+						TYPE:    "TypeError",
+						message: "slice index must be an integer",
+						EXISTS:  true,
+					}
+				} else {
+					end = int(a[1].(number).Num().Int64())
+				}
+			}
+			if len(a) > 2 {
+				if a[2] == nil {
+					step = 1
+				} else if typeof(a[2]) != "number" || !a[2].(number).IsInt() {
+					return "", ArErr{
+						TYPE:    "TypeError",
+						message: "slice index must be an integer",
+						EXISTS:  true,
+					}
+				} else {
+					step = int(a[2].(number).Num().Int64())
+				}
+			}
+			if start < 0 {
+				start = len(arr) + start
+			}
+			if _, ok := end.(int); ok && end.(int) < 0 {
+				end = len(arr) + end.(int)
+			}
+			if end != nil && end.(int) > len(arr) {
+				end = len(arr)
+			}
+			if end == nil {
+				return arr[start], ArErr{}
+			} else if step == 1 {
+				return arr[start:end.(int)], ArErr{}
+			} else {
+				output := []any{}
+				if step > 0 {
+					for i := start; i < end.(int); i += step {
+						output = append(output, arr[i])
+					}
+				} else {
+					for i := end.(int) - 1; i >= start; i += step {
+						output = append(output, arr[i])
+					}
+				}
+				return output, ArErr{}
+			}
+		}}
 	val.obj["remove"] = builtinFunc{
 		"remove",
 		func(args ...any) (any, ArErr) {
