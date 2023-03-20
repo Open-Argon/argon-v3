@@ -1,16 +1,14 @@
 let read(path) = do
-    file = open(path, "r")
-    text = file.text()
+    f = file.read(path)
+    text = f.text()
     data = []
     splitlines = text.split("\n")
-    i = 0
-    while (i < splitlines.length) do
+    for (i from 0 to splitlines.length) do
         values = []
         in_quotes = false
         start = 0
         line = splitlines[i]
-        j = 0
-        while (j < line.length) do
+        for (j from 0 to line.length) do
             char = line[j]
             if (char == "," && not in_quotes) do
                 value = line[start:j].rightstrip("\r").strip()
@@ -27,8 +25,6 @@ let read(path) = do
                     value = value[1:value.length - 1]
                 value = value.replace("\"\"", "\"")
                 values.append(value)
-            j = j + 1
         data.append(values)
-        i = i + 1
     
     return data

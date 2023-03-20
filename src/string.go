@@ -187,8 +187,11 @@ func ArString(str string) ArObject {
 			if len(a) != 1 {
 				return nil, ArErr{"TypeError", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
 			}
+			if typeof(a[0]) != "array" {
+				return nil, ArErr{"TypeError", "expected array, got " + typeof(a[0]), 0, "", "", true}
+			}
 			output := []string{str}
-			for _, v := range a {
+			for _, v := range a[0].([]any) {
 				if typeof(v) != "string" {
 					return nil, ArErr{"TypeError", "expected string, got " + typeof(v), 0, "", "", true}
 				}

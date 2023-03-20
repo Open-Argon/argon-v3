@@ -38,6 +38,8 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine i
 			return parseWhileLoop(code, index, codelines)
 		} else if isForeverLoop(code) {
 			return parseForeverLoop(code, index, codelines)
+		} else if isForLoop(code) {
+			return parseForLoop(code, index, codelines)
 		} else if isGenericImport(code) {
 			return parseGenericImport(code, index, codelines)
 		}

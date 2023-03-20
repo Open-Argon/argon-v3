@@ -108,15 +108,17 @@ func parseForeverLoop(code UNPARSEcode, index int, codeline []UNPARSEcode) (whil
 }
 
 func runWhileLoop(loop whileLoop, stack stack, stacklevel int) (any, ArErr) {
+	newstack := append(stack, newscope())
 	for {
-		condition, err := runVal(loop.condition, stack, stacklevel+1)
+		condition, err := runVal(loop.condition, newstack, stacklevel+1)
+		newbodystack := append(newstack, newscope())
 		if err.EXISTS {
 			return nil, err
 		}
 		if !anyToBool(condition) {
 			break
 		}
-		resp, err := runVal(loop.body, stack, stacklevel+1)
+		resp, err := runVal(loop.body, newbodystack, stacklevel+1)
 		if err.EXISTS {
 			return nil, err
 		}

@@ -130,7 +130,7 @@ func init() {
 		return nil, ArErr{TYPE: "TypeError", message: "Cannot ceil '" + typeof(a[0]) + "'", EXISTS: true}
 	}}
 	vars.obj["sqrt"] = builtinFunc{"sqrt", ArgonSqrt}
-	vars.obj["open"] = builtinFunc{"open", ArOpen}
+	vars.obj["file"] = ArFile
 	vars.obj["random"] = ArRandom
 	vars.obj["json"] = ArJSON
 	vars.obj["sin"] = ArSin

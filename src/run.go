@@ -159,6 +159,14 @@ func runVal(line any, stack stack, stacklevel int) (any, ArErr) {
 			break
 		}
 		return runWhileLoop(x, stack, stacklevel+1)
+	case forLoop:
+		if stackoverflow {
+			linenum = x.line
+			path = x.path
+			code = x.code
+			break
+		}
+		return runForLoop(x, stack, stacklevel+1)
 	case CreateArray:
 		if stackoverflow {
 			linenum = x.line
@@ -203,14 +211,14 @@ func runVal(line any, stack stack, stacklevel int) (any, ArErr) {
 }
 
 // returns error
-func run(translated []any, stack stack) (any, ArErr, any) {
+func run(translated []any, stack stack) (any, ArErr) {
 	var output any = nil
 	for _, val := range translated {
 		val, err := runVal(val, stack, 0)
 		output = val
 		if err.EXISTS {
-			return nil, err, output
+			return output, err
 		}
 	}
-	return nil, ArErr{}, output
+	return output, ArErr{}
 }

@@ -134,7 +134,7 @@ func importMod(realpath string, origin string, main bool) (ArObject, ArErr) {
 			"scope": global,
 		}),
 	})
-	_, runimeErr, _ := run(translated, stack{vars, localvars, global})
+	_, runimeErr := ThrowOnNonLoop(run(translated, stack{vars, localvars, global}))
 	importing[p] = false
 	if runimeErr.EXISTS {
 		return ArObject{}, runimeErr

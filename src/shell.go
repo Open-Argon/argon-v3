@@ -41,10 +41,13 @@ func shell() {
 		if translationerr.EXISTS {
 			panicErr(translationerr)
 		}
-		_, runimeErr, output := run(translated, global)
+		output, runimeErr := ThrowOnNonLoop(run(translated, global))
+		output = openReturn(output)
+
 		if runimeErr.EXISTS {
 			panicErr(runimeErr)
 		} else if count == 1 {
+
 			fmt.Println(anyToArgon(output, true, true, 3, 0, true, 1))
 		}
 	}
