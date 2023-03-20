@@ -107,7 +107,11 @@ func importMod(realpath string, origin string, main bool) (ArObject, ArErr) {
 		return ArObject{}, translationerr
 	}
 	ArgsArArray := []any{}
-	for _, arg := range Args[1:] {
+	withoutarfile := []string{}
+	if len(Args) > 1 {
+		withoutarfile = Args[1:]
+	}
+	for _, arg := range withoutarfile {
 		ArgsArArray = append(ArgsArArray, arg)
 	}
 	global := newscope()

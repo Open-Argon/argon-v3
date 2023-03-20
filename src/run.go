@@ -194,7 +194,9 @@ func runVal(line any, stack stack, stacklevel int) (any, ArErr) {
 	case bool:
 		return x, ArErr{}
 	case nil:
-		return nil, ArErr{}
+		return x, ArErr{}
+	case ArObject:
+		return x, ArErr{}
 	}
 	if stackoverflow {
 		return nil, ArErr{

@@ -1,0 +1,3 @@
+import "csv" as csv
+
+term.log(csv.read("tests/test.csv"))

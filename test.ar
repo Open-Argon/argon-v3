@@ -1,3 +1,0 @@
-import "csv" as csv
-
-term.log(csv.read("test.csv"))

@@ -1,0 +1,14 @@
+f() = do
+    term.log("Hello, world!")
+    term.time("threaded function")
+    for (i from 0 to 1000000) do
+        if (i % 100000 == 0) do
+            term.log("i = " + i)
+    term.timeEnd("threaded function")
+    term.log("Goodbye, world!")
+
+t = thread(f)
+t.start()
+term.time("main thread")
+t.join()
+term.timeEnd("main thread")

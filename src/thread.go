@@ -1,10 +1,13 @@
 package main
 
-import "sync"
+import (
+	"fmt"
+	"sync"
+)
 
 func ArThread(args ...any) (any, ArErr) {
-	if len(args) == 0 {
-		return nil, ArErr{TYPE: "TypeError", message: "Cannot call thread without a function", EXISTS: true}
+	if len(args) != 1 {
+		return nil, ArErr{TYPE: "TypeError", message: "Invalid number of arguments, expected 1, got " + fmt.Sprint(len(args)), EXISTS: true}
 	}
 	var tocall any
 	switch x := args[0].(type) {
@@ -26,6 +29,9 @@ func ArThread(args ...any) (any, ArErr) {
 			if hasrun {
 				return nil, ArErr{TYPE: "Runtime Error", message: "Cannot start a thread twice", EXISTS: true}
 			}
+			if len(args) != 0 {
+				return nil, ArErr{TYPE: "TypeError", message: "Invalid number of arguments, expected 0, got " + fmt.Sprint(len(args)), EXISTS: true}
+			}
 			hasrun = true
 			wg.Add(1)
 			go func() {
@@ -39,6 +45,9 @@ func ArThread(args ...any) (any, ArErr) {
 				return nil, ArErr{TYPE: "Runtime Error", message: "Cannot join a thread that has not started", EXISTS: true}
 			} else if joined {
 				return nil, ArErr{TYPE: "Runtime Error", message: "Cannot join a thread twice", EXISTS: true}
+			}
+			if len(args) != 0 {
+				return nil, ArErr{TYPE: "TypeError", message: "Invalid number of arguments, expected 0, got " + fmt.Sprint(len(args)), EXISTS: true}
 			}
 			joined = true
 			wg.Wait()
