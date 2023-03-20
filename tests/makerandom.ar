@@ -1,10 +1,8 @@
 y = []
-i = 0
-while (i<1000000) do
+for (i from 0 to 1000000) do
     y.append(random())
     if (i % 100000 == 0) term.log(i)
-    i = i + 1
 
 term.time("write")
-open("array.json", "w").json(y)
+file.write("array.json").json(y)
 term.timeEnd("write")
