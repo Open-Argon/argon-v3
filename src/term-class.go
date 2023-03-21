@@ -7,33 +7,6 @@ import (
 
 var timing = anymap{}
 
-var plain = Map(anymap{
-	"log": builtinFunc{"log", func(args ...any) (any, ArErr) {
-		output := []any{}
-		for i := 0; i < len(args); i++ {
-			output = append(output, anyToArgon(args[i], false, true, 3, 0, false, 0))
-		}
-		fmt.Println(output...)
-		return nil, ArErr{}
-	}},
-	"logVal": builtinFunc{"logVal", func(args ...any) (any, ArErr) {
-		output := []any{}
-		for i := 0; i < len(args); i++ {
-			output = append(output, anyToArgon(args[i], true, true, 3, 0, false, 0))
-		}
-		fmt.Println(output...)
-		return nil, ArErr{}
-	}},
-	"print": builtinFunc{"print", func(args ...any) (any, ArErr) {
-		output := []any{}
-		for i := 0; i < len(args); i++ {
-			output = append(output, anyToArgon(args[i], false, false, 3, 0, false, 0))
-		}
-		fmt.Println(output...)
-		return nil, ArErr{}
-	}},
-})
-
 var ArTerm = Map(anymap{
 	"log": builtinFunc{"log", func(args ...any) (any, ArErr) {
 		output := []any{}
@@ -59,7 +32,40 @@ var ArTerm = Map(anymap{
 		fmt.Println(output...)
 		return nil, ArErr{}
 	}},
-	"plain": plain,
+	"plain": Map(anymap{
+		"log": builtinFunc{"log", func(args ...any) (any, ArErr) {
+			output := []any{}
+			for i := 0; i < len(args); i++ {
+				output = append(output, anyToArgon(args[i], false, true, 3, 0, false, 0))
+			}
+			fmt.Println(output...)
+			return nil, ArErr{}
+		}},
+		"logVal": builtinFunc{"logVal", func(args ...any) (any, ArErr) {
+			output := []any{}
+			for i := 0; i < len(args); i++ {
+				output = append(output, anyToArgon(args[i], true, true, 3, 0, false, 0))
+			}
+			fmt.Println(output...)
+			return nil, ArErr{}
+		}},
+		"print": builtinFunc{"print", func(args ...any) (any, ArErr) {
+			output := []any{}
+			for i := 0; i < len(args); i++ {
+				output = append(output, anyToArgon(args[i], false, false, 3, 0, false, 0))
+			}
+			fmt.Println(output...)
+			return nil, ArErr{}
+		}},
+		"oneLine": builtinFunc{"oneLine", func(args ...any) (any, ArErr) {
+			output := []any{}
+			for i := 0; i < len(args); i++ {
+				output = append(output, anyToArgon(args[i], false, false, 3, 0, false, 0))
+			}
+			fmt.Print(output...)
+			return nil, ArErr{}
+		}},
+	}),
 	"error": builtinFunc{"error", func(args ...any) (any, ArErr) {
 		output := []any{"error: "}
 		for i := 0; i < len(args); i++ {
@@ -103,4 +109,18 @@ var ArTerm = Map(anymap{
 		fmt.Printf("\x1b[%dm%s\x1b[0m", 34, fmt.Sprint(anyToArgon(id, false, true, 3, 0, false, 0), ": ", timesince)+"\n")
 		return nil, ArErr{}
 	}},
+	"input": Map(
+		anymap{
+			"password": builtinFunc{"password", func(args ...any) (any, ArErr) {
+				resp, err := getPassword(args...)
+				if err != nil {
+					return nil, ArErr{TYPE: "Runtime Error", message: err.Error(), EXISTS: true}
+				}
+				return ArString(resp), ArErr{}
+			}},
+			"__call__": builtinFunc{"input", func(args ...any) (any, ArErr) {
+				return input(args...), ArErr{}
+			}},
+		},
+	),
 })

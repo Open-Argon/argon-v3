@@ -12,16 +12,6 @@ type builtinFunc struct {
 func ArgonString(args ...any) (any, ArErr) {
 	return ArString(anyToArgon(args[0], true, false, 3, 0, false, 0)), ArErr{}
 }
-func ArgonPassworInput(args ...any) (any, ArErr) {
-	resp, err := getPassword(args...)
-	if err != nil {
-		return nil, ArErr{TYPE: "Runtime Error", message: err.Error(), EXISTS: true}
-	}
-	return ArString(resp), ArErr{}
-}
-func ArgonInput(args ...any) (any, ArErr) {
-	return input(args...), ArErr{}
-}
 
 func ArgonNumber(args ...any) (any, ArErr) {
 	if len(args) == 0 {

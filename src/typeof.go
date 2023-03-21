@@ -1,7 +1,7 @@
 package main
 
 func typeof(val any) string {
-	switch val.(type) {
+	switch x := val.(type) {
 	case number:
 		return "number"
 	case nil:
@@ -10,14 +10,14 @@ func typeof(val any) string {
 		return "boolean"
 	case string:
 		return "string"
-	case anymap:
+	case []any:
 		return "array"
 	case Callable:
 		return "function"
 	case builtinFunc:
 		return "function"
 	case ArObject:
-		return "map"
+		return x.TYPE
 	case accessVariable:
 		return "variable"
 	}

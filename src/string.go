@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 var stringCompile = makeRegex("(( *)\"((\\\\([a-z\\\"'`]))|[^\\\"])*\"( *))|(( *)'((\\\\([a-z\\'\"`]))|[^\\'])*'( *))")
@@ -88,7 +91,7 @@ func ArString(str string) ArObject {
 			// a[0] is start
 			// a[1] is end
 			// a[2] is step
-			if len(a) < 0 || len(a) > 3 {
+			if len(a) > 3 {
 				return nil, ArErr{"TypeError", "expected 1 to 3 arguments, got " + fmt.Sprint(len(a)), 0, "", "", true}
 			}
 			var (
@@ -265,7 +268,7 @@ func ArString(str string) ArObject {
 			if len(a) != 0 {
 				return nil, ArErr{"TypeError", "expected 0 arguments, got " + fmt.Sprint(len(a)), 0, "", "", true}
 			}
-			return strings.Title(str), ArErr{}
+			return cases.Title(language.English).String(str), ArErr{}
 		}}
 	obj.obj["lower"] = builtinFunc{
 		"lower",

@@ -42,11 +42,11 @@ func getPassword(args ...any) (string, error) {
 			break
 		}
 		if char[0] == 3 || char[0] == 4 {
-			return "", fmt.Errorf("User cancelled")
+			return "", fmt.Errorf("keyboard interupt")
 		} else if char[0] == '\r' || char[0] == '\n' {
 			fmt.Println()
 			break
-		} else if char[0] == '\b' {
+		} else if char[0] == '\b' || char[0] == 127 {
 			if len(password) > 0 {
 				password = password[:len(password)-1]
 				fmt.Print("\b \b")

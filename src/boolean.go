@@ -24,7 +24,6 @@ func anyToBool(x any) bool {
 	default:
 		return true
 	}
-
 }
 
 var booleanCompile = makeRegex(`( )*(true|false|null)( )*`)

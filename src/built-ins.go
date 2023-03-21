@@ -7,8 +7,6 @@ var vars = Map(anymap{})
 func init() {
 	vars.obj["global"] = vars
 	vars.obj["term"] = ArTerm
-	vars.obj["input"] = builtinFunc{"input", ArgonInput}
-	vars.obj["passwordInput"] = builtinFunc{"passwordInput", ArgonPassworInput}
 	vars.obj["number"] = builtinFunc{"number", ArgonNumber}
 	vars.obj["string"] = builtinFunc{"string", ArgonString}
 	vars.obj["infinity"] = infinity
@@ -151,4 +149,5 @@ func init() {
 		}
 		return ArArray([]any{}), ArErr{}
 	}}
+	vars.obj["subprocess"] = builtinFunc{"subprocess", ArSubprocess}
 }

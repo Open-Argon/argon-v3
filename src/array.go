@@ -68,7 +68,7 @@ func ArArray(arr []any) ArObject {
 			// a[0] is start
 			// a[1] is end
 			// a[2] is step
-			if len(a) < 0 || len(a) > 3 {
+			if len(a) > 3 {
 				return nil, ArErr{"TypeError", "expected 1 to 3 arguments, got " + fmt.Sprint(len(a)), 0, "", "", true}
 			}
 			var (
