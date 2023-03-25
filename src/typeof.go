@@ -12,6 +12,8 @@ func typeof(val any) string {
 		return "string"
 	case []any:
 		return "array"
+	case anymap:
+		return "map"
 	case Callable:
 		return "function"
 	case builtinFunc:
