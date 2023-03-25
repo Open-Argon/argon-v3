@@ -23,7 +23,7 @@ func ArThread(args ...any) (any, ArErr) {
 	}
 	var resp any
 	var err ArErr
-	currentscope := stack{vars, newscope()}
+
 	hasrun := false
 	joined := false
 	var wg sync.WaitGroup
@@ -38,7 +38,7 @@ func ArThread(args ...any) (any, ArErr) {
 			hasrun = true
 			wg.Add(1)
 			go func() {
-				resp, err = runCall(call{tocall, []any{}, "", 0, ""}, currentscope, 0)
+				resp, err = runCall(call{tocall, []any{}, "", 0, ""}, nil, 0)
 				wg.Done()
 			}()
 			return nil, ArErr{}

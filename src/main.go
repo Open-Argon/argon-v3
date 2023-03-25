@@ -17,15 +17,18 @@ func newscope() ArObject {
 }
 
 func main() {
+	initRandom()
+	garbageCollect()
+	global := makeGlobal()
+	if len(Args) == 0 {
+		shell(global)
+		os.Exit(0)
+	}
 	ex, e := os.Getwd()
 	if e != nil {
 		panic(e)
 	}
-	if len(Args) == 0 {
-		shell()
-		os.Exit(0)
-	}
-	_, err := importMod(Args[0], ex, true)
+	_, err := importMod(Args[0], ex, true, global)
 	if err.EXISTS {
 		panicErr(err)
 		os.Exit(1)

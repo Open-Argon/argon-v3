@@ -47,7 +47,7 @@ func readFile(path string) []UNPARSEcode {
 	return output
 }
 
-func importMod(realpath string, origin string, main bool) (ArObject, ArErr) {
+func importMod(realpath string, origin string, main bool, global ArObject) (ArObject, ArErr) {
 	extention := filepath.Ext(realpath)
 	path := realpath
 	if extention == "" {
@@ -114,7 +114,7 @@ func importMod(realpath string, origin string, main bool) (ArObject, ArErr) {
 	for _, arg := range withoutarfile {
 		ArgsArArray = append(ArgsArArray, arg)
 	}
-	global := newscope()
+	local := newscope()
 	localvars := Map(anymap{
 		"program": Map(anymap{
 			"args":   ArArray(ArgsArArray),
@@ -126,7 +126,7 @@ func importMod(realpath string, origin string, main bool) (ArObject, ArErr) {
 				if _, ok := args[0].(string); !ok {
 					return nil, ArErr{"Import Error", "Invalid argument type", 0, realpath, "", true}
 				}
-				return importMod(args[0].(string), filepath.Dir(p), false)
+				return importMod(args[0].(string), filepath.Dir(p), false, global)
 			}},
 			"cwd": ex,
 			"exc": exc,
@@ -138,7 +138,7 @@ func importMod(realpath string, origin string, main bool) (ArObject, ArErr) {
 			"scope": global,
 		}),
 	})
-	_, runimeErr := ThrowOnNonLoop(run(translated, stack{vars, localvars, global}))
+	_, runimeErr := ThrowOnNonLoop(run(translated, stack{global, localvars, local}))
 	importing[p] = false
 	if runimeErr.EXISTS {
 		return ArObject{}, runimeErr

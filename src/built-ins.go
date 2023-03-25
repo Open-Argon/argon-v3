@@ -2,9 +2,8 @@ package main
 
 import "fmt"
 
-var vars = Map(anymap{})
-
-func init() {
+func makeGlobal() ArObject {
+	var vars = Map(anymap{})
 	vars.obj["global"] = vars
 	vars.obj["term"] = ArTerm
 	vars.obj["number"] = builtinFunc{"number", ArgonNumber}
@@ -150,4 +149,5 @@ func init() {
 		return ArArray([]any{}), ArErr{}
 	}}
 	vars.obj["subprocess"] = builtinFunc{"subprocess", ArSubprocess}
+	return vars
 }

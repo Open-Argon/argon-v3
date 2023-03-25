@@ -97,7 +97,7 @@ var ArRandom = Map(anymap{
 	}},
 })
 
-func init() {
+func initRandom() {
 	rand.Seed(
 		time.Now().UnixMicro(),
 	)
