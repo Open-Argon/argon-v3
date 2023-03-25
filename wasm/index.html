@@ -2,6 +2,7 @@
 <html>
     <head>
         <title>Argon WASM Runtime Example</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <style>
             .terminal {
                 font-family: monospace;
@@ -14,6 +15,7 @@
                 box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
                 min-height: 250px;
                 max-width: 500px;
+                overflow-x: auto;
             }
             .terminal * {
                 min-height: 1rem;
@@ -60,27 +62,28 @@
                 box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
             }
         </style>
-        <script src="argon_wasm.js"></script>
+        <script src="/argon_wasm.js"></script>
     </head>
     <body>
         <h1>Argon WASM Runtime Example</h1>
         <button id="run" class="runButton">run</button>
-        <textarea id="editbox" class="editbox">
+        <textarea id="editbox" class="editbox" spellcheck="flase" autocapitalize="false">
 term.log("hello world")</textarea
         >
-        <pre id="terminal" class="terminal">
-
-        </pre>
+        <pre
+            id="terminal"
+            class="terminal"
+        ><div>                                        ____  </div><div>     /\                                |___ \ </div><div>    /  \   _ __ __ _  ___  _ __   __   ____) |</div><div>   / /\ \ | '__/ _` |/ _ \| '_ \  \ \ / /__ &lt; </div><div>  / ____ \| | | (_| | (_) | | | |  \ V /___) |</div><div> /_/    \_\_|  \__, |\___/|_| |_|   \_/|____/ </div><div>                __/ |                         </div><div>               |___/                          </div><div>----------------------------------------------</div><div>Welcome to ARGON for WASM!</div><div>write code above and click run to see it work like magic!</div></pre>
         <script>
             const output = document.getElementById("terminal");
             const editbox = document.getElementById("editbox");
             const run = document.getElementById("run");
-            run.addEventListener("click", () => {
+            run.addEventListener("click", async () => {
                 output.innerHTML = "";
-                setTimeout(()=>Ar.eval(editbox.value), 100)
+                setTimeout(() => Ar.eval(editbox.value, true), 0);
             });
 
-            ArgonWASMRuntime({
+            const runAr = ArgonWASMRuntime({
                 console: {
                     log: (...msg) => {
                         const p = document.createElement("div");

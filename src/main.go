@@ -23,10 +23,14 @@ func main() {
 	obj := js.Global().Get("Object").New()
 	obj.Set("eval", js.FuncOf(func(this js.Value, args []js.Value) interface{} {
 		code := ""
-		if len(args) > 0 {
+		allowDocument := false
+		if len(args) >= 1 {
 			code = args[0].String()
 		}
-		val, err := wasmRun(code)
+		if len(args) >= 2 {
+			allowDocument = args[1].Bool()
+		}
+		val, err := wasmRun(code, allowDocument)
 		if err.EXISTS {
 			panicErr(err)
 			return js.Null()

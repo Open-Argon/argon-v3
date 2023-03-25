@@ -1,5 +1,6 @@
 window.ArgonWASMRuntime = async (config = {}) => {
     const term = config.console || console;
+    const path = config.path || "/bin/argon.wasm";
     if (typeof global !== "undefined") {
     } else if (typeof window !== "undefined") {
         window.global = window;
@@ -309,6 +310,7 @@ window.ArgonWASMRuntime = async (config = {}) => {
             };
             const timeOrigin = Date.now() - performance.now();
             this.importObject = {
+                env: {},
                 go: {
                     // Go's SP does not change as long as no Go code is running. Some operations (e.g. calls, getters and setters)
                     // may synchronously trigger a Go event handler. This makes Go code get executed in the middle of the imported
@@ -340,7 +342,7 @@ window.ArgonWASMRuntime = async (config = {}) => {
                     // func resetMemoryDataView()
                     "runtime.resetMemoryDataView": (sp) => {
                         sp >>>= 0;
-                        this.mem = new DataView(this._inst.exports.mem.buffer);
+                        this.mem = memory;
                     },
                     // func nanotime1() int64
                     "runtime.nanotime1": (sp) => {
@@ -646,11 +648,7 @@ window.ArgonWASMRuntime = async (config = {}) => {
         }
         _resume() {
             if (this.exited) {
-                (async () => {
-                    await run();
-                    this._inst.exports.resume();
-                })();
-                return;
+				throw new Error("Go program has already exited");
             }
             this._inst.exports.resume();
             if (this.exited) {
@@ -668,13 +666,11 @@ window.ArgonWASMRuntime = async (config = {}) => {
         }
     };
     const go = new Go();
-    const file = await fetch("bin/argon.wasm");
-    const run = async () => {
-        const result = await WebAssembly.instantiateStreaming(
-            file.clone(),
-            go.importObject
-        );
-        go.run(result.instance);
-    };
-    await run();
+    const file = fetch(path);
+    const result = await WebAssembly.instantiateStreaming(
+        (await file).clone(),
+        go.importObject
+    );
+
+    go.run(result.instance);
 };

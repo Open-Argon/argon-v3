@@ -2,9 +2,12 @@ package main
 
 import "fmt"
 
-func makeGlobal() ArObject {
+func makeGlobal(allowDocument bool) ArObject {
 	var vars = Map(anymap{})
 	vars.obj["global"] = vars
+	if allowDocument {
+		vars.obj["document"] = ArDocument
+	}
 	vars.obj["term"] = ArTerm
 	vars.obj["number"] = builtinFunc{"number", ArgonNumber}
 	vars.obj["string"] = builtinFunc{"string", ArgonString}

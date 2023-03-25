@@ -33,7 +33,9 @@ func argonToJsValid(argon any) any {
 	}
 }
 
-func wasmRun(code string) (any, ArErr) {
+func wasmRun(code string, allowDocument bool) (any, ArErr) {
+	initRandom()
+	global := makeGlobal(allowDocument)
 	lines := strings.Split(code, "\n")
 	codelines := []UNPARSEcode{}
 	for i := 0; i < len(lines); i++ {
@@ -49,7 +51,7 @@ func wasmRun(code string) (any, ArErr) {
 	if translationerr.EXISTS {
 		return nil, translationerr
 	}
-	global := newscope()
+	local := newscope()
 	localvars := Map(anymap{
 		"program": Map(anymap{
 			"args":   []any{},
@@ -67,5 +69,5 @@ func wasmRun(code string) (any, ArErr) {
 			"scope": global,
 		}),
 	})
-	return ThrowOnNonLoop(run(translated, stack{vars, localvars, global}))
+	return ThrowOnNonLoop(run(translated, stack{global, localvars, local}))
 }
