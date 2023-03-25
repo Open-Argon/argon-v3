@@ -19,6 +19,7 @@ func newscope() ArObject {
 
 func main() {
 	c := make(chan ArObject)
+	garbageCollect()
 	obj := js.Global().Get("Object").New()
 	obj.Set("eval", js.FuncOf(func(this js.Value, args []js.Value) interface{} {
 		code := ""

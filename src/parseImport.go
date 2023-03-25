@@ -58,7 +58,7 @@ func runImport(importOBJ ArImport, stack stack, stacklevel int) (any, ArErr) {
 	if e != nil {
 		return nil, ArErr{"File Error", "could not get current working directory", importOBJ.line, importOBJ.path, importOBJ.code, true}
 	}
-	stackMap, err := importMod(path, ex, false)
+	stackMap, err := importMod(path, ex, false, stack[0])
 	if err.EXISTS {
 		if err.line == 0 {
 			err.line = importOBJ.line

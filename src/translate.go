@@ -61,7 +61,8 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine i
 		if worked {
 			return resp, worked, err, i
 		}
-	} else if isnot(code) {
+	}
+	if isnot(code) {
 		return parseNot(code, index, codelines, isLine)
 	}
 	if isSetVariable(code) {
@@ -75,7 +76,8 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine i
 		if worked {
 			return resp, worked, err, i
 		}
-	} else if isNumber(code) {
+	}
+	if isNumber(code) {
 		return parseNumber(code)
 	} else if isNegative(code) {
 		return parseNegative(code, index, codelines)
@@ -85,21 +87,26 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine i
 		return parseSquareroot(code, index, codelines)
 	} else if isFactorial(code) {
 		return parseFactorial(code, index, codelines)
-	} else if isCall(code) {
+	}
+	if isCall(code) {
 		resp, worked, err, i = parseCall(code, index, codelines)
 		if worked {
 			return resp, worked, err, i
 		}
-	} else if isVariable(code) {
+	}
+	if isVariable(code) {
 		return parseVariable(code)
-	} else if isArray(code) {
+	}
+	if isArray(code) {
 		resp, worked, err, i = parseArray(code, index, codelines)
 		if worked {
 			return resp, worked, err, i
 		}
-	} else if isMapGet(code) {
+	}
+	if isMapGet(code) {
 		return mapGetParse(code, index, codelines)
-	} else if isIndexGet(code) {
+	}
+	if isIndexGet(code) {
 		resp, worked, err, i = indexGetParse(code, index, codelines)
 		if worked {
 			return resp, worked, err, i

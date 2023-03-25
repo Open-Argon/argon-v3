@@ -6,8 +6,8 @@ import (
 	"os/signal"
 )
 
-func shell() {
-	global := stack{vars, newscope()}
+func shell(global ArObject) {
+	stack := stack{global, newscope()}
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
 	go func() {
@@ -41,7 +41,7 @@ func shell() {
 		if translationerr.EXISTS {
 			panicErr(translationerr)
 		}
-		output, runimeErr := ThrowOnNonLoop(run(translated, global))
+		output, runimeErr := ThrowOnNonLoop(run(translated, stack))
 		output = openReturn(output)
 
 		if runimeErr.EXISTS {

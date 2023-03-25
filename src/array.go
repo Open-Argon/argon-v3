@@ -351,7 +351,7 @@ func ArArray(arr []any) ArObject {
 					return runCall(call{
 						args[1],
 						[]any{a}, "", 0, "",
-					}, stack{vars, newscope()}, 0)
+					}, stack{}, 0)
 				})
 				if err.EXISTS {
 					return nil, err
@@ -400,7 +400,7 @@ func ArArray(arr []any) ArObject {
 				vv, err := runCall(call{
 					args[0],
 					[]any{v}, "", 0, "",
-				}, stack{vars, newscope()}, 0)
+				}, stack{}, 0)
 				if err.EXISTS {
 					return nil, err
 				}
@@ -431,7 +431,7 @@ func ArArray(arr []any) ArObject {
 				vv, err := runCall(call{
 					args[0],
 					[]any{v}, "", 0, "",
-				}, stack{vars, newscope()}, 0)
+				}, stack{}, 0)
 				if err.EXISTS {
 					return nil, err
 				}
@@ -448,7 +448,7 @@ func ArArray(arr []any) ArObject {
 			if len(args) != 2 {
 				return nil, ArErr{
 					TYPE:    "TypeError",
-					message: "missing argument",
+					message: "missing argument, expected 2 got " + fmt.Sprint(len(args)),
 					EXISTS:  true,
 				}
 			}
@@ -472,7 +472,7 @@ func ArArray(arr []any) ArObject {
 				v, err = runCall(call{
 					args[0],
 					[]any{v, vv}, "", 0, "",
-				}, stack{vars, newscope()}, 0)
+				}, stack{}, 0)
 				if err.EXISTS {
 					return nil, err
 				}

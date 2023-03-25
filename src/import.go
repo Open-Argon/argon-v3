@@ -46,7 +46,7 @@ func readFile(path string) []UNPARSEcode {
 	return output
 }
 
-func importMod(realpath string, origin string, main bool) (ArObject, ArErr) {
+func importMod(realpath string, origin string, main bool, global ArObject) (ArObject, ArErr) {
 	return ArObject{}, ArErr{
 		TYPE:    "Import Error",
 		message: "importing in WASM is currently not supported",
