@@ -120,18 +120,19 @@ var ArTerm = Map(anymap{
 		fmt.Printf("\x1b[%dm%s\x1b[0m", 34, fmt.Sprint(anyToArgon(id, false, true, 3, 0, false, 0), ": ", timesince)+"\n")
 		return nil, ArErr{}
 	}},
-	"input": Map(
-		anymap{
-			"password": builtinFunc{"password", func(args ...any) (any, ArErr) {
-				resp, err := getPassword(args...)
-				if err != nil {
-					return nil, ArErr{TYPE: "Runtime Error", message: err.Error(), EXISTS: true}
-				}
-				return ArString(resp), ArErr{}
-			}},
-			"__call__": builtinFunc{"input", func(args ...any) (any, ArErr) {
-				return input(args...), ArErr{}
-			}},
-		},
-	),
 })
+
+var ArInput = Map(
+	anymap{
+		"password": builtinFunc{"password", func(args ...any) (any, ArErr) {
+			resp, err := getPassword(args...)
+			if err != nil {
+				return nil, ArErr{TYPE: "Runtime Error", message: err.Error(), EXISTS: true}
+			}
+			return ArString(resp), ArErr{}
+		}},
+		"__call__": builtinFunc{"input", func(args ...any) (any, ArErr) {
+			return input(args...), ArErr{}
+		}},
+	},
+)

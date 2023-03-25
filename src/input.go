@@ -56,5 +56,6 @@ func getPassword(args ...any) (string, error) {
 			fmt.Print("*")
 		}
 	}
+	fmt.Print("\r")
 	return string(password), nil
 }
