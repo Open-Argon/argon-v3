@@ -16,6 +16,17 @@ var ArTerm = Map(anymap{
 		fmt.Println(output...)
 		return nil, ArErr{}
 	}},
+	"clear": builtinFunc{"clear", func(args ...any) (any, ArErr) {
+		if len(args) != 0 {
+			return nil, ArErr{
+				TYPE:    "Runtime Error",
+				message: "takes 0 arguments, got " + fmt.Sprint(len(args)),
+				EXISTS:  true,
+			}
+		}
+		fmt.Print("\033[H\033[2J")
+		return nil, ArErr{}
+	}},
 	"logVal": builtinFunc{"logVal", func(args ...any) (any, ArErr) {
 		output := []any{}
 		for i := 0; i < len(args); i++ {
