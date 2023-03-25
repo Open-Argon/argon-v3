@@ -666,9 +666,8 @@ window.ArgonWASMRuntime = async (config = {}) => {
         }
     };
     const go = new Go();
-    const file = fetch(path);
     const result = await WebAssembly.instantiateStreaming(
-        (await file).clone(),
+        fetch(path),
         go.importObject
     );
 
