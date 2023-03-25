@@ -82,6 +82,7 @@ func makeGlobal(allowDocument bool) ArObject {
 	vars.obj["log"] = builtinFunc{"log", ArgonLog}
 	vars.obj["logN"] = builtinFunc{"logN", ArgonLogN}
 	vars.obj["thread"] = builtinFunc{"thread", ArThread}
+	vars.obj["input"] = ArInput
 	vars.obj["round"] = builtinFunc{"round", func(a ...any) (any, ArErr) {
 		if len(a) == 0 {
 			return nil, ArErr{TYPE: "round", message: "round takes 1 argument",
@@ -135,6 +136,18 @@ func makeGlobal(allowDocument bool) ArObject {
 	vars.obj["json"] = ArJSON
 	vars.obj["sin"] = ArSin
 	vars.obj["arcsin"] = ArArcsin
+	vars.obj["cos"] = ArCos
+	vars.obj["arccos"] = ArArccos
+	vars.obj["tan"] = ArTan
+	vars.obj["arctan"] = ArArctan
+	vars.obj["cosec"] = ArCosec
+	vars.obj["arccosec"] = ArArccosec
+	vars.obj["sec"] = ArSec
+	vars.obj["arcsec"] = ArArcsec
+	vars.obj["cot"] = ArCot
+	vars.obj["arccot"] = ArArccot
+	vars.obj["todeg"] = ArToDeg
+	vars.obj["torad"] = ArToRad
 	vars.obj["dir"] = builtinFunc{"dir", func(a ...any) (any, ArErr) {
 		fmt.Println(a)
 		if len(a) == 0 {
