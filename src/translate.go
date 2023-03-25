@@ -55,7 +55,9 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine i
 		isLine = 1
 	}
 
-	if isBrackets(code) {
+	if isBoolean(code) {
+		return parseBoolean(code)
+	} else if isBrackets(code) {
 		resp, worked, err, i = parseBrackets(code, index, codelines)
 		if worked {
 			return resp, worked, err, i
@@ -74,6 +76,35 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine i
 		if worked {
 			return resp, worked, err, i
 		}
+	} else if isNumber(code) {
+		return parseNumber(code)
+	} else if isNegative(code) {
+		return parseNegative(code, index, codelines)
+	} else if isString(code) {
+		return parseString(code)
+	} else if issquareroot(code) {
+		return parseSquareroot(code, index, codelines)
+	} else if isFactorial(code) {
+		return parseFactorial(code, index, codelines)
+	} else if isCall(code) {
+		resp, worked, err, i = parseCall(code, index, codelines)
+		if worked {
+			return resp, worked, err, i
+		}
+	} else if isVariable(code) {
+		return parseVariable(code)
+	} else if isArray(code) {
+		resp, worked, err, i = parseArray(code, index, codelines)
+		if worked {
+			return resp, worked, err, i
+		}
+	} else if isMapGet(code) {
+		return mapGetParse(code, index, codelines)
+	} else if isIndexGet(code) {
+		resp, worked, err, i = indexGetParse(code, index, codelines)
+		if worked {
+			return resp, worked, err, i
+		}
 	}
 	{
 		operation, worked, err, step := parseOperations(code, index, codelines)
@@ -82,41 +113,6 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine i
 		} else if err.EXISTS {
 			return nil, worked, err, step
 		}
-	}
-	if isNumber(code) {
-		return parseNumber(code)
-	} else if isNegative(code) {
-		return parseNegative(code, index, codelines)
-	} else if isFactorial(code) {
-		return parseFactorial(code, index, codelines)
-	} else if isCall(code) {
-		resp, worked, err, i = parseCall(code, index, codelines)
-		if worked {
-			return resp, worked, err, i
-		}
-	}
-	if isBoolean(code) {
-		return parseBoolean(code)
-	} else if isVariable(code) {
-		return parseVariable(code)
-	} else if isArray(code) {
-		resp, worked, err, i = parseArray(code, index, codelines)
-		if worked {
-			return resp, worked, err, i
-		}
-	}
-	if isMapGet(code) {
-		return mapGetParse(code, index, codelines)
-	} else if isIndexGet(code) {
-		resp, worked, err, i = indexGetParse(code, index, codelines)
-		if worked {
-			return resp, worked, err, i
-		}
-	}
-	if isString(code) {
-		return parseString(code)
-	} else if issquareroot(code) {
-		return parseSquareroot(code, index, codelines)
 	}
 	return resp, worked, err, i
 }
