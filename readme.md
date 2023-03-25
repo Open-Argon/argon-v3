@@ -1,8 +1,8 @@
 <div align="center">
 <p>
-    <img width="80" src="https://raw.githubusercontent.com/Ugric/Argon/main/logo.png">
+    <img width="150" src="logos/ArLogo.png">
 </p>
-<h1>Argon 3</h1>
+<h1>Argon v3</h1>
 </div>
 
 ARGON 3 is a math-driven programming language designed to make code easy to read and write. It's not meant to be fast, as it's interpreted. This specification should be used as a guideline, and is subject to change for later versions. Later updates for Argon 3 should be backwards compatible (where possible) with code designed for older versions of the interpreter.
