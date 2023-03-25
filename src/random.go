@@ -68,6 +68,33 @@ var ArRandom = Map(anymap{
 		return round(resp.(number), 0), ArErr{}
 	}},
 	"range": builtinFunc{"range", randomRange},
+	"seed": builtinFunc{"seed", func(a ...any) (any, ArErr) {
+		if len(a) != 1 {
+			return nil, ArErr{
+				TYPE:    "Runtime Error",
+				message: "takes 1 argument, got " + fmt.Sprint(len(a)),
+				EXISTS:  true,
+			}
+		}
+		if typeof(a[0]) != "number" {
+			return nil, ArErr{
+				TYPE:    "Runtime Error",
+				message: "takes a number not a '" + typeof(a[0]) + "'",
+				EXISTS:  true,
+			}
+		}
+		if !a[0].(number).IsInt() {
+			return nil, ArErr{
+				TYPE:    "Runtime Error",
+				message: "takes an integer not a float",
+				EXISTS:  true,
+			}
+		}
+		rand.Seed(
+			a[0].(number).Num().Int64(),
+		)
+		return nil, ArErr{}
+	}},
 })
 
 func init() {
