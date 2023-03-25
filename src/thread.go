@@ -11,9 +11,12 @@ func ArThread(args ...any) (any, ArErr) {
 	}
 	var tocall any
 	switch x := args[0].(type) {
-	case Callable:
-		tocall = x
-	case builtinFunc:
+	case anymap:
+		if _, ok := x["__call__"]; !ok {
+			return nil, ArErr{TYPE: "TypeError", message: "Cannot call thread with a '" + typeof(args[0]) + "'", EXISTS: true}
+		}
+		tocall = x["__call__"]
+	case builtinFunc, Callable:
 		tocall = x
 	default:
 		return nil, ArErr{TYPE: "TypeError", message: "Cannot call thread with a '" + typeof(args[0]) + "'", EXISTS: true}
