@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"syscall/js"
 )
 
 // args without the program path
@@ -17,17 +18,21 @@ func newscope() ArObject {
 }
 
 func main() {
-	ex, e := os.Getwd()
-	if e != nil {
-		panic(e)
-	}
-	if len(Args) == 0 {
-		shell()
-		os.Exit(0)
-	}
-	_, err := importMod(Args[0], ex, true)
-	if err.EXISTS {
-		panicErr(err)
-		os.Exit(1)
-	}
+	c := make(chan ArObject)
+	obj := js.Global().Get("Object").New()
+	obj.Set("eval", js.FuncOf(func(this js.Value, args []js.Value) interface{} {
+		code := ""
+		if len(args) > 0 {
+			code = args[0].String()
+		}
+		val, err := wasmRun(code)
+		if err.EXISTS {
+			panicErr(err)
+			return js.Null()
+		}
+
+		return js.ValueOf(argonToJsValid(val))
+	}))
+	js.Global().Set("Ar", obj)
+	<-c
 }

@@ -44,7 +44,6 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine i
 			return parseGenericImport(code, index, codelines)
 		}
 	}
-
 	if isLine >= 1 {
 		if isDoWrap(code) {
 			return parseDoWrap(code, index, codelines)
