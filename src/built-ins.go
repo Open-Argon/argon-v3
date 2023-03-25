@@ -8,6 +8,7 @@ func makeGlobal(allowDocument bool) ArObject {
 	if allowDocument {
 		vars.obj["document"] = ArDocument
 	}
+	vars.obj["js"] = ArJS
 	vars.obj["term"] = ArTerm
 	vars.obj["number"] = builtinFunc{"number", ArgonNumber}
 	vars.obj["string"] = builtinFunc{"string", ArgonString}

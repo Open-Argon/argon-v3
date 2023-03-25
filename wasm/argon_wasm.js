@@ -342,7 +342,7 @@ window.ArgonWASMRuntime = async (config = {}) => {
                     // func resetMemoryDataView()
                     "runtime.resetMemoryDataView": (sp) => {
                         sp >>>= 0;
-                        this.mem = memory;
+                        this.mem = new DataView(this._inst.exports.mem.buffer);
                     },
                     // func nanotime1() int64
                     "runtime.nanotime1": (sp) => {

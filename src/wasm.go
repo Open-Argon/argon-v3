@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"strings"
 	"syscall/js"
 )
@@ -34,6 +35,7 @@ func argonToJsValid(argon any) any {
 }
 
 func wasmRun(code string, allowDocument bool) (any, ArErr) {
+	JSclearTimers()
 	initRandom()
 	global := makeGlobal(allowDocument)
 	lines := strings.Split(code, "\n")
@@ -71,3 +73,122 @@ func wasmRun(code string, allowDocument bool) (any, ArErr) {
 	})
 	return ThrowOnNonLoop(run(translated, stack{global, localvars, local}))
 }
+
+var IntervalList = []int{}
+var TimeoutList = []int{}
+
+func JSclearTimers() {
+	for _, v := range IntervalList {
+		js.Global().Call("clearInterval", v)
+	}
+	for _, v := range TimeoutList {
+		js.Global().Call("clearTimeout", v)
+	}
+}
+
+var ArJS = Map(anymap{
+	"setTimeout": builtinFunc{"setTimeout", func(args ...any) (any, ArErr) {
+		if len(args) > 2 || len(args) < 1 {
+			return nil, ArErr{"TypeError", "Expected 1 or 2 argument, got " + fmt.Sprint(len(args)), 0, "<wasm>", "", true}
+		}
+		if typeof(args[0]) != "function" {
+			return nil, ArErr{"TypeError", "Expected function, got " + typeof(args[0]), 0, "<wasm>", "", true}
+		}
+		var ms int64 = 0
+		if len(args) == 2 {
+			if typeof(args[1]) != "number" {
+				return nil, ArErr{"TypeError", "Expected number, got " + typeof(args[1]), 0, "<wasm>", "", true}
+			}
+			if !args[1].(number).IsInt() {
+				return nil, ArErr{"TypeError", "Expected integer, got float", 0, "<wasm>", "", true}
+			}
+			ms = args[1].(number).Num().Int64()
+		}
+		f := js.FuncOf(func(this js.Value, a []js.Value) interface{} {
+			runCall(
+				call{
+					callable: args[0],
+					args:     []any{},
+				},
+				stack{},
+				0,
+			)
+			return nil
+		})
+		n := js.Global().Call("setTimeout", f, ms).Int()
+		TimeoutList = append(TimeoutList, n)
+		return newNumber().SetInt64(int64(n)), ArErr{}
+	}},
+	"setInterval": builtinFunc{"setInterval", func(args ...any) (any, ArErr) {
+		if len(args) > 2 || len(args) < 1 {
+			return nil, ArErr{"TypeError", "Expected 1 or 2 argument, got " + fmt.Sprint(len(args)), 0, "<wasm>", "", true}
+		}
+		if typeof(args[0]) != "function" {
+			return nil, ArErr{"TypeError", "Expected function, got " + typeof(args[0]), 0, "<wasm>", "", true}
+		}
+		var ms int64 = 0
+		if len(args) == 2 {
+			if typeof(args[1]) != "number" {
+				return nil, ArErr{"TypeError", "Expected number, got " + typeof(args[1]), 0, "<wasm>", "", true}
+			}
+			if !args[1].(number).IsInt() {
+				return nil, ArErr{"TypeError", "Expected integer, got float", 0, "<wasm>", "", true}
+			}
+			ms = args[1].(number).Num().Int64()
+		}
+		f := js.FuncOf(func(this js.Value, a []js.Value) interface{} {
+			runCall(
+				call{
+					callable: args[0],
+					args:     []any{},
+				},
+				stack{},
+				0,
+			)
+			return nil
+		})
+		n := js.Global().Call("setInterval", f, ms).Int()
+		IntervalList = append(IntervalList, n)
+		return newNumber().SetInt64(int64(n)), ArErr{}
+	}},
+	"clearTimeout": builtinFunc{"clearTimeout", func(args ...any) (any, ArErr) {
+		if len(args) != 1 {
+			return nil, ArErr{"TypeError", "Expected 1 argument, got " + fmt.Sprint(len(args)), 0, "<wasm>", "", true}
+		}
+		if typeof(args[0]) != "number" {
+			return nil, ArErr{"TypeError", "Expected number, got " + typeof(args[0]), 0, "<wasm>", "", true}
+		}
+		if !args[0].(number).IsInt() {
+			return nil, ArErr{"TypeError", "Expected integer, got float", 0, "<wasm>", "", true}
+		}
+		n := args[0].(number).Num().Int64()
+		for i, v := range TimeoutList {
+			if v == int(n) {
+				TimeoutList = append(TimeoutList[:i], TimeoutList[i+1:]...)
+				break
+			}
+		}
+		js.Global().Call("clearTimeout", n)
+		return nil, ArErr{}
+	}},
+	"clearInterval": builtinFunc{"clearInterval", func(args ...any) (any, ArErr) {
+		if len(args) != 1 {
+			return nil, ArErr{"TypeError", "Expected 1 argument, got " + fmt.Sprint(len(args)), 0, "<wasm>", "", true}
+		}
+		if typeof(args[0]) != "number" {
+			return nil, ArErr{"TypeError", "Expected number, got " + typeof(args[0]), 0, "<wasm>", "", true}
+		}
+		if !args[0].(number).IsInt() {
+			return nil, ArErr{"TypeError", "Expected integer, got float", 0, "<wasm>", "", true}
+		}
+		n := args[0].(number).Num().Int64()
+		for i, v := range IntervalList {
+			if v == int(n) {
+				IntervalList = append(IntervalList[:i], IntervalList[i+1:]...)
+				break
+			}
+		}
+		js.Global().Call("clearInterval", n)
+		return nil, ArErr{}
+	}},
+})
