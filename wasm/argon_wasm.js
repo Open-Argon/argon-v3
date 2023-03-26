@@ -1,6 +1,6 @@
 window.ArgonWASMRuntime = async (config = {}) => {
     const term = config.console || console;
-    const path = config.path || "/bin/argon.wasm";
+    const path = config.path || "bin/argon.wasm";
     if (typeof global !== "undefined") {
     } else if (typeof window !== "undefined") {
         window.global = window;
