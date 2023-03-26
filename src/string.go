@@ -366,6 +366,80 @@ func ArString(str string) ArObject {
 			}
 			return strings.Count(str, a[0].(string)), ArErr{}
 		}}
+
+	obj.obj["sort"] = builtinFunc{
+		"sort",
+		func(args ...any) (any, ArErr) {
+			if len(args) > 2 {
+				return nil, ArErr{
+					TYPE:    "TypeError",
+					message: "too many arguments",
+					EXISTS:  true,
+				}
+			}
+			reverse := false
+			if len(args) >= 1 {
+				if typeof(args[0]) != "boolean" {
+					return nil, ArErr{
+						TYPE:    "TypeError",
+						message: "argument must be a boolean",
+						EXISTS:  true,
+					}
+				}
+				reverse = args[0].(bool)
+			}
+			bytes := []byte(str)
+			anyarr := make([]any, len(bytes))
+			for i, b := range bytes {
+				anyarr[i] = b
+			}
+			if len(args) == 2 {
+				if typeof(args[1]) != "function" {
+					return nil, ArErr{
+						TYPE:    "TypeError",
+						message: "argument must be a function",
+						EXISTS:  true,
+					}
+				}
+				output, err := quickSort(anyarr, func(a any) (any, ArErr) {
+					return runCall(call{
+						args[1],
+						[]any{a}, "", 0, "",
+					}, stack{}, 0)
+				})
+				if err.EXISTS {
+					return nil, err
+				}
+				bytes = make([]byte, len(output))
+				for i, b := range output {
+					bytes[i] = b.(byte)
+				}
+				str = string(bytes)
+				obj.obj["length"] = len(str)
+				obj.obj["__value__"] = str
+				return nil, ArErr{}
+			}
+			output, err := quickSort(anyarr, func(a any) (any, ArErr) {
+				return a, ArErr{}
+			})
+			if err.EXISTS {
+				return nil, err
+			}
+			if reverse {
+				for i, j := 0, len(output)-1; i < j; i, j = i+1, j-1 {
+					output[i], output[j] = output[j], output[i]
+				}
+			}
+			bytes = make([]byte, len(output))
+			for i, b := range output {
+				bytes[i] = b.(byte)
+			}
+			str = string(bytes)
+			obj.obj["length"] = len(str)
+			obj.obj["__value__"] = str
+			return nil, ArErr{}
+		},
+	}
 	obj.obj["strip"] = builtinFunc{
 		"strip",
 		func(a ...any) (any, ArErr) {

@@ -78,6 +78,10 @@ func compare(a, b any) (bool, error) {
 				return anyToBool(resp), nil
 			}
 		}
+	} else if x, ok := b.(byte); ok {
+		if y, ok := a.(byte); ok {
+			return y < x, nil
+		}
 	}
 	return false, fmt.Errorf("cannot compare %s to %s", typeof(a), typeof(b))
 }
