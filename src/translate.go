@@ -62,6 +62,12 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine i
 			return resp, worked, err, i
 		}
 	}
+	if isAbs(code) {
+		resp, worked, err, i = parseAbs(code, index, codelines)
+		if worked {
+			return resp, worked, err, i
+		}
+	}
 	if isnot(code) {
 		return parseNot(code, index, codelines, isLine)
 	}
@@ -79,8 +85,6 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine i
 	}
 	if isNumber(code) {
 		return parseNumber(code)
-	} else if isNegative(code) {
-		return parseNegative(code, index, codelines)
 	} else if isString(code) {
 		return parseString(code)
 	} else if issquareroot(code) {
@@ -105,7 +109,9 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine i
 			return nil, worked, err, step
 		}
 	}
-	if isCall(code) {
+	if isNegative(code) {
+		return parseNegative(code, index, codelines)
+	} else if isCall(code) {
 		resp, worked, err, i = parseCall(code, index, codelines)
 		if worked {
 			return resp, worked, err, i

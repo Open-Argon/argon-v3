@@ -149,6 +149,7 @@ func makeGlobal(allowDocument bool) ArObject {
 	vars.obj["arccot"] = ArArccot
 	vars.obj["todeg"] = ArToDeg
 	vars.obj["torad"] = ArToRad
+	vars.obj["abs"] = ArAbs
 	vars.obj["dir"] = builtinFunc{"dir", func(a ...any) (any, ArErr) {
 		fmt.Println(a)
 		if len(a) == 0 {

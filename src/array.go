@@ -533,6 +533,36 @@ func ArArray(arr []any) ArObject {
 			return ArArray(newarr), ArErr{}
 		},
 	}
+	val.obj["__Equal__"] = builtinFunc{
+		"__LessThanEqual__",
+		func(args ...any) (any, ArErr) {
+			if len(args) != 1 {
+				return nil, ArErr{
+					TYPE:    "TypeError",
+					message: "missing argument",
+					EXISTS:  true,
+				}
+			}
+			if typeof(args[0]) != "array" {
+				return false, ArErr{}
+			}
+			if len(arr) != len(args[0].(ArObject).obj["__value__"].([]any)) {
+				return false, ArErr{}
+			}
+			for i, v := range arr {
+				res, err := runOperation(operationType{
+					operation: 8,
+					values:    []any{v, args[0].(ArObject).obj["__value__"].([]any)[i]},
+				}, stack{}, 0)
+				if err.EXISTS {
+					return nil, err
+				}
+				if anyToBool(res) {
+					return false, ArErr{}
+				}
+			}
+			return true, ArErr{}
+		}}
 	return val
 }
 

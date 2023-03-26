@@ -1,4 +1,4 @@
-module wbell.dev/m/v2
+module argon.wbell.dev
 
 go 1.19
 

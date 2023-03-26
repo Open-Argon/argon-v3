@@ -7,6 +7,13 @@ import (
 
 var mapCompiled = makeRegex(`( *)\{(((( *).+( *):( *).+( *))|(` + spacelessVariable + `))(( *)\,(( *).+( *):( *).+( *))|(` + spacelessVariable + `)))*\}( *)`)
 
+type createMap struct {
+	body anymap
+	code string
+	line int
+	path string
+}
+
 func isMap(code UNPARSEcode) bool {
 	return mapCompiled.MatchString(code.code)
 }

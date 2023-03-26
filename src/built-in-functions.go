@@ -10,6 +10,9 @@ type builtinFunc struct {
 }
 
 func ArgonString(args ...any) (any, ArErr) {
+	if len(args) == 0 {
+		return ArString(""), ArErr{}
+	}
 	return ArString(anyToArgon(args[0], true, false, 3, 0, false, 0)), ArErr{}
 }
 
