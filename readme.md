@@ -7,7 +7,7 @@
 
 ### HEADS UP! 🙂
 
-Argon v3.wasm is a fork of Argon v3 which can had parts rewritten for support in WebAssembly (WASM).
+Argon v3.wasm is a fork of Argon v3 which has had parts rewritten for support in WebAssembly (WASM).
 
 It includes all the same features and functionality as Argon v3, but has been compiled to run efficiently on WebAssembly.
 
