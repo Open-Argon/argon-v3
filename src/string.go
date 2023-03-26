@@ -30,8 +30,7 @@ func unquoted(
 	if err != nil {
 		return "", err
 	}
-	classoutput := (output)
-	return classoutput, nil
+	return output, nil
 }
 
 // returns translateString, success, error
@@ -256,8 +255,8 @@ func ArString(str string) ArObject {
 			}
 			splitby := a[0].(string)
 			output := []any{}
-			splitted := any(strings.Split(str, splitby))
-			for _, v := range splitted.([]string) {
+			splitted := (strings.Split(str, splitby))
+			for _, v := range splitted {
 				output = append(output, ArString(v))
 			}
 			return output, ArErr{}
@@ -411,6 +410,135 @@ func ArString(str string) ArObject {
 				cutset = a[0].(string)
 			}
 			return strings.TrimRight(str, cutset), ArErr{}
+		}}
+	obj.obj["__LessThanEqual__"] = builtinFunc{
+		"__LessThanOrEqual__",
+		func(a ...any) (any, ArErr) {
+			if len(a) != 1 {
+				return nil, ArErr{"TypeError", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
+			}
+			if typeof(a[0]) != "string" {
+				return nil, ArErr{"TypeError", "cannot get less than or equal to of type " + typeof(a[0]) + " from string", 0, "", "", true}
+			}
+			return str <= a[0].(string), ArErr{}
+		}}
+	obj.obj["__LessThan__"] = builtinFunc{
+		"__LessThan__",
+		func(a ...any) (any, ArErr) {
+			if len(a) != 1 {
+				return nil, ArErr{"TypeError", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
+			}
+			if typeof(a[0]) != "string" {
+				return nil, ArErr{"TypeError", "cannot get less than of type " + typeof(a[0]) + " from string", 0, "", "", true}
+			}
+			return str < a[0].(string), ArErr{}
+		}}
+	obj.obj["__GreaterThan__"] = builtinFunc{
+		"__GreaterThan__",
+		func(a ...any) (any, ArErr) {
+			if len(a) != 1 {
+				return nil, ArErr{"TypeError", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
+			}
+			if typeof(a[0]) != "string" {
+				return nil, ArErr{"TypeError", "cannot get greater than of type " + typeof(a[0]) + " from string", 0, "", "", true}
+			}
+			return str > a[0].(string), ArErr{}
+		}}
+
+	obj.obj["__GreaterThanEqual__"] = builtinFunc{
+		"__GreaterThanEqual__",
+		func(a ...any) (any, ArErr) {
+			if len(a) != 1 {
+				return nil, ArErr{"TypeError", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
+			}
+			if typeof(a[0]) != "string" {
+				return nil, ArErr{"TypeError", "cannot get greater than or equal to of type " + typeof(a[0]) + " from string", 0, "", "", true}
+			}
+			return str >= a[0].(string), ArErr{}
+		}}
+	obj.obj["__Equal__"] = builtinFunc{
+		"__Equal__",
+		func(a ...any) (any, ArErr) {
+			if len(a) != 1 {
+				return nil, ArErr{"TypeError", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
+			}
+			return str == a[0], ArErr{}
+		}}
+	obj.obj["__NotEqual__"] = builtinFunc{
+		"__NotEqual__",
+		func(a ...any) (any, ArErr) {
+			if len(a) != 1 {
+				return nil, ArErr{"TypeError", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
+			}
+			return str != a[0], ArErr{}
+		}}
+	obj.obj["__Add__"] = builtinFunc{
+		"__Add__",
+		func(a ...any) (any, ArErr) {
+			if len(a) != 1 {
+				return nil, ArErr{"TypeError", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
+			}
+			if typeof(a[0]) != "string" {
+				return nil, ArErr{"TypeError", "cannot add " + typeof(a[0]) + " to string", 0, "", "", true}
+			}
+			return strings.Join([]string{str, a[0].(string)}, ""), ArErr{}
+		}}
+	obj.obj["__Multiply__"] = builtinFunc{
+		"__Multiply__",
+		func(a ...any) (any, ArErr) {
+			if len(a) != 1 {
+				return nil, ArErr{"TypeError", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
+			}
+			if typeof(a[0]) != "number" {
+				return nil, ArErr{"TypeError", "cannot multiply string by " + typeof(a[0]), 0, "", "", true}
+			}
+			n := a[0].(number)
+			if !n.IsInt() {
+				return nil, ArErr{"ValueError", "cannot multiply string by float", 0, "", "", true}
+			}
+			if n.Sign() < 0 {
+				return nil, ArErr{"ValueError", "cannot multiply string by negative number", 0, "", "", true}
+			}
+			return strings.Repeat(str, int(n.Num().Int64())), ArErr{}
+		}}
+	obj.obj["__Contains__"] = builtinFunc{
+		"__Contains__",
+		func(a ...any) (any, ArErr) {
+			if len(a) != 1 {
+				return nil, ArErr{"TypeError", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
+			}
+			if typeof(a[0]) != "string" {
+				return nil, ArErr{"TypeError", "cannot check if string contains " + typeof(a[0]), 0, "", "", true}
+			}
+			return strings.Contains(str, a[0].(string)), ArErr{}
+		}}
+	obj.obj["__Subtract__"] = builtinFunc{
+		"__Subtract__",
+		func(a ...any) (any, ArErr) {
+			if len(a) != 1 {
+				return nil, ArErr{"TypeError", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
+			}
+			if typeof(a[0]) != "string" {
+				return nil, ArErr{"TypeError", "cannot subtract " + typeof(a[0]) + " from string", 0, "", "", true}
+			}
+			return strings.Replace(str, a[0].(string), "", -1), ArErr{}
+		}}
+	obj.obj["__Divide__"] = builtinFunc{
+		"__Divide__",
+		func(a ...any) (any, ArErr) {
+			if len(a) != 1 {
+				return nil, ArErr{"TypeError", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
+			}
+			if typeof(a[0]) != "string" {
+				return nil, ArErr{"TypeError", "cannot divide string by " + typeof(a[0]), 0, "", "", true}
+			}
+			splitby := a[0].(string)
+			output := []any{}
+			splitted := (strings.Split(str, splitby))
+			for _, v := range splitted {
+				output = append(output, ArString(v))
+			}
+			return ArArray(output), ArErr{}
 		}}
 	return obj
 }

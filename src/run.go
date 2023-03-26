@@ -14,8 +14,6 @@ func runVal(line any, stack stack, stacklevel int) (any, ArErr) {
 		stackoverflow = stacklevel >= 10000
 	)
 	switch x := line.(type) {
-	case number:
-		return x, ArErr{}
 	case string:
 		return ArString(x), ArErr{}
 	case call:
@@ -191,11 +189,15 @@ func runVal(line any, stack stack, stacklevel int) (any, ArErr) {
 			break
 		}
 		return runImport(x, stack, stacklevel+1)
-	case bool:
-		return x, ArErr{}
-	case nil:
-		return x, ArErr{}
-	case ArObject:
+	case ABS:
+		if stackoverflow {
+			linenum = x.line
+			path = x.path
+			code = x.code
+			break
+		}
+		return runAbs(x, stack, stacklevel+1)
+	case bool, ArObject, number, nil:
 		return x, ArErr{}
 	}
 	if stackoverflow {

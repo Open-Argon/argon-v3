@@ -32,7 +32,7 @@ func quickSort(list []interface{}, getKey func(interface{}) (interface{}, ArErr)
 				EXISTS:  true,
 			}
 		}
-		if comp < 0 {
+		if comp {
 			left = append(left, v)
 		} else {
 			right = append(right, v)
@@ -52,35 +52,32 @@ func quickSort(list []interface{}, getKey func(interface{}) (interface{}, ArErr)
 }
 
 func getkeyCache(getKey func(interface{}) (interface{}, ArErr), index interface{}, cache keyCache) (interface{}, ArErr) {
-	if cacheval, ok := cache[index]; ok {
+	key := ArValidToAny(index)
+	if cacheval, ok := cache[key]; ok {
 		return cacheval, ArErr{}
 	}
 	val, err := getKey(index)
 	if err.EXISTS {
 		return nil, err
 	}
-	cache[index] = val
+	cache[key] = val
 	return val, ArErr{}
 }
 
-func compare(a, b interface{}) (int, error) {
-	switch x := a.(type) {
-	case string:
-		if _, ok := b.(string); !ok {
-			return 0, fmt.Errorf("cannot compare %T to %T", a, b)
+func compare(a, b any) (bool, error) {
+	if isAnyNumber(a) && isAnyNumber(b) {
+		return a.(number).Cmp(b.(number)) < 0, nil
+	} else if x, ok := a.(ArObject); ok {
+		if y, ok := x.obj["__LessThan__"]; ok {
+			resp, err := runCall(
+				call{
+					callable: y,
+					args:     []any{b},
+				}, stack{}, 0)
+			if !err.EXISTS {
+				return anyToBool(resp), nil
+			}
 		}
-		if a == b {
-			return 0, nil
-		}
-		if x < b.(string) {
-			return -1, nil
-		}
-		return 1, nil
-	case number:
-		if _, ok := b.(number); !ok {
-			return 0, fmt.Errorf("cannot compare %T to %T", a, b)
-		}
-		return x.Cmp(b.(number)), nil
 	}
-	return 0, fmt.Errorf("cannot compare %T to %T", a, b)
+	return false, fmt.Errorf("cannot compare %s to %s", typeof(a), typeof(b))
 }
