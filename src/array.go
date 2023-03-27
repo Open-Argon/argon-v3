@@ -507,9 +507,9 @@ func ArArray(arr []any) ArObject {
 						EXISTS:  true,
 					}
 				}
-				output = append(output, v.(string))
+				output = append(output, v.(ArObject).obj["__value__"].(string))
 			}
-			return ArString(strings.Join(output, args[0].(string))), ArErr{}
+			return ArString(strings.Join(output, args[0].(ArObject).obj["__value__"].(string))), ArErr{}
 		},
 	}
 	val.obj["concat"] = builtinFunc{

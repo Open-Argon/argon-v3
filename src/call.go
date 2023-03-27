@@ -92,9 +92,6 @@ func runCall(c call, stack stack, stacklevel int) (any, ArErr) {
 	}
 	switch x := callable.(type) {
 	case builtinFunc:
-		for i := range args {
-			args[i] = ArValidToAny(args[i])
-		}
 		resp, err := x.FUNC(args...)
 		resp = AnyToArValid(resp)
 		if err.EXISTS {
