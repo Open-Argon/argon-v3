@@ -253,7 +253,7 @@ func ArString(str string) ArObject {
 			if typeof(a[0]) != "string" {
 				return nil, ArErr{"TypeError", "expected string, got " + typeof(a[0]), 0, "", "", true}
 			}
-			splitby := a[0].(string)
+			splitby := a[0].(ArObject).obj["__value__"].(string)
 			output := []any{}
 			splitted := (strings.Split(str, splitby))
 			for _, v := range splitted {
@@ -297,7 +297,7 @@ func ArString(str string) ArObject {
 			if typeof(a[1]) != "string" {
 				return nil, ArErr{"TypeError", "expected string, got " + typeof(a[1]), 0, "", "", true}
 			}
-			return strings.Replace(str, a[0].(string), a[1].(string), -1), ArErr{}
+			return strings.Replace(str, a[0].(ArObject).obj["__value__"].(string), a[1].(string), -1), ArErr{}
 		}}
 	obj.obj["contains"] = builtinFunc{
 		"contains",
@@ -308,7 +308,7 @@ func ArString(str string) ArObject {
 			if typeof(a[0]) != "string" {
 				return nil, ArErr{"TypeError", "expected string, got " + typeof(a[0]), 0, "", "", true}
 			}
-			return strings.Contains(str, a[0].(string)), ArErr{}
+			return strings.Contains(str, a[0].(ArObject).obj["__value__"].(string)), ArErr{}
 		}}
 	obj.obj["startswith"] = builtinFunc{
 		"startswith",
@@ -319,7 +319,7 @@ func ArString(str string) ArObject {
 			if typeof(a[0]) != "string" {
 				return nil, ArErr{"TypeError", "expected string, got " + typeof(a[0]), 0, "", "", true}
 			}
-			return strings.HasPrefix(str, a[0].(string)), ArErr{}
+			return strings.HasPrefix(str, a[0].(ArObject).obj["__value__"].(string)), ArErr{}
 		}}
 	obj.obj["endswith"] = builtinFunc{
 		"endswith",
@@ -330,7 +330,7 @@ func ArString(str string) ArObject {
 			if typeof(a[0]) != "string" {
 				return nil, ArErr{"TypeError", "expected string, got " + typeof(a[0]), 0, "", "", true}
 			}
-			return strings.HasSuffix(str, a[0].(string)), ArErr{}
+			return strings.HasSuffix(str, a[0].(ArObject).obj["__value__"].(string)), ArErr{}
 		}}
 	obj.obj["index"] = builtinFunc{
 		"index",
@@ -341,7 +341,7 @@ func ArString(str string) ArObject {
 			if typeof(a[0]) != "string" {
 				return nil, ArErr{"TypeError", "expected string, got " + typeof(a[0]), 0, "", "", true}
 			}
-			return strings.Index(str, a[0].(string)), ArErr{}
+			return strings.Index(str, a[0].(ArObject).obj["__value__"].(string)), ArErr{}
 		}}
 	obj.obj["rindex"] = builtinFunc{
 		"rindex",
@@ -352,7 +352,7 @@ func ArString(str string) ArObject {
 			if typeof(a[0]) != "string" {
 				return nil, ArErr{"TypeError", "expected string, got " + typeof(a[0]), 0, "", "", true}
 			}
-			return strings.LastIndex(str, a[0].(string)), ArErr{}
+			return strings.LastIndex(str, a[0].(ArObject).obj["__value__"].(string)), ArErr{}
 		}}
 	obj.obj["count"] = builtinFunc{
 		"count",
@@ -364,7 +364,7 @@ func ArString(str string) ArObject {
 			if typeof(a[0]) != "string" {
 				return nil, ArErr{"TypeError", "expected string, got " + typeof(a[0]), 0, "", "", true}
 			}
-			return strings.Count(str, a[0].(string)), ArErr{}
+			return strings.Count(str, a[0].(ArObject).obj["__value__"].(string)), ArErr{}
 		}}
 
 	obj.obj["sort"] = builtinFunc{
@@ -451,7 +451,7 @@ func ArString(str string) ArObject {
 				if typeof(a[0]) != "string" {
 					return nil, ArErr{"TypeError", "expected string, got " + typeof(a[0]), 0, "", "", true}
 				}
-				cutset = a[0].(string)
+				cutset = a[0].(ArObject).obj["__value__"].(string)
 			}
 			return strings.Trim(str, cutset), ArErr{}
 		}}
@@ -466,7 +466,7 @@ func ArString(str string) ArObject {
 				if typeof(a[0]) != "string" {
 					return nil, ArErr{"TypeError", "expected string, got " + typeof(a[0]), 0, "", "", true}
 				}
-				cutset = a[0].(string)
+				cutset = a[0].(ArObject).obj["__value__"].(string)
 			}
 			return strings.TrimLeft(str, cutset), ArErr{}
 		}}
@@ -481,7 +481,7 @@ func ArString(str string) ArObject {
 				if typeof(a[0]) != "string" {
 					return nil, ArErr{"TypeError", "expected string, got " + typeof(a[0]), 0, "", "", true}
 				}
-				cutset = a[0].(string)
+				cutset = a[0].(ArObject).obj["__value__"].(string)
 			}
 			return strings.TrimRight(str, cutset), ArErr{}
 		}}
@@ -494,7 +494,7 @@ func ArString(str string) ArObject {
 			if typeof(a[0]) != "string" {
 				return nil, ArErr{"TypeError", "cannot get less than or equal to of type " + typeof(a[0]) + " from string", 0, "", "", true}
 			}
-			return str <= a[0].(string), ArErr{}
+			return str <= a[0].(ArObject).obj["__value__"].(string), ArErr{}
 		}}
 	obj.obj["__LessThan__"] = builtinFunc{
 		"__LessThan__",
@@ -505,7 +505,7 @@ func ArString(str string) ArObject {
 			if typeof(a[0]) != "string" {
 				return nil, ArErr{"TypeError", "cannot get less than of type " + typeof(a[0]) + " from string", 0, "", "", true}
 			}
-			return str < a[0].(string), ArErr{}
+			return str < a[0].(ArObject).obj["__value__"].(string), ArErr{}
 		}}
 	obj.obj["__GreaterThan__"] = builtinFunc{
 		"__GreaterThan__",
@@ -516,7 +516,7 @@ func ArString(str string) ArObject {
 			if typeof(a[0]) != "string" {
 				return nil, ArErr{"TypeError", "cannot get greater than of type " + typeof(a[0]) + " from string", 0, "", "", true}
 			}
-			return str > a[0].(string), ArErr{}
+			return str > a[0].(ArObject).obj["__value__"].(string), ArErr{}
 		}}
 
 	obj.obj["__GreaterThanEqual__"] = builtinFunc{
@@ -528,7 +528,7 @@ func ArString(str string) ArObject {
 			if typeof(a[0]) != "string" {
 				return nil, ArErr{"TypeError", "cannot get greater than or equal to of type " + typeof(a[0]) + " from string", 0, "", "", true}
 			}
-			return str >= a[0].(string), ArErr{}
+			return str >= a[0].(ArObject).obj["__value__"].(string), ArErr{}
 		}}
 	obj.obj["__Equal__"] = builtinFunc{
 		"__Equal__",
@@ -555,7 +555,7 @@ func ArString(str string) ArObject {
 			if typeof(a[0]) != "string" {
 				return nil, ArErr{"TypeError", "cannot add " + typeof(a[0]) + " to string", 0, "", "", true}
 			}
-			return strings.Join([]string{str, a[0].(string)}, ""), ArErr{}
+			return strings.Join([]string{str, a[0].(ArObject).obj["__value__"].(string)}, ""), ArErr{}
 		}}
 	obj.obj["__Multiply__"] = builtinFunc{
 		"__Multiply__",
@@ -584,7 +584,7 @@ func ArString(str string) ArObject {
 			if typeof(a[0]) != "string" {
 				return nil, ArErr{"TypeError", "cannot check if string contains " + typeof(a[0]), 0, "", "", true}
 			}
-			return strings.Contains(str, a[0].(string)), ArErr{}
+			return strings.Contains(str, a[0].(ArObject).obj["__value__"].(string)), ArErr{}
 		}}
 	obj.obj["__Subtract__"] = builtinFunc{
 		"__Subtract__",
@@ -595,7 +595,7 @@ func ArString(str string) ArObject {
 			if typeof(a[0]) != "string" {
 				return nil, ArErr{"TypeError", "cannot subtract " + typeof(a[0]) + " from string", 0, "", "", true}
 			}
-			return strings.Replace(str, a[0].(string), "", -1), ArErr{}
+			return strings.Replace(str, a[0].(ArObject).obj["__value__"].(string), "", -1), ArErr{}
 		}}
 	obj.obj["__Divide__"] = builtinFunc{
 		"__Divide__",
@@ -606,7 +606,7 @@ func ArString(str string) ArObject {
 			if typeof(a[0]) != "string" {
 				return nil, ArErr{"TypeError", "cannot divide string by " + typeof(a[0]), 0, "", "", true}
 			}
-			splitby := a[0].(string)
+			splitby := a[0].(ArObject).obj["__value__"].(string)
 			output := []any{}
 			splitted := (strings.Split(str, splitby))
 			for _, v := range splitted {

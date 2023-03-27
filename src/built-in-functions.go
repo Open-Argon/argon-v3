@@ -33,7 +33,7 @@ func ArgonNumber(args ...any) (any, ArErr) {
 		if x {
 			return newNumber().SetInt64(1), ArErr{}
 		}
-		return newNumber().SetInt64(0), ArErr{}
+		return newNumber(), ArErr{}
 	case nil:
 		return newNumber(), ArErr{}
 	}

@@ -1,7 +1,5 @@
 package main
 
-import "fmt"
-
 func makeGlobal() ArObject {
 	var vars = Map(anymap{})
 	vars.obj["global"] = vars
@@ -31,14 +29,14 @@ func makeGlobal() ArObject {
 					newmap[i] = v
 				}
 				return Map(newmap), ArErr{}
+			} else if x.TYPE == "string" {
+				newmap := anymap{}
+				for i, v := range x.obj["__value__"].(string) {
+					newmap[i] = ArString(string(v))
+				}
+				return Map(newmap), ArErr{}
 			}
 			return x, ArErr{}
-		case string:
-			newmap := anymap{}
-			for i, v := range x {
-				newmap[i] = ArString(string(v))
-			}
-			return Map(newmap), ArErr{}
 		}
 		return nil, ArErr{TYPE: "TypeError", message: "Cannot create map from '" + typeof(a[0]) + "'", EXISTS: true}
 	}}
@@ -47,15 +45,16 @@ func makeGlobal() ArObject {
 			return ArArray([]any{}), ArErr{}
 		}
 		switch x := a[0].(type) {
-		case string:
-			newarray := []any{}
-			for _, v := range x {
-				newarray = append(newarray, ArString(string(v)))
-			}
-			return ArArray(newarray), ArErr{}
 		case ArObject:
 			if x.TYPE == "array" {
 				return x, ArErr{}
+			} else if x.TYPE == "string" {
+
+				newarray := []any{}
+				for _, v := range x.obj["__value__"].(string) {
+					newarray = append(newarray, ArString(string(v)))
+				}
+				return ArArray(newarray), ArErr{}
 			}
 			newarray := []any{}
 			for key, val := range x.obj {
@@ -147,7 +146,6 @@ func makeGlobal() ArObject {
 	vars.obj["torad"] = ArToRad
 	vars.obj["abs"] = ArAbs
 	vars.obj["dir"] = builtinFunc{"dir", func(a ...any) (any, ArErr) {
-		fmt.Println(a)
 		if len(a) == 0 {
 			return ArArray([]any{}), ArErr{}
 		}

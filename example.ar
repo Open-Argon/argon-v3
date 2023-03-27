@@ -1,0 +1,2 @@
+forever do
+    term.log(random())
