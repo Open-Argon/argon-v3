@@ -181,7 +181,7 @@ var ArArccosec = builtinFunc{"arccosec", func(args ...any) (any, ArErr) {
 	}
 	num := args[0].(number)
 	n, _ := num.Float64()
-	if n < -1 || n > 1 {
+	if n > -1 && n < 1 {
 		return nil, ArErr{TYPE: "Runtime Error",
 			message: fmt.Sprintf("arccosec expected number between -1 and 1, got %s", anyToArgon(n, true, true, 3, 0, false, 0)),
 			EXISTS:  true,
@@ -229,7 +229,7 @@ var ArArcsec = builtinFunc{"arcsec", func(args ...any) (any, ArErr) {
 	}
 	num := args[0].(number)
 	n, _ := num.Float64()
-	if n < -1 || n > 1 {
+	if n > -1 && n < 1 {
 		return nil, ArErr{TYPE: "Runtime Error",
 			message: fmt.Sprintf("arcsec expected number between -1 and 1, got %s", anyToArgon(n, true, true, 3, 0, false, 0)),
 			EXISTS:  true,
