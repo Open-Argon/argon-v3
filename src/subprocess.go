@@ -14,13 +14,14 @@ func ArSubprocess(args ...any) (any, ArErr) {
 			EXISTS:  true,
 		}
 	} else if typeof(args[0]) != "array" {
-		fmt.Println(args[0])
 		return nil, ArErr{
 			TYPE:    "TypeError",
 			message: fmt.Sprintf("subprocess() argument must be an array, not %s", typeof(args[0])),
 			EXISTS:  true,
 		}
-	} else if len(args[0].([]any)) == 0 {
+	}
+	args[0] = ArValidToAny(args[0])
+	if len(args[0].([]any)) == 0 {
 		return nil, ArErr{
 			TYPE:    "RuntimeError",
 			message: "subprocess() argument must be an array of strings, not an empty array",

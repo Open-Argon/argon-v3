@@ -152,7 +152,7 @@ func indexGetParse(code UNPARSEcode, index int, codelines []UNPARSEcode) (ArMapG
 		return ArMapGet{tival, args, true, code.line, code.realcode, code.path}, true, ArErr{}, 1
 	}
 	return ArMapGet{}, false, ArErr{
-		"SyntaxError",
+		"Syntax Error",
 		"invalid index get",
 		code.line,
 		code.path,
