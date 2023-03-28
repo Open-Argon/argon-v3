@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -31,7 +30,6 @@ func parseTryCatch(code UNPARSEcode, index int, codelines []UNPARSEcode) (TryCat
 	totalIndex += i
 	catchtrimmed := strings.TrimSpace(codelines[index+totalIndex].code)
 	if !catchCompiled.MatchString(catchtrimmed) {
-		fmt.Println(catchtrimmed)
 		return TryCatch{}, false, ArErr{"Syntax Error", "invalid syntax", code.line, code.path, code.realcode, true}, i
 	}
 	catchtrimmed = catchtrimmed[6:]

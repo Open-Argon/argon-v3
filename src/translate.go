@@ -80,12 +80,6 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine i
 			return resp, worked, err, i
 		}
 	}
-	if isAutoAsignVariable(code) {
-		resp, worked, err, i = parseAutoAsignVariable(code, index, codelines, isLine)
-		if worked {
-			return resp, worked, err, i
-		}
-	}
 	if isNumber(code) {
 		return parseNumber(code)
 	} else if isString(code) {
@@ -100,6 +94,12 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine i
 	}
 	if isArray(code) {
 		resp, worked, err, i = parseArray(code, index, codelines)
+		if worked {
+			return resp, worked, err, i
+		}
+	}
+	if isAutoAsignVariable(code) {
+		resp, worked, err, i = parseAutoAsignVariable(code, index, codelines, isLine)
 		if worked {
 			return resp, worked, err, i
 		}

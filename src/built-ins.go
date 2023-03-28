@@ -16,13 +16,15 @@ func makeGlobal() ArObject {
 			if x.TYPE == "array" {
 				newmap := anymap{}
 				for i, v := range x.obj["__value__"].([]any) {
+					v := ArValidToAny(v)
 					switch y := v.(type) {
 					case []any:
 						if len(y) == 2 {
 							if isUnhashable(y[0]) {
 								return nil, ArErr{TYPE: "TypeError", message: "Cannot use unhashable value as key: " + typeof(y[0]), EXISTS: true}
 							}
-							newmap[y[0]] = y[1]
+							key := ArValidToAny(y[0])
+							newmap[key] = y[1]
 							continue
 						}
 					}
@@ -161,5 +163,22 @@ func makeGlobal() ArObject {
 		return ArArray([]any{}), ArErr{}
 	}}
 	vars.obj["subprocess"] = builtinFunc{"subprocess", ArSubprocess}
+	vars.obj["class"] = builtinFunc{"class", func(a ...any) (any, ArErr) {
+		if len(a) == 0 {
+			return nil, ArErr{TYPE: "TypeError", message: "Cannot create class from '" + typeof(a[0]) + "'", EXISTS: true}
+		}
+		switch x := a[0].(type) {
+		case ArObject:
+			if x.TYPE == "class" {
+				return x, ArErr{}
+			}
+			newclass := ArObject{TYPE: "class", obj: anymap{}}
+			for key, val := range x.obj {
+				newclass.obj[key] = val
+			}
+			return newclass, ArErr{}
+		}
+		return nil, ArErr{TYPE: "TypeError", message: "Cannot create class from '" + typeof(a[0]) + "'", EXISTS: true}
+	}}
 	return vars
 }
