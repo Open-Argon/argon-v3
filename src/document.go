@@ -114,8 +114,12 @@ func windowElement(element js.Value) ArObject {
 
 var ArDocument = Map(
 	anymap{
-		"body": windowElement(js.Global().Get("document").Get("body")),
-		"head": windowElement(js.Global().Get("document").Get("head")),
+		"body": builtinFunc{"getElementById", func(args ...any) (any, ArErr) {
+			return windowElement(js.Global().Get("document").Get("body")), ArErr{}
+		}},
+		"head": builtinFunc{"getElementById", func(args ...any) (any, ArErr) {
+			return windowElement(js.Global().Get("document").Get("head")), ArErr{}
+		}},
 		"getElementById": builtinFunc{"getElementById", func(args ...any) (any, ArErr) {
 			if len(args) < 1 {
 				return nil, ArErr{"Argument Error", "Not enough arguments for getElementById", 0, "", "", true}
