@@ -13,7 +13,6 @@ func ArgonString(args ...any) (any, ArErr) {
 	if len(args) == 0 {
 		return ArString(""), ArErr{}
 	}
-	args[0] = ArValidToAny(args[0])
 	return ArString(anyToArgon(args[0], true, false, 3, 0, false, 0)), ArErr{}
 }
 
@@ -21,7 +20,6 @@ func ArgonNumber(args ...any) (any, ArErr) {
 	if len(args) == 0 {
 		return newNumber(), ArErr{}
 	}
-	args[0] = ArValidToAny(args[0])
 	switch x := args[0].(type) {
 	case string:
 		if !isNumber(UNPARSEcode{code: x}) {
