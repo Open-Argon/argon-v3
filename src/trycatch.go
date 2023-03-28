@@ -28,9 +28,11 @@ func parseTryCatch(code UNPARSEcode, index int, codelines []UNPARSEcode) (TryCat
 		return TryCatch{}, false, err, i
 	}
 	totalIndex += i
-	if index+totalIndex >= len(codelines) {
-		return TryCatch{}, false, ArErr{"Syntax Error", "expected catch statement", code.line, code.path, code.realcode, true}, i
-	}
+	/*
+		if index+totalIndex >= len(codelines) {
+			return TryCatch{}, false, ArErr{"Syntax Error", "expected catch statement", code.line, code.path, code.realcode, true}, i
+		}
+	*/
 	catchtrimmed := strings.TrimSpace(codelines[index+totalIndex].code)
 	if !catchCompiled.MatchString(catchtrimmed) {
 		return TryCatch{}, false, ArErr{"Syntax Error", "invalid syntax", code.line, code.path, code.realcode, true}, i
