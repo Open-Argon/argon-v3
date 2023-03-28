@@ -197,6 +197,14 @@ func runVal(line any, stack stack, stacklevel int) (any, ArErr) {
 			break
 		}
 		return runAbs(x, stack, stacklevel+1)
+	case TryCatch:
+		if stackoverflow {
+			linenum = x.line
+			path = x.path
+			code = x.code
+			break
+		}
+		return runTryCatch(x, stack, stacklevel+1)
 	case bool, ArObject, number, nil:
 		return x, ArErr{}
 	}

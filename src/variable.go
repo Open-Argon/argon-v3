@@ -35,6 +35,8 @@ var blockedVariableNames = map[string]bool{
 	"not":      true,
 	"and":      true,
 	"or":       true,
+	"try":      true,
+	"catch":    true,
 }
 
 type accessVariable struct {
@@ -85,7 +87,7 @@ func readVariable(v accessVariable, stack stack) (any, ArErr) {
 			return val, ArErr{}
 		}
 	}
-	return nil, ArErr{"Runtime Error", "variable \"" + v.name + "\" does not exist", v.line, v.path, v.code, true}
+	return nil, ArErr{"Name Error", "variable \"" + v.name + "\" does not exist", v.line, v.path, v.code, true}
 }
 
 func isSetVariable(code UNPARSEcode) bool {
@@ -212,7 +214,7 @@ func setVariableValue(v setVariable, stack stack, stacklevel int) (any, ArErr) {
 		_, ok := stack[len(stack)-1].obj[v.toset.(accessVariable).name]
 		varMutex.RUnlock()
 		if ok {
-			return nil, ArErr{"Runtime Error", "variable \"" + v.toset.(accessVariable).name + "\" already exists", v.line, v.path, v.code, true}
+			return nil, ArErr{"Name Error", "variable \"" + v.toset.(accessVariable).name + "\" already exists", v.line, v.path, v.code, true}
 		}
 		varMutex.Lock()
 		stack[len(stack)-1].obj[v.toset.(accessVariable).name] = resp
@@ -307,7 +309,7 @@ func runDelete(d ArDelete, stack stack, stacklevel int) (any, ArErr) {
 				return nil, ArErr{}
 			}
 		}
-		return nil, ArErr{"Runtime Error", "variable \"" + x.name + "\" does not exist", d.line, d.path, d.code, true}
+		return nil, ArErr{"Name Error", "variable \"" + x.name + "\" does not exist", d.line, d.path, d.code, true}
 	case ArMapGet:
 		respp, err := runVal(x.VAL, stack, stacklevel+1)
 		if err.EXISTS {

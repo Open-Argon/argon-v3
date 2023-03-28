@@ -42,6 +42,8 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine i
 			return parseForLoop(code, index, codelines)
 		} else if isGenericImport(code) {
 			return parseGenericImport(code, index, codelines)
+		} else if isTryCatch(code) {
+			return parseTryCatch(code, index, codelines)
 		}
 	}
 
