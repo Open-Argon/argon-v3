@@ -38,8 +38,7 @@ func getPassword(args ...any) (string, error) {
 		char := make([]byte, 1)
 		_, err := os.Stdin.Read(char)
 		if err != nil {
-			fmt.Println(err)
-			break
+			return "", err
 		}
 		if char[0] == 3 || char[0] == 4 {
 			return "", fmt.Errorf("keyboard interupt")

@@ -16,6 +16,7 @@ type call struct {
 }
 
 type Callable struct {
+	name   string
 	params []string
 	run    any
 	code   string
@@ -110,12 +111,33 @@ func runCall(c call, stack stack, stacklevel int) (any, ArErr) {
 		if len(x.params) != len(args) {
 			return nil, ArErr{"Runtime Error", "expected " + fmt.Sprint(len(x.params)) + " arguments, got " + fmt.Sprint(len(args)), c.line, c.path, c.code, true}
 		}
+		l := anymap{}
+		for i, param := range x.params {
+			l[param] = args[i]
+		}
+		resp, err := runVal(x.run, append(x.stack, Map(l)), stacklevel+1)
+		return ThrowOnNonLoop(openReturn(resp), err)
+	}
+	return nil, ArErr{"Runtime Error", "type '" + typeof(callable) + "' is not callable", c.line, c.path, c.code, true}
+}
+
+func builtinCall(callable any, args []any) (any, ArErr) {
+
+	switch x := callable.(type) {
+	case builtinFunc:
+		resp, err := x.FUNC(args...)
+		resp = AnyToArValid(resp)
+		return resp, err
+	case Callable:
+		if len(x.params) != len(args) {
+			return nil, ArErr{TYPE: "Runtime Error", message: "expected " + fmt.Sprint(len(x.params)) + " arguments, got " + fmt.Sprint(len(args)), EXISTS: true}
+		}
 		level := newscope()
 		for i, param := range x.params {
 			level.obj[param] = args[i]
 		}
-		resp, err := runVal(x.run, append(x.stack, level), stacklevel+1)
+		resp, err := runVal(x.run, append(x.stack, level), 0)
 		return ThrowOnNonLoop(openReturn(resp), err)
 	}
-	return nil, ArErr{"Runtime Error", "type '" + typeof(callable) + "' is not callable", c.line, c.path, c.code, true}
+	return nil, ArErr{TYPE: "Runtime Error", message: "type '" + typeof(callable) + "' is not callable", EXISTS: true}
 }

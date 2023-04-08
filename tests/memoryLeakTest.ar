@@ -1,8 +1,7 @@
 f() = do
     a = []
-    for (i from 0 to 10000000) a.append(i)
+    for (i from 0 to 10000) a.append(i)
 
 term.log("start")
 f()
 term.log("end")
-time.snooze(100000000)

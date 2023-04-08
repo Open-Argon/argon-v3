@@ -11,8 +11,7 @@ name = "william bell"
 term.log(getInitials(name))
 term.log(name)
 
-let addLastName(name) = do
-    name.append(" Bell")
+let addLastName(name) = name.append(" Bell")
 
 name = "William"
 addLastName(name)

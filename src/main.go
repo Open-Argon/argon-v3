@@ -11,10 +11,7 @@ var Args = os.Args[1:]
 type stack = []ArObject
 
 func newscope() ArObject {
-	return ArObject{
-		TYPE: "map",
-		obj:  make(anymap),
-	}
+	return Map(anymap{})
 }
 
 func main() {

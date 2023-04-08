@@ -98,7 +98,7 @@ var ArTerm = Map(anymap{
 	"time": builtinFunc{"time", func(args ...any) (any, ArErr) {
 		var id any = nil
 		if len(args) > 0 {
-			id = args[0]
+			id = ArValidToAny(args[0])
 		}
 		timing[id] = time.Now()
 		return nil, ArErr{}
@@ -107,7 +107,7 @@ var ArTerm = Map(anymap{
 	"timeEnd": builtinFunc{"timeEnd", func(args ...any) (any, ArErr) {
 		var id any = nil
 		if len(args) > 0 {
-			id = args[0]
+			id = ArValidToAny(args[0])
 		}
 		if _, ok := timing[id]; !ok {
 			return nil, ArErr{TYPE: "TypeError", message: "Cannot find timer with id '" + fmt.Sprint(id) + "'", EXISTS: true}
@@ -131,8 +131,11 @@ var ArInput = Map(
 			}
 			return ArString(resp), ArErr{}
 		}},
-		"__call__": builtinFunc{"input", func(args ...any) (any, ArErr) {
-			return input(args...), ArErr{}
-		}},
 	},
 )
+
+func init() {
+	ArInput.obj["__call__"] = builtinFunc{"input", func(args ...any) (any, ArErr) {
+		return input(args...), ArErr{}
+	}}
+}

@@ -13,7 +13,7 @@ func anyToBool(x any) bool {
 	case nil:
 		return false
 	case ArObject:
-		if x.TYPE == "array" {
+		if typeof(x) == "array" {
 			return len(x.obj["__value__"].([]any)) != 0
 		}
 		return len(x.obj) != 0

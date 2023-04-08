@@ -7,8 +7,7 @@ import (
 var MicroSeconds = newNumber().SetInt64(1000000)
 
 func ArTimeClass(N time.Time) ArObject {
-	return Class(anymap{
-		"__value__": newNumber().Quo(newNumber().SetInt64(N.UnixMicro()), MicroSeconds),
+	m := Map(anymap{
 		"year": builtinFunc{
 			"year",
 			func(a ...any) (any, ArErr) {
@@ -97,6 +96,8 @@ func ArTimeClass(N time.Time) ArObject {
 			},
 		},
 	})
+	m.obj["__value__"] = newNumber().Quo(newNumber().SetInt64(N.UnixMicro()), MicroSeconds)
+	return m
 }
 
 var ArTime = Map(anymap{
@@ -112,19 +113,43 @@ var ArTime = Map(anymap{
 	}},
 	"parse": builtinFunc{"parse", func(a ...any) (any, ArErr) {
 		if len(a) == 1 {
+			if typeof(a[0]) != "string" {
+				return nil, ArErr{
+					TYPE:    "Runtime Error",
+					message: "parse requires a string",
+					EXISTS:  true,
+				}
+			}
+			a[0] = ArValidToAny(a[0])
 			N, err := time.Parse(time.UnixDate, a[0].(string))
 			if err != nil {
 				return nil, ArErr{
-					TYPE:    "ArErr",
+					TYPE:    "Runtime Error",
 					message: err.Error(),
 				}
 			}
 			return ArTimeClass(N), ArErr{}
 		} else if len(a) > 1 {
+			if typeof(a[0]) != "string" {
+				return nil, ArErr{
+					TYPE:    "Runtime Error",
+					message: "parse requires a string",
+					EXISTS:  true,
+				}
+			}
+			a[0] = ArValidToAny(a[0])
+			if typeof(a[1]) != "string" {
+				return nil, ArErr{
+					TYPE:    "Runtime Error",
+					message: "parse requires a string",
+					EXISTS:  true,
+				}
+			}
+			a[1] = ArValidToAny(a[1])
 			N, err := time.Parse(a[0].(string), a[1].(string))
 			if err != nil {
 				return nil, ArErr{
-					TYPE:    "ArErr",
+					TYPE:    "Runtime Error",
 					message: err.Error(),
 					EXISTS:  true,
 				}
@@ -132,17 +157,26 @@ var ArTime = Map(anymap{
 			return ArTimeClass(N), ArErr{}
 		}
 		return nil, ArErr{
-			TYPE:    "ArErr",
-			message: "parse requires 2 arguments",
+			TYPE:    "Runtime Error",
+			message: "parse requires 1 or 2 arguments",
 			EXISTS:  true,
 		}
 	}},
 	"parseInLocation": builtinFunc{"parseInLocation", func(a ...any) (any, ArErr) {
-		if len(a) > 2 {
+		if len(a) != 2 {
+			if typeof(a[0]) != "string" || typeof(a[1]) != "string" {
+				return nil, ArErr{
+					TYPE:    "Runtime Error",
+					message: "parseInLocation requires a string",
+					EXISTS:  true,
+				}
+			}
+			a[0] = ArValidToAny(a[0])
+			a[1] = ArValidToAny(a[1])
 			N, err := time.ParseInLocation(a[0].(string), a[1].(string), time.Local)
 			if err != nil {
 				return nil, ArErr{
-					TYPE:    "ArErr",
+					TYPE:    "Runtime Error",
 					message: err.Error(),
 					EXISTS:  true,
 				}
@@ -150,18 +184,26 @@ var ArTime = Map(anymap{
 			return ArTimeClass(N), ArErr{}
 		}
 		return nil, ArErr{
-			TYPE:    "ArErr",
-			message: "parseInLocation requires 3 arguments",
+			TYPE:    "Runtime Error",
+			message: "parseInLocation requires 2 arguments",
 			EXISTS:  true,
 		}
 	},
 	},
 	"date": builtinFunc{"date", func(a ...any) (any, ArErr) {
-		if len(a) > 0 {
+		if len(a) != 1 {
+			if typeof(a[0]) != "string" {
+				return nil, ArErr{
+					TYPE:    "Runtime Error",
+					message: "date requires a string",
+					EXISTS:  true,
+				}
+			}
+			a[0] = ArValidToAny(a[0])
 			N, err := time.Parse(time.UnixDate, a[0].(string))
 			if err != nil {
 				return nil, ArErr{
-					TYPE:    "ArErr",
+					TYPE:    "Runtime Error",
 					message: err.Error(),
 					EXISTS:  true,
 				}
@@ -169,45 +211,66 @@ var ArTime = Map(anymap{
 			return ArTimeClass(N), ArErr{}
 		}
 		return nil, ArErr{
-			TYPE:    "ArErr",
+			TYPE:    "Runtime Error",
 			message: "date requires 1 argument",
 			EXISTS:  true,
 		}
 	},
 	},
-	"Unix": builtinFunc{"Unix", func(a ...any) (any, ArErr) {
-		if len(a) > 1 {
+	"unix": builtinFunc{"unix", func(a ...any) (any, ArErr) {
+		if len(a) != 2 {
+			if typeof(a[0]) != "number" || typeof(a[1]) != "number" {
+				return nil, ArErr{
+					TYPE:    "Runtime Error",
+					message: "unix requires a number",
+					EXISTS:  true,
+				}
+			}
 			sec, _ := a[0].(number).Float64()
 			nsec, _ := a[1].(number).Float64()
 			return ArTimeClass(time.Unix(int64(sec), int64(nsec))), ArErr{}
 		}
 		return nil, ArErr{
-			TYPE:    "ArErr",
-			message: "Unix requires 2 arguments",
+			TYPE:    "Runtime Error",
+			message: "unix requires 2 arguments",
 			EXISTS:  true,
 		}
 	},
 	},
-	"UnixMilli": builtinFunc{"UnixMilli", func(a ...any) (any, ArErr) {
-		if len(a) > 0 {
+	"unixMilli": builtinFunc{"unixMilli", func(a ...any) (any, ArErr) {
+		if len(a) != 1 {
+			if typeof(a[0]) != "number" {
+				return nil, ArErr{
+					TYPE:    "Runtime Error",
+					message: "unixMilli requires a number",
+					EXISTS:  true,
+				}
+			}
 			msec, _ := a[0].(number).Float64()
 			return ArTimeClass(time.UnixMilli(int64(msec))), ArErr{}
 		}
 		return nil, ArErr{
-			TYPE:    "ArErr",
+			TYPE:    "Runtime Error",
 			message: "UnixMilli requires 1 argument",
 			EXISTS:  true,
 		}
 	},
 	},
-	"UnixMicro": builtinFunc{"UnixMicro", func(a ...any) (any, ArErr) {
+	"unixMicro": builtinFunc{"unixMicro", func(a ...any) (any, ArErr) {
 		if len(a) > 0 {
+			if typeof(a[0]) != "number" {
+				return nil, ArErr{
+					TYPE:    "Runtime Error",
+					message: "unixMicro requires a number",
+					EXISTS:  true,
+				}
+			}
 			usec, _ := a[0].(number).Float64()
 			return ArTimeClass(time.UnixMicro(int64(usec))), ArErr{}
 		}
 		return nil, ArErr{
-			TYPE:    "ArErr",
-			message: "UnixMicro requires 1 argument",
+			TYPE:    "Runtime Error",
+			message: "unixMicro requires 1 argument",
 			EXISTS:  true,
 		}
 	},

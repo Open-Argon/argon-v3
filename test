@@ -1,0 +1,4 @@
+for FILE in ./tests/*.ar; do
+    echo "running : $FILE";
+    ./run "$FILE";
+done

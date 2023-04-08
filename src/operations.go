@@ -557,12 +557,12 @@ func calcNotIn(o operationType, stack stack, stacklevel int) (any, ArErr) {
 	if err.EXISTS {
 		return false, err
 	}
-	if x, ok := resp.(ArObject); ok {
+	if x, ok := resp2.(ArObject); ok {
 		if y, ok := x.obj["__NotContains__"]; ok {
 			return runCall(
 				call{
 					y,
-					[]any{resp2},
+					[]any{resp},
 					o.code,
 					o.line,
 					o.path,
@@ -571,7 +571,7 @@ func calcNotIn(o operationType, stack stack, stacklevel int) (any, ArErr) {
 	}
 	return false, ArErr{
 		"Runtime Error",
-		"Cannot check if type '" + typeof(resp) + "' is in type '" + typeof(resp2) + "'",
+		"Cannot check if type '" + typeof(resp) + "' is not in type '" + typeof(resp2) + "'",
 		o.line,
 		o.path,
 		o.code,
@@ -697,7 +697,11 @@ func calcMod(o operationType, stack stack, stacklevel int) (any, ArErr) {
 			return nil, err
 		}
 		if typeof(resp) == "number" && typeof(output) == "number" {
-			output = floor(newNumber().Quo(resp.(number), output.(number)))
+			x := newNumber().Set(resp.(number))
+			x.Quo(output.(number), x)
+			x = floor(x)
+			x.Mul(x, resp.(number))
+			output.(number).Sub(output.(number), x)
 			continue
 		} else if x, ok := output.(ArObject); ok {
 			if y, ok := x.obj["__Modulo__"]; ok {

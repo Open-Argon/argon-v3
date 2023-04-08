@@ -143,6 +143,6 @@ func importMod(realpath string, origin string, main bool, global ArObject) (ArOb
 	if runimeErr.EXISTS {
 		return ArObject{}, runimeErr
 	}
-	imported[p] = global
-	return global, ArErr{}
+	imported[p] = local
+	return local, ArErr{}
 }

@@ -2,16 +2,16 @@ package main
 
 import "fmt"
 
-type keyCache map[interface{}]interface{}
+type keyCache map[any]any
 
-func quickSort(list []interface{}, getKey func(interface{}) (interface{}, ArErr)) ([]interface{}, ArErr) {
+func quickSort(list []any, getKey func(any) (any, ArErr)) ([]any, ArErr) {
 	if len(list) <= 1 {
 		return list, ArErr{}
 	}
 
 	pivot := list[0]
-	var left []interface{}
-	var right []interface{}
+	var left []any
+	var right []any
 
 	var cache = make(keyCache)
 
@@ -51,7 +51,7 @@ func quickSort(list []interface{}, getKey func(interface{}) (interface{}, ArErr)
 	return append(append(left, pivot), right...), ArErr{}
 }
 
-func getkeyCache(getKey func(interface{}) (interface{}, ArErr), index interface{}, cache keyCache) (interface{}, ArErr) {
+func getkeyCache(getKey func(any) (any, ArErr), index any, cache keyCache) (any, ArErr) {
 	key := ArValidToAny(index)
 	if cacheval, ok := cache[key]; ok {
 		return cacheval, ArErr{}
