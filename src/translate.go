@@ -103,6 +103,12 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine i
 			return resp, worked, err, i
 		}
 	}
+	if isCall(code) {
+		resp, worked, err, i = parseCall(code, index, codelines)
+		if worked {
+			return resp, worked, err, i
+		}
+	}
 	{
 		operation, worked, err, step := parseOperations(code, index, codelines)
 		if worked {
@@ -113,16 +119,9 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine i
 	}
 	if isNegative(code) {
 		return parseNegative(code, index, codelines)
-	} else if isCall(code) {
-		resp, worked, err, i = parseCall(code, index, codelines)
-		if worked {
-			return resp, worked, err, i
-		}
-	}
-	if isMapGet(code) {
+	} else if isMapGet(code) {
 		return mapGetParse(code, index, codelines)
-	}
-	if isIndexGet(code) {
+	} else if isIndexGet(code) {
 		resp, worked, err, i = indexGetParse(code, index, codelines)
 		if worked {
 			return resp, worked, err, i

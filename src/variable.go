@@ -2,18 +2,15 @@ package main
 
 import (
 	"strings"
-	"sync"
 )
 
 var spacelessVariable = `([a-zA-Z_]|(\p{L}\p{M}*))([a-zA-Z0-9_]|(\p{L}\p{M}*))*`
 var SpacelessVariableCompiled = makeRegex(spacelessVariable)
-var variableCompile = makeRegex(`( *)([a-zA-Z_]|(\p{L}\p{M}*))([a-zA-Z0-9_]|(\p{L}\p{M}*))*( *)`)
+var variableCompile = makeRegex(`( *)` + spacelessVariable + `( *)`)
 var validname = makeRegex(`(.|\n)*(\(( *)((([a-zA-Z_]|(\p{L}\p{M}*))([a-zA-Z0-9_]|(\p{L}\p{M}*))*)(( *)\,( *)([a-zA-Z_]|(\p{L}\p{M}*))([a-zA-Z0-9_]|(\p{L}\p{M}*))*)*)?( *)\))`)
 var setVariableCompile = makeRegex(`( *)(let( +))(.|\n)+( *)=(.|\n)+`)
 var autoAsignVariableCompile = makeRegex(`(.|\n)+=(.|\n)+`)
 var deleteVariableCompile = makeRegex(`( *)delete( +)(.|\n)+( *)`)
-
-var varMutex = sync.RWMutex{}
 
 var blockedVariableNames = map[string]bool{
 	"if":       true,
@@ -80,11 +77,20 @@ func parseVariable(code UNPARSEcode) (accessVariable, bool, ArErr, int) {
 
 func readVariable(v accessVariable, stack stack) (any, ArErr) {
 	for i := len(stack) - 1; i >= 0; i-- {
-		varMutex.RLock()
-		val, ok := stack[i].obj[v.name]
-		varMutex.RUnlock()
-		if ok {
-			return val, ArErr{}
+		callable, ok := stack[i].obj["__Contains__"]
+		if !ok {
+			continue
+		}
+		contains, err := builtinCall(callable, []any{v.name})
+		if err.EXISTS {
+			return nil, err
+		}
+		if anyToBool(contains) {
+			callable, ok := stack[i].obj["__getindex__"]
+			if !ok {
+				continue
+			}
+			return builtinCall(callable, []any{v.name})
 		}
 	}
 	return nil, ArErr{"Name Error", "variable \"" + v.name + "\" does not exist", v.line, v.path, v.code, true}
@@ -200,7 +206,7 @@ func parseAutoAsignVariable(code UNPARSEcode, index int, lines []UNPARSEcode, is
 func setVariableValue(v setVariable, stack stack, stacklevel int) (any, ArErr) {
 	var resp any
 	if v.function {
-		resp = Callable{v.params, v.value, v.code, stack, v.line}
+		resp = Callable{"anonymous", v.params, v.value, v.code, stack, v.line}
 	} else {
 		respp, err := runVal(v.value, stack, stacklevel+1)
 		if err.EXISTS {
@@ -210,32 +216,48 @@ func setVariableValue(v setVariable, stack stack, stacklevel int) (any, ArErr) {
 	}
 
 	if v.TYPE == "let" {
-		varMutex.RLock()
-		_, ok := stack[len(stack)-1].obj[v.toset.(accessVariable).name]
-		varMutex.RUnlock()
-		if ok {
-			return nil, ArErr{"Name Error", "variable \"" + v.toset.(accessVariable).name + "\" already exists", v.line, v.path, v.code, true}
+		stackcallable, ok := stack[len(stack)-1].obj["__setindex__"]
+		if !ok {
+			return nil, ArErr{"Type Error", "stack doesn't have __setindex__", v.line, v.path, v.code, true}
 		}
-		varMutex.Lock()
-		stack[len(stack)-1].obj[v.toset.(accessVariable).name] = resp
-		varMutex.Unlock()
+		_, err := builtinCall(stackcallable, []any{v.toset.(accessVariable).name, resp})
+		if err.EXISTS {
+			return nil, err
+		}
 	} else {
 		switch x := v.toset.(type) {
 		case accessVariable:
+			name := x.name
+			hasSet := false
+			if v.function {
+				resp = Callable{name, v.params, v.value, v.code, stack, v.line}
+			}
 			for i := len(stack) - 1; i >= 0; i-- {
-				varMutex.RLock()
-				_, ok := stack[i].obj[x.name]
-				varMutex.RUnlock()
-				if ok {
-					varMutex.Lock()
-					stack[i].obj[x.name] = resp
-					varMutex.Unlock()
-					return ThrowOnNonLoop(resp, ArErr{})
+				callable, ok := stack[i].obj["__Contains__"]
+				if !ok {
+					continue
+				}
+				contains, err := builtinCall(callable, []any{name})
+				if err.EXISTS {
+					return nil, err
+				}
+				if anyToBool(contains) {
+					callable, ok := stack[i].obj["__setindex__"]
+					if !ok {
+						continue
+					}
+					builtinCall(callable, []any{name, resp})
+					hasSet = true
+					break
 				}
 			}
-			varMutex.Lock()
-			stack[len(stack)-1].obj[x.name] = resp
-			varMutex.Unlock()
+			if !hasSet {
+				callable, ok := stack[len(stack)-1].obj["__setindex__"]
+				if !ok {
+					return nil, ArErr{"Type Error", "stack doesn't have __setindex__", v.line, v.path, v.code, true}
+				}
+				builtinCall(callable, []any{name, resp})
+			}
 		case ArMapGet:
 			respp, err := runVal(x.VAL, stack, stacklevel+1)
 			if err.EXISTS {
@@ -251,29 +273,22 @@ func setVariableValue(v setVariable, stack stack, stacklevel int) (any, ArErr) {
 			}
 			switch y := respp.(type) {
 			case ArObject:
-				if y.TYPE != "map" {
-					if _, ok := y.obj["__setindex__"]; ok {
-						callable := y.obj["__setindex__"]
-						r := ArValidToAny(resp)
-						_, err := runCall(call{
-							callable: callable,
-							args:     []any{key, r},
-							line:     v.line,
-							path:     v.path,
-							code:     v.code,
-						}, stack, stacklevel+1)
+				if _, ok := y.obj["__setindex__"]; ok {
+					callable := y.obj["__setindex__"]
+					r := ArValidToAny(resp)
+					_, err := runCall(call{
+						callable: callable,
+						args:     []any{key, r},
+						line:     v.line,
+						path:     v.path,
+						code:     v.code,
+					}, stack, stacklevel+1)
+					if err.EXISTS {
 						return nil, err
 					}
-				} else {
-					if isUnhashable(key) {
-						return nil, ArErr{"Runtime Error", "can't use unhashable type as map key: " + typeof(key), v.line, v.path, v.code, true}
-					}
-					varMutex.Lock()
-					y.obj[key] = resp
-					varMutex.Unlock()
 				}
 			default:
-				return nil, ArErr{"Runtime Error", "can't set for non map", v.line, v.path, v.code, true}
+				return nil, ArErr{"Runtime Error", "can't set for non object", v.line, v.path, v.code, true}
 			}
 		}
 	}
@@ -304,9 +319,20 @@ func runDelete(d ArDelete, stack stack, stacklevel int) (any, ArErr) {
 	switch x := d.value.(type) {
 	case accessVariable:
 		for i := len(stack) - 1; i >= 0; i-- {
-			if _, ok := stack[i].obj[x.name]; ok {
-				delete(stack[i].obj, x.name)
-				return nil, ArErr{}
+			callable, ok := stack[i].obj["__Contains__"]
+			if !ok {
+				continue
+			}
+			contains, err := builtinCall(callable, []any{x.name})
+			if err.EXISTS {
+				return nil, err
+			}
+			if anyToBool(contains) {
+				callable, ok := stack[i].obj["__deleteindex__"]
+				if !ok {
+					continue
+				}
+				return builtinCall(callable, []any{x.name})
 			}
 		}
 		return nil, ArErr{"Name Error", "variable \"" + x.name + "\" does not exist", d.line, d.path, d.code, true}
@@ -324,7 +350,7 @@ func runDelete(d ArDelete, stack stack, stacklevel int) (any, ArErr) {
 		}
 		switch y := respp.(type) {
 		case ArObject:
-			if y.TYPE == "array" {
+			if typeof(y) == "array" {
 				return nil, ArErr{"Runtime Error", "can't delete from array", d.line, d.path, d.code, true}
 			}
 			if isUnhashable(key) {

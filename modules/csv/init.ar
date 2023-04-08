@@ -12,17 +12,14 @@ let read(path) = do
             char = line[j]
             if (char == "," && not in_quotes) do
                 value = line[start:j].rightstrip("\r").strip()
-                if (value && value[0] == "\"" && value[-1] == "\"") do
-                    value = value[1:value.length - 1]
+                if (value && value[0] == "\"" && value[-1] == "\"") value = value[1:value.length - 1]
                 value = value.replace("\"\"", "\"")
                 values.append(value)
                 start = j + 1
-            else if (char == "\"") do
-                in_quotes = not in_quotes
+            else if (char == "\"") in_quotes = not in_quotes
             if (j == line.length - 1) do
                 value = line[start:j + 1].rightstrip("\r").strip()
-                if (value && value[0] == "\"" && value[-1] == "\"") do
-                    value = value[1:value.length - 1]
+                if (value && value[0] == "\"" && value[-1] == "\"") value = value[1:value.length - 1]
                 value = value.replace("\"\"", "\"")
                 values.append(value)
         data.append(values)

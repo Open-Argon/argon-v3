@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"math"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -78,6 +79,9 @@ func anyToArgon(x any, quote bool, simplify bool, depth int, indent int, colored
 			return "{}"
 		}
 		keys := make([]any, len(x))
+		sort.Slice(keys, func(i, j int) bool {
+			return anyToArgon(keys[i], false, true, 0, 0, false, 0) < anyToArgon(keys[j], false, true, 0, 0, false, 0)
+		})
 
 		i := 0
 		for k := range x {
@@ -148,7 +152,7 @@ func anyToArgon(x any, quote bool, simplify bool, depth int, indent int, colored
 		if colored {
 			output = append(output, "\x1b[38;5;240m")
 		}
-		output = append(output, "<function>")
+		output = append(output, "<function "+x.name+">")
 		if colored {
 			output = append(output, "\x1b[0m")
 		}

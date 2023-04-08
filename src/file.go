@@ -28,6 +28,7 @@ func ArRead(args ...any) (any, ArErr) {
 	if typeof(args[0]) != "string" {
 		return ArObject{}, ArErr{TYPE: "Runtime Error", message: "read takes a string not type '" + typeof(args[0]) + "'", EXISTS: true}
 	}
+	args[0] = ArValidToAny(args[0])
 	filename := args[0].(string)
 	file, err := os.Open(filename)
 	if err != nil {
@@ -58,6 +59,7 @@ func ArWrite(args ...any) (any, ArErr) {
 	if typeof(args[0]) != "string" {
 		return ArObject{}, ArErr{TYPE: "Runtime Error", message: "write takes a string not type '" + typeof(args[0]) + "'", EXISTS: true}
 	}
+	args[0] = ArValidToAny(args[0])
 	filename := args[0].(string)
 	file, err := os.Create(filename)
 	if err != nil {

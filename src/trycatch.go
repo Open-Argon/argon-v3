@@ -59,15 +59,15 @@ func parseTryCatch(code UNPARSEcode, index int, codelines []UNPARSEcode) (TryCat
 func runTryCatch(t TryCatch, stack stack, stacklevel int) (any, ArErr) {
 	val, err := runVal(t.Try, stack, stacklevel)
 	if err.EXISTS {
-		scope := newscope()
-		scope.obj[t.errorName] = Map(anymap{
+		vars := anymap{}
+		vars[t.errorName] = Map(anymap{
 			"type":    err.TYPE,
 			"message": err.message,
 			"line":    newNumber().SetInt64(int64(err.line)),
 			"path":    err.path,
 			"code":    err.code,
 		})
-		val, err = runVal(t.Catch, append(stack, scope), stacklevel)
+		val, err = runVal(t.Catch, append(stack, Map(vars)), stacklevel)
 		if err.EXISTS {
 			return nil, err
 		}

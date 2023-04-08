@@ -47,9 +47,9 @@ func parseString(code UNPARSEcode) (string, bool, ArErr, int) {
 
 func ArString(str string) ArObject {
 	obj := ArObject{
-		"string",
 		anymap{
 			"__value__": str,
+			"__name__":  "string",
 			"length":    newNumber().SetUint64(uint64(len(str))),
 		},
 	}
@@ -173,6 +173,7 @@ func ArString(str string) ArObject {
 			}
 			output := []string{str}
 			for _, v := range a {
+				v = ArValidToAny(v)
 				if typeof(v) != "string" {
 					return nil, ArErr{"TypeError", "expected string, got " + typeof(v), 0, "", "", true}
 				}
@@ -297,7 +298,9 @@ func ArString(str string) ArObject {
 			if typeof(a[1]) != "string" {
 				return nil, ArErr{"TypeError", "expected string, got " + typeof(a[1]), 0, "", "", true}
 			}
-			return strings.Replace(str, a[0].(ArObject).obj["__value__"].(string), a[1].(string), -1), ArErr{}
+			a[0] = ArValidToAny(a[0])
+			a[1] = ArValidToAny(a[1])
+			return strings.Replace(str, a[0].(string), a[1].(string), -1), ArErr{}
 		}}
 	obj.obj["contains"] = builtinFunc{
 		"contains",
@@ -494,7 +497,8 @@ func ArString(str string) ArObject {
 			if typeof(a[0]) != "string" {
 				return nil, ArErr{"TypeError", "cannot get less than or equal to of type " + typeof(a[0]) + " from string", 0, "", "", true}
 			}
-			return str <= a[0].(ArObject).obj["__value__"].(string), ArErr{}
+			a[0] = ArValidToAny(a[0])
+			return str <= a[0].(string), ArErr{}
 		}}
 	obj.obj["__LessThan__"] = builtinFunc{
 		"__LessThan__",
@@ -505,7 +509,8 @@ func ArString(str string) ArObject {
 			if typeof(a[0]) != "string" {
 				return nil, ArErr{"TypeError", "cannot get less than of type " + typeof(a[0]) + " from string", 0, "", "", true}
 			}
-			return str < a[0].(ArObject).obj["__value__"].(string), ArErr{}
+			a[0] = ArValidToAny(a[0])
+			return str < a[0].(string), ArErr{}
 		}}
 	obj.obj["__GreaterThan__"] = builtinFunc{
 		"__GreaterThan__",
@@ -516,7 +521,8 @@ func ArString(str string) ArObject {
 			if typeof(a[0]) != "string" {
 				return nil, ArErr{"TypeError", "cannot get greater than of type " + typeof(a[0]) + " from string", 0, "", "", true}
 			}
-			return str > a[0].(ArObject).obj["__value__"].(string), ArErr{}
+			a[0] = ArValidToAny(a[0])
+			return str > a[0].(string), ArErr{}
 		}}
 
 	obj.obj["__GreaterThanEqual__"] = builtinFunc{
@@ -528,7 +534,8 @@ func ArString(str string) ArObject {
 			if typeof(a[0]) != "string" {
 				return nil, ArErr{"TypeError", "cannot get greater than or equal to of type " + typeof(a[0]) + " from string", 0, "", "", true}
 			}
-			return str >= a[0].(ArObject).obj["__value__"].(string), ArErr{}
+			a[0] = ArValidToAny(a[0])
+			return str >= a[0].(string), ArErr{}
 		}}
 	obj.obj["__Equal__"] = builtinFunc{
 		"__Equal__",
@@ -536,6 +543,7 @@ func ArString(str string) ArObject {
 			if len(a) != 1 {
 				return nil, ArErr{"TypeError", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
 			}
+			a[0] = ArValidToAny(a[0])
 			return str == a[0], ArErr{}
 		}}
 	obj.obj["__NotEqual__"] = builtinFunc{
@@ -544,6 +552,7 @@ func ArString(str string) ArObject {
 			if len(a) != 1 {
 				return nil, ArErr{"TypeError", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
 			}
+			a[0] = ArValidToAny(a[0])
 			return str != a[0], ArErr{}
 		}}
 	obj.obj["__Add__"] = builtinFunc{
@@ -552,10 +561,11 @@ func ArString(str string) ArObject {
 			if len(a) != 1 {
 				return nil, ArErr{"TypeError", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
 			}
+			a[0] = ArValidToAny(a[0])
 			if typeof(a[0]) != "string" {
-				return nil, ArErr{"TypeError", "cannot add " + typeof(a[0]) + " to string", 0, "", "", true}
+				a[0] = anyToArgon(a[0], false, false, 3, 0, false, 0)
 			}
-			return strings.Join([]string{str, a[0].(ArObject).obj["__value__"].(string)}, ""), ArErr{}
+			return strings.Join([]string{str, a[0].(string)}, ""), ArErr{}
 		}}
 	obj.obj["__Multiply__"] = builtinFunc{
 		"__Multiply__",
@@ -584,7 +594,8 @@ func ArString(str string) ArObject {
 			if typeof(a[0]) != "string" {
 				return nil, ArErr{"TypeError", "cannot check if string contains " + typeof(a[0]), 0, "", "", true}
 			}
-			return strings.Contains(str, a[0].(ArObject).obj["__value__"].(string)), ArErr{}
+			a[0] = ArValidToAny(a[0])
+			return strings.Contains(str, a[0].(string)), ArErr{}
 		}}
 	obj.obj["__Subtract__"] = builtinFunc{
 		"__Subtract__",
@@ -595,7 +606,8 @@ func ArString(str string) ArObject {
 			if typeof(a[0]) != "string" {
 				return nil, ArErr{"TypeError", "cannot subtract " + typeof(a[0]) + " from string", 0, "", "", true}
 			}
-			return strings.Replace(str, a[0].(ArObject).obj["__value__"].(string), "", -1), ArErr{}
+			a[0] = ArValidToAny(a[0])
+			return strings.Replace(str, a[0].(string), "", -1), ArErr{}
 		}}
 	obj.obj["__Divide__"] = builtinFunc{
 		"__Divide__",
@@ -606,7 +618,8 @@ func ArString(str string) ArObject {
 			if typeof(a[0]) != "string" {
 				return nil, ArErr{"TypeError", "cannot divide string by " + typeof(a[0]), 0, "", "", true}
 			}
-			splitby := a[0].(ArObject).obj["__value__"].(string)
+			a[0] = ArValidToAny(a[0])
+			splitby := a[0].(string)
 			output := []any{}
 			splitted := (strings.Split(str, splitby))
 			for _, v := range splitted {

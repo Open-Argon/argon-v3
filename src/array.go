@@ -20,8 +20,8 @@ func isArray(code UNPARSEcode) bool {
 
 func ArArray(arr []any) ArObject {
 	val := ArObject{
-		"array",
 		anymap{
+			"__name__":  "array",
 			"__value__": arr,
 			"length":    newNumber().SetUint64(uint64(len(arr))),
 		},
@@ -39,7 +39,7 @@ func ArArray(arr []any) ArObject {
 			if typeof(a[0]) != "number" {
 				return nil, ArErr{
 					TYPE:    "TypeError",
-					message: "index must be a number",
+					message: "dex must be a number",
 					EXISTS:  true,
 				}
 			}
@@ -499,7 +499,6 @@ func ArArray(arr []any) ArObject {
 			}
 			output := []string{}
 			for _, v := range arr {
-				v = ArValidToAny(v)
 				if typeof(v) != "string" {
 					return nil, ArErr{
 						TYPE:    "TypeError",
@@ -563,6 +562,31 @@ func ArArray(arr []any) ArObject {
 			}
 			return true, ArErr{}
 		}}
+	val.obj["__Contains__"] = builtinFunc{
+		"__Contains__",
+		func(args ...any) (any, ArErr) {
+			if len(args) != 1 {
+				return nil, ArErr{
+					TYPE:    "TypeError",
+					message: "missing argument",
+					EXISTS:  true,
+				}
+			}
+			for _, v := range arr {
+				res, err := runOperation(operationType{
+					operation: 8,
+					values:    []any{v, args[0]},
+				}, stack{}, 0)
+				if err.EXISTS {
+					return nil, err
+				}
+				if anyToBool(res) {
+					return true, ArErr{}
+				}
+			}
+			return false, ArErr{}
+		},
+	}
 	return val
 }
 

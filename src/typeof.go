@@ -19,7 +19,13 @@ func typeof(val any) string {
 	case builtinFunc:
 		return "function"
 	case ArObject:
-		return x.TYPE
+		if val, ok := x.obj["__name__"]; ok {
+			val := ArValidToAny(val)
+			if val, ok := val.(string); ok {
+				return val
+			}
+		}
+		return "object"
 	case accessVariable:
 		return "variable"
 	}
