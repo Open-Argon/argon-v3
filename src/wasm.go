@@ -12,13 +12,13 @@ func argonToJsValid(argon any) any {
 		f, _ := x.Float64()
 		return f
 	case ArObject:
-		if x.TYPE == "array" {
+		if typeof(x) == "array" {
 			arr := js.Global().Get("Array").New()
 			for i, v := range x.obj["__value__"].([]any) {
 				arr.SetIndex(i, argonToJsValid(v))
 			}
 			return arr
-		} else if x.TYPE == "string" {
+		} else if typeof(x) == "string" {
 			return x.obj["__value__"].(string)
 		}
 

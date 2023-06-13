@@ -6,7 +6,6 @@ import (
 
 func windowElement(element js.Value) ArObject {
 	return ArObject{
-		TYPE: "map",
 		obj: anymap{
 			"innerHTML": builtinFunc{"innerHTML", func(args ...any) (any, ArErr) {
 				if len(args) > 0 {
