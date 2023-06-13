@@ -533,7 +533,7 @@ func ArArray(arr []any) ArObject {
 		},
 	}
 	val.obj["__Equal__"] = builtinFunc{
-		"__Equal__",
+		"__LessThanEqual__",
 		func(args ...any) (any, ArErr) {
 			if len(args) != 1 {
 				return nil, ArErr{
