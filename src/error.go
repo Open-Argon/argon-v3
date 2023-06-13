@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+
+	"github.com/jwalton/go-supportscolor"
 )
 
 type ArErr struct {
@@ -19,5 +21,9 @@ func panicErr(err ArErr) {
 		fmt.Println("    " + err.code)
 		fmt.Println()
 	}
-	fmt.Printf("\x1b[%dm%s\x1b[0m", 91, fmt.Sprint(err.TYPE, ": ", err.message, "\n"))
+	if supportscolor.Stdout().SupportsColor {
+		fmt.Printf("\x1b[%dm%s\x1b[0m", 91, fmt.Sprint(err.TYPE, ": ", err.message, "\n"))
+	} else {
+		fmt.Println(fmt.Sprint(err.TYPE, ": ", err.message))
+	}
 }

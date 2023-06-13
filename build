@@ -1,1 +1,1 @@
-go build -o bin/argon ./src
+GOOS=js GOARCH=wasm go build -o wasm/bin/argon.wasm ./src

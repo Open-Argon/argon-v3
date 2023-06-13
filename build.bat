@@ -1,2 +1,4 @@
 @echo off
-go build -o bin/argon.exe ./src
+set GOOS=js
+set GOARCH=wasm
+go build -o wasm/bin/argon.wasm ./src

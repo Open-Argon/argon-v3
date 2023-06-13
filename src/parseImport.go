@@ -44,6 +44,7 @@ func parseGenericImport(code UNPARSEcode, index int, codeline []UNPARSEcode) (Ar
 }
 
 func runImport(importOBJ ArImport, stack stack, stacklevel int) (any, ArErr) {
+	return nil, ArErr{"Import Error", "importing in WASM is currently not supported", importOBJ.line, importOBJ.path, importOBJ.code, true}
 	val, err := runVal(importOBJ.filePath, stack, stacklevel+1)
 	val = ArValidToAny(val)
 	if err.EXISTS {
