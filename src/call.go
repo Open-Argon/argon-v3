@@ -93,6 +93,7 @@ func runCall(c call, stack stack, stacklevel int) (any, ArErr) {
 	}
 	switch x := callable.(type) {
 	case builtinFunc:
+		debugPrintln(x.name, args)
 		resp, err := x.FUNC(args...)
 		resp = AnyToArValid(resp)
 		if err.EXISTS {
@@ -108,6 +109,7 @@ func runCall(c call, stack stack, stacklevel int) (any, ArErr) {
 		}
 		return resp, err
 	case Callable:
+		debugPrintln(x.name, args)
 		if len(x.params) != len(args) {
 			return nil, ArErr{"Runtime Error", "expected " + fmt.Sprint(len(x.params)) + " arguments, got " + fmt.Sprint(len(args)), c.line, c.path, c.code, true}
 		}
@@ -122,6 +124,7 @@ func runCall(c call, stack stack, stacklevel int) (any, ArErr) {
 }
 
 func builtinCall(callable any, args []any) (any, ArErr) {
+	debugPrintln(callable, args)
 
 	switch x := callable.(type) {
 	case builtinFunc:

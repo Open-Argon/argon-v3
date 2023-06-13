@@ -22,13 +22,13 @@ func isMap(code UNPARSEcode) bool {
 func parseMap(code UNPARSEcode) (any, UNPARSEcode) {
 	trimmed := strings.Trim(code.code, " ")
 	trimmed = trimmed[1 : len(trimmed)-1]
-	fmt.Println(trimmed)
+	debugPrintln(trimmed)
 	return nil, UNPARSEcode{}
 }
 
 func Map(m anymap) ArObject {
 	var mutex = sync.RWMutex{}
-	return ArObject{
+	obj := ArObject{
 		obj: anymap{
 			"__value__": m,
 			"__name__":  "map",
@@ -168,4 +168,47 @@ func Map(m anymap) ArObject {
 			},
 		},
 	}
+	obj.obj["__Equal__"] = builtinFunc{
+		"__Equal__",
+		func(args ...any) (any, ArErr) {
+			debugPrintln("Equal", args)
+			if len(args) != 1 {
+				return nil, ArErr{
+					TYPE:    "TypeError",
+					message: "expected 1 argument, got " + fmt.Sprint(len(args)),
+					EXISTS:  true,
+				}
+			}
+			if typeof(args[0]) != "map" {
+				return false, ArErr{}
+			}
+			a := ArValidToAny(args[0]).(anymap)
+			mutex.RLock()
+			if len(m) != len(a) {
+				mutex.RUnlock()
+				return false, ArErr{}
+			}
+			for k, v := range m {
+				debugPrintln(k, v)
+				if _, ok := a[k]; !ok {
+					mutex.RUnlock()
+					return false, ArErr{}
+				}
+				val, err := runOperation(operationType{
+					operation: 9,
+					values:    []any{v, a[k]},
+				}, stack{}, 0)
+				if err.EXISTS {
+					return val, err
+				}
+				if !anyToBool(val) {
+					mutex.RUnlock()
+					return false, ArErr{}
+				}
+			}
+			mutex.RUnlock()
+			return true, ArErr{}
+		},
+	}
+	return obj
 }

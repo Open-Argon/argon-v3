@@ -129,7 +129,6 @@ func compareValues(o operationType, stack stack, stacklevel int) (bool, ArErr) {
 		stack,
 		stacklevel+1,
 	)
-	resp2 = ArValidToAny(resp2)
 	if err.EXISTS {
 		return false, err
 	}
@@ -557,12 +556,12 @@ func calcNotIn(o operationType, stack stack, stacklevel int) (any, ArErr) {
 	if err.EXISTS {
 		return false, err
 	}
-	if x, ok := resp2.(ArObject); ok {
+	if x, ok := resp.(ArObject); ok {
 		if y, ok := x.obj["__NotContains__"]; ok {
 			return runCall(
 				call{
 					y,
-					[]any{resp},
+					[]any{resp2},
 					o.code,
 					o.line,
 					o.path,
@@ -651,6 +650,7 @@ func notequals(a any, b any, o operationType, stack stack, stacklevel int) (bool
 }
 
 func equals(a any, b any, o operationType, stack stack, stacklevel int) (bool, ArErr) {
+	debugPrintln("equals", a, b)
 	if typeof(a) == "number" && typeof(b) == "number" {
 		return a.(number).Cmp(b.(number)) == 0, ArErr{}
 	} else if x, ok := a.(ArObject); ok {
@@ -678,7 +678,6 @@ func calcMod(o operationType, stack stack, stacklevel int) (any, ArErr) {
 		stack,
 		stacklevel+1,
 	)
-	resp = ArValidToAny(resp)
 	if err.EXISTS {
 		return nil, err
 	}
