@@ -65,7 +65,7 @@ func parseCall(code UNPARSEcode, index int, codelines []UNPARSEcode) (any, bool,
 }
 
 func runCall(c call, stack stack, stacklevel int) (any, ArErr) {
-	var callable any
+	var callable any = c.callable
 	switch x := c.callable.(type) {
 	case builtinFunc:
 		callable = x
