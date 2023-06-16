@@ -84,7 +84,7 @@ func runCall(c call, stack stack, stacklevel int) (any, ArErr) {
 				c.line,
 				c.code,
 				c.path,
-			}, stack, stacklevel)
+			}, stack, stacklevel+1)
 			if !err.EXISTS {
 				callable = callable_
 			}

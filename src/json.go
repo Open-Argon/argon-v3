@@ -46,8 +46,8 @@ func jsonstringify(obj any, level int) (string, error) {
 	output := []string{}
 	obj = ArValidToAny(obj)
 	switch x := obj.(type) {
-	case ArObject:
-		for key, value := range x.obj {
+	case anymap:
+		for key, value := range x {
 			str, err := jsonstringify(value, level+1)
 			if err != nil {
 				return "", err
@@ -89,6 +89,7 @@ var ArJSON = Map(anymap{
 		if typeof(args[0]) != "string" {
 			return nil, ArErr{TYPE: "Runtime Error", message: "parse takes a string not a '" + typeof(args[0]) + "'", EXISTS: true}
 		}
+		args[0] = ArValidToAny(args[0])
 		return jsonparse(args[0].(string)), ArErr{}
 	}},
 	"stringify": builtinFunc{"stringify", func(args ...any) (any, ArErr) {
@@ -99,6 +100,6 @@ var ArJSON = Map(anymap{
 		if err != nil {
 			return nil, ArErr{TYPE: "Runtime Error", message: err.Error(), EXISTS: true}
 		}
-		return str, ArErr{}
+		return ArString(str), ArErr{}
 	}},
 })

@@ -1,3 +1,5 @@
 import "csv" as csv
 
-term.log(csv.read("tests/test.csv"))
+let table = (csv.read("tests/test.csv"))
+
+term.log(number(table[::-1][0][::-1][0]))

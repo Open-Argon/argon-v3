@@ -57,7 +57,7 @@ func parseTryCatch(code UNPARSEcode, index int, codelines []UNPARSEcode) (TryCat
 }
 
 func runTryCatch(t TryCatch, stack stack, stacklevel int) (any, ArErr) {
-	val, err := runVal(t.Try, stack, stacklevel)
+	val, err := runVal(t.Try, stack, stacklevel+1)
 	if err.EXISTS {
 		vars := anymap{}
 		vars[t.errorName] = Map(anymap{
@@ -67,7 +67,7 @@ func runTryCatch(t TryCatch, stack stack, stacklevel int) (any, ArErr) {
 			"path":    err.path,
 			"code":    err.code,
 		})
-		val, err = runVal(t.Catch, append(stack, Map(vars)), stacklevel)
+		val, err = runVal(t.Catch, append(stack, Map(vars)), stacklevel+1)
 		if err.EXISTS {
 			return nil, err
 		}

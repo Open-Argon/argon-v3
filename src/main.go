@@ -16,6 +16,7 @@ func newscope() ArObject {
 
 func main() {
 	debugPrintln("In debug mode...")
+
 	if !debug {
 		defer func() {
 			if r := recover(); r != nil {

@@ -104,18 +104,18 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine i
 			return resp, worked, err, i
 		}
 	}
-	if isCall(code) {
-		resp, worked, err, i = parseCall(code, index, codelines)
-		if worked {
-			return resp, worked, err, i
-		}
-	}
 	{
 		operation, worked, err, step := parseOperations(code, index, codelines)
 		if worked {
 			return operation, worked, err, step
 		} else if err.EXISTS {
 			return nil, worked, err, step
+		}
+	}
+	if isCall(code) {
+		resp, worked, err, i = parseCall(code, index, codelines)
+		if worked {
+			return resp, worked, err, i
 		}
 	}
 	if isNegative(code) {

@@ -70,6 +70,17 @@ func runImport(importOBJ ArImport, stack stack, stacklevel int) (any, ArErr) {
 		}
 		return nil, err
 	}
+	setindex, ok := stack[len(stack)-1].obj["__setindex__"]
+	if !ok {
+		return nil, ArErr{
+			"Import Error",
+			"could not find __setindex__ in module scope",
+			importOBJ.line,
+			importOBJ.path,
+			importOBJ.code,
+			true,
+		}
+	}
 	switch x := importOBJ.values.(type) {
 	case []string:
 		for _, v := range x {
@@ -77,10 +88,10 @@ func runImport(importOBJ ArImport, stack stack, stacklevel int) (any, ArErr) {
 			if !ok {
 				return nil, ArErr{"Import Error", "could not find value " + anyToArgon(v, true, false, 3, 0, false, 0) + " in module " + anyToArgon(path, true, false, 3, 0, false, 0), importOBJ.line, importOBJ.path, importOBJ.code, true}
 			}
-			stack[len(stack)-1].obj[v] = val
+			builtinCall(setindex, []any{v, val})
 		}
 	case string:
-		stack[len(stack)-1].obj[x] = stackMap
+		builtinCall(setindex, []any{x, stackMap})
 	}
 	return nil, ArErr{}
 }

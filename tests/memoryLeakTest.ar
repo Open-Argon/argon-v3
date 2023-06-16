@@ -1,6 +1,6 @@
 f() = do
     a = []
-    for (i from 0 to 10000) a.append(i)
+    for (i from 0 to 100000) a.append(i)
 
 term.log("start")
 f()

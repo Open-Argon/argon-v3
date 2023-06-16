@@ -26,6 +26,14 @@ func mapGet(r ArMapGet, stack stack, stacklevel int) (any, ArErr) {
 	if err.EXISTS {
 		return nil, err
 	}
+
+	switch m := resp.(type) {
+	case ArObject:
+		if obj, ok := m.obj[r.args[0]]; ok {
+			return obj, ArErr{}
+		}
+	}
+
 	switch m := resp.(type) {
 	case ArObject:
 		if callable, ok := m.obj["__getindex__"]; ok {
@@ -44,13 +52,6 @@ func mapGet(r ArMapGet, stack stack, stacklevel int) (any, ArErr) {
 					return m.obj[r.args[0]], ArErr{}
 				}
 			}
-		}
-	}
-
-	switch m := resp.(type) {
-	case ArObject:
-		if obj, ok := m.obj[r.args[0]]; ok {
-			return obj, ArErr{}
 		}
 	}
 

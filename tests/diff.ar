@@ -1,0 +1,19 @@
+let zero = 1/infinity
+let diff(f) = (x) = (f(x + zero) - f(x)) / zero
+
+let count = 0
+
+let f(x) = do
+    count = count + 1
+    term.log(count)
+    return x^10+x^9+x^8+x^7+x^6+x^5+x^4+x^3+x^2+x+1
+x = 100
+d = 0
+
+forever do
+    n = f(x)
+    term.log("f"+("'"*d)+"("+x+") = "+n)
+    if (n == 0) break
+    f = diff(f)
+    d = d + 1
+    count = 0

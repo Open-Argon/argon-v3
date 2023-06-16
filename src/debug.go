@@ -7,7 +7,7 @@ import (
 
 var debug = os.Getenv("__ARGON_DEBUG__") == "true"
 
-func debugPrintln(a ...interface{}) {
+func debugPrintln(a ...any) {
 	if debug {
 		go func() {
 			defer func() {
