@@ -78,9 +78,19 @@ func runCall(c call, stack stack, stacklevel int) (any, ArErr) {
 		}
 		switch x := callable_.(type) {
 		case ArObject:
-			callable_ = x.obj["__call__"]
+			callable_, err := mapGet(ArMapGet{
+				x,
+				[]any{"__call__"},
+				c.line,
+				c.code,
+				c.path,
+			}, stack, stacklevel)
+			if !err.EXISTS {
+				callable = callable_
+			}
+		default:
+			callable = callable_
 		}
-		callable = callable_
 	}
 	args := []any{}
 	level := append(stack, newscope())
