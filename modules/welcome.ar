@@ -14,18 +14,13 @@ term.clear()
 
 # ARGON 3 is a math-driven programming language designed to make code easy to read and write. It's not meant to be fast, as it's interpreted. This specification should be used as a guideline, and is subject to change for later versions. Later updates for Argon 3 should be backwards compatible (where possible) with code designed for older versions of the interpreter.
 
+# why use argon?
+term.log("🤔 Why use Argon?")
+term.log()
 term.log("ARGON 3 is a math-driven programming language")
 term.log("designed to make code easy to read and write.")
 term.log("It's not meant to be fast, as it's interpreted.")
-term.log("This specification should be used as a guideline,")
-term.log("and is subject to change for later versions.")
-term.log("Later updates for Argon 3 should be backwards")
-term.log("compatible (where possible) with code designed")
-term.log("for older versions of the interpreter.")
 term.log()
-input.pause()
-term.clear()
-
 term.log("📚 Features")
 term.log("   - Easy to read and write: Argon 3 is designed with clarity of code in mind, making it easier for you and others to read and write code.")
 term.log("   - All numbers are stored as rational numbers, preventing precision errors.")
