@@ -151,6 +151,7 @@ func translate(codelines []UNPARSEcode) ([]any, ArErr) {
 		if err.EXISTS {
 			return nil, err
 		}
+
 		translated = append(translated, val)
 	}
 	return translated, ArErr{}

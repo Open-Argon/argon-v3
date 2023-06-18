@@ -567,6 +567,18 @@ func ArString(str string) ArObject {
 			}
 			return strings.Join([]string{str, a[0].(string)}, ""), ArErr{}
 		}}
+	obj.obj["__PostAdd__"] = builtinFunc{
+		"__PostAdd__",
+		func(a ...any) (any, ArErr) {
+			if len(a) != 1 {
+				return nil, ArErr{"TypeError", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
+			}
+			a[0] = ArValidToAny(a[0])
+			if typeof(a[0]) != "string" {
+				a[0] = anyToArgon(a[0], false, false, 3, 0, false, 0)
+			}
+			return strings.Join([]string{a[0].(string), str}, ""), ArErr{}
+		}}
 	obj.obj["__Multiply__"] = builtinFunc{
 		"__Multiply__",
 		func(a ...any) (any, ArErr) {

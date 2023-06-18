@@ -15,13 +15,20 @@ func isNegative(code UNPARSEcode) bool {
 	return negativeCompile.MatchString(code.code)
 }
 
-func parseNegative(code UNPARSEcode, index int, codeline []UNPARSEcode) (negative, bool, ArErr, int) {
+func parseNegative(code UNPARSEcode, index int, codeline []UNPARSEcode) (any, bool, ArErr, int) {
+	trimmed := strings.TrimSpace(code.code)
+	trimmednegative := strings.TrimLeft(trimmed, "-")
+	difference := len(trimmed) - len(trimmednegative)
 	resp, worked, err, i := translateVal(UNPARSEcode{
-		code:     strings.TrimSpace(code.code)[1:],
+		code:     trimmednegative,
 		realcode: code.realcode,
 		line:     code.line,
 		path:     code.path,
 	}, index, codeline, 0)
+
+	if difference%2 == 0 {
+		return resp, worked, err, i
+	}
 	return negative{
 		VAL:  resp,
 		line: code.line,

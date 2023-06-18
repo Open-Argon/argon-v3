@@ -131,11 +131,12 @@ var ArInput = Map(
 			}
 			return ArString(resp), ArErr{}
 		}},
+		"__call__": builtinFunc{"input", func(args ...any) (any, ArErr) {
+			return input(args...), ArErr{}
+		}},
+		"pause": builtinFunc{"pause", func(args ...any) (any, ArErr) {
+			pause()
+			return nil, ArErr{}
+		}},
 	},
 )
-
-func init() {
-	ArInput.obj["__call__"] = builtinFunc{"input", func(args ...any) (any, ArErr) {
-		return input(args...), ArErr{}
-	}}
-}

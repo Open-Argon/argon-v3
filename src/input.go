@@ -58,3 +58,9 @@ func getPassword(args ...any) (string, error) {
 	fmt.Print("\r")
 	return string(password), nil
 }
+
+func pause() {
+	fmt.Print("Press any key to continue...")
+	term.ReadPassword(int(os.Stdin.Fd()))
+	fmt.Println()
+}

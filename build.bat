@@ -1,2 +1,2 @@
 @echo off
-go build -o bin/argon.exe ./src
+go build -trimpath -ldflags="-s -w" -o bin/argon.exe ./src
