@@ -60,7 +60,7 @@ func getPassword(args ...any) (string, error) {
 }
 
 func pause() {
-	fmt.Print("Press any key to continue...")
+	fmt.Print("Press Enter to continue...")
 	term.ReadPassword(int(os.Stdin.Fd()))
 	fmt.Println()
 }
