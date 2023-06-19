@@ -150,8 +150,35 @@ func makeGlobal() ArObject {
 	vars["cot"] = ArCot
 	vars["arccot"] = ArArccot
 	vars["todeg"] = ArToDeg
+	vars["colour"] = ArColour
 	vars["torad"] = ArToRad
 	vars["abs"] = ArAbs
+	vars["fraction"] = builtinFunc{"fraction", func(a ...any) (any, ArErr) {
+		if len(a) == 0 {
+			return nil, ArErr{TYPE: "fraction", message: "fraction takes 1 argument",
+				EXISTS: true}
+		}
+		switch x := a[0].(type) {
+		case number:
+			return ArString(x.String()), ArErr{}
+		case ArObject:
+			if callable, ok := x.obj["__fraction__"]; ok {
+				resp, err := runCall(
+					call{
+						callable: callable,
+						args:     []any{},
+					},
+					stack{},
+					0,
+				)
+				if err.EXISTS {
+					return nil, err
+				}
+				return resp, ArErr{}
+			}
+		}
+		return nil, ArErr{TYPE: "TypeError", message: "Cannot fraction '" + typeof(a[0]) + "'", EXISTS: true}
+	}}
 	vars["dir"] = builtinFunc{"dir", func(a ...any) (any, ArErr) {
 		if len(a) == 0 {
 			return ArArray([]any{}), ArErr{}

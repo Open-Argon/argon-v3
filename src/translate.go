@@ -91,9 +91,16 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine i
 	} else if isString(code) {
 		return parseString(code)
 	} else if issquareroot(code) {
-		return parseSquareroot(code, index, codelines)
-	} else if isFactorial(code) {
-		return parseFactorial(code, index, codelines)
+		resp, worked, err, i = parseSquareroot(code, index, codelines)
+		if worked {
+			return resp, worked, err, i
+		}
+	}
+	if isFactorial(code) {
+		resp, worked, err, i = parseFactorial(code, index, codelines)
+		if worked {
+			return resp, worked, err, i
+		}
 	}
 	if isVariable(code) {
 		return parseVariable(code)

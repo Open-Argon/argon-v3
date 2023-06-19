@@ -6,7 +6,7 @@ import (
 	"sync"
 )
 
-var mapCompiled = makeRegex(`( )*<( |\n)*(((.|\n)+)(,(.|\n)+)*)?( |\n)*>( )*`)
+var mapCompiled = makeRegex(`( )*{( |\n)*(((.|\n)+)(,(.|\n)+)*)?( |\n)*}( )*`)
 
 type createMap struct {
 	body anymap
@@ -20,7 +20,7 @@ func isMap(code UNPARSEcode) bool {
 }
 
 func parseMap(code UNPARSEcode, index int, codelines []UNPARSEcode) (any, bool, ArErr, int) {
-	trimmed := strings.Trim(code.code, " ")
+	trimmed := strings.TrimSpace(code.code)
 	trimmed = trimmed[1 : len(trimmed)-1]
 	debugPrintln(trimmed)
 	return Map(anymap{}), true, ArErr{}, 1
