@@ -163,6 +163,26 @@ func makeGlobal() ArObject {
 			for key := range x.obj {
 				newarray = append(newarray, key)
 			}
+			if callable, ok := x.obj["__dir__"]; ok {
+				resp, err := runCall(
+					call{
+						callable: callable,
+						args:     []any{},
+					},
+					stack{newscope()},
+					0,
+				)
+				if err.EXISTS {
+					return nil, err
+				}
+				resp = ArValidToAny(resp)
+				switch x := resp.(type) {
+				case []any:
+					newarray = append(newarray, x...)
+				default:
+					return nil, ArErr{TYPE: "TypeError", message: "__dir__ returned type '" + typeof(x) + "'", EXISTS: true}
+				}
+			}
 			return ArArray(newarray), ArErr{}
 		}
 		return ArArray([]any{}), ArErr{}

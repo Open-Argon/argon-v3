@@ -76,7 +76,7 @@ func anyToArgon(x any, quote bool, simplify bool, depth int, indent int, colored
 		}
 	case anymap:
 		if len(x) == 0 {
-			return "{}"
+			return "<>"
 		}
 		keys := make([]any, len(x))
 		sort.Slice(keys, func(i, j int) bool {
@@ -107,7 +107,7 @@ func anyToArgon(x any, quote bool, simplify bool, depth int, indent int, colored
 			}
 			output = append(output, keyval+": "+anyToArgon(x[key], true, true, depth-1, indent+1, colored, plain))
 		}
-		return "{" + maybenewline + (strings.Repeat("    ", (indent+1)*plain)) + strings.Join(output, ","+maybenewline+(strings.Repeat("    ", (indent+1)*plain))) + maybenewline + (strings.Repeat("    ", indent*plain)) + "}"
+		return "<" + maybenewline + (strings.Repeat("    ", (indent+1)*plain)) + strings.Join(output, ","+maybenewline+(strings.Repeat("    ", (indent+1)*plain))) + maybenewline + (strings.Repeat("    ", indent*plain)) + ">"
 	case []any:
 		singleline := len(x) <= 3
 		output := []string{}

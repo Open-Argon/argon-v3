@@ -6,7 +6,7 @@ import (
 	"sync"
 )
 
-var mapCompiled = makeRegex(`( *)\{(((( *).+( *):( *).+( *))|(` + spacelessVariable + `))(( *)\,(( *).+( *):( *).+( *))|(` + spacelessVariable + `)))*\}( *)`)
+var mapCompiled = makeRegex(`( )*<( |\n)*(((.|\n)+)(,(.|\n)+)*)?( |\n)*>( )*`)
 
 type createMap struct {
 	body anymap
@@ -19,11 +19,11 @@ func isMap(code UNPARSEcode) bool {
 	return mapCompiled.MatchString(code.code)
 }
 
-func parseMap(code UNPARSEcode) (any, UNPARSEcode) {
+func parseMap(code UNPARSEcode, index int, codelines []UNPARSEcode) (any, bool, ArErr, int) {
 	trimmed := strings.Trim(code.code, " ")
 	trimmed = trimmed[1 : len(trimmed)-1]
 	debugPrintln(trimmed)
-	return nil, UNPARSEcode{}
+	return Map(anymap{}), true, ArErr{}, 1
 }
 
 func Map(m anymap) ArObject {
@@ -211,5 +211,14 @@ func Map(m anymap) ArObject {
 			return true, ArErr{}
 		},
 	}
+	obj.obj["__dir__"] = builtinFunc{
+		"__dir__",
+		func(args ...any) (any, ArErr) {
+			x := []any{}
+			for k := range m {
+				x = append(x, k)
+			}
+			return x, ArErr{}
+		}}
 	return obj
 }

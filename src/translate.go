@@ -103,6 +103,8 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine i
 		if worked {
 			return resp, worked, err, i
 		}
+	} else if isMap(code) {
+		resp, worked, err, i = parseMap(code, index, codelines)
 	}
 	{
 		operation, worked, err, step := parseOperations(code, index, codelines)
