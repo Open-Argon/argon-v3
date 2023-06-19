@@ -13,7 +13,18 @@ func anyToBool(x any) bool {
 	case nil:
 		return false
 	case ArObject:
-		return anyToBool(ArValidToAny(x))
+		if y, ok := x.obj["__Boolean__"]; ok {
+			val, err := runCall(
+				call{
+					callable: y,
+					args:     []any{},
+				}, stack{}, 0)
+			if err.EXISTS {
+				return false
+			}
+			return anyToBool(val)
+		}
+		return false
 	case builtinFunc:
 		return true
 	case Callable:

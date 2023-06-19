@@ -74,6 +74,8 @@ func anyToArgon(x any, quote bool, simplify bool, depth int, indent int, colored
 		if colored {
 			output = append(output, "\x1b[0m")
 		}
+	case ArObject:
+
 	case anymap:
 		if len(x) == 0 {
 			return "{}"

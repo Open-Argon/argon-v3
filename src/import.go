@@ -11,6 +11,8 @@ import (
 var imported = make(map[string]ArObject)
 var importing = make(map[string]bool)
 
+var modules_folder = "argon_modules"
+
 func FileExists(filename string) bool {
 	if _, err := os.Stat(filename); err == nil {
 		return true
@@ -73,13 +75,13 @@ func importMod(realpath string, origin string, main bool, global ArObject) (ArOb
 		pathsToTest = []string{
 			filepath.Join(origin, realpath, "init.ar"),
 			filepath.Join(origin, path),
-			filepath.Join(origin, "modules", path),
-			filepath.Join(origin, "modules", realpath, "init.ar"),
+			filepath.Join(origin, modules_folder, path),
+			filepath.Join(origin, modules_folder, realpath, "init.ar"),
 			filepath.Join(ex, path),
-			filepath.Join(ex, "modules", realpath, "init.ar"),
-			filepath.Join(ex, "modules", path),
-			filepath.Join(executable, "modules", realpath, "init.ar"),
-			filepath.Join(executable, "modules", path),
+			filepath.Join(ex, modules_folder, realpath, "init.ar"),
+			filepath.Join(ex, modules_folder, path),
+			filepath.Join(executable, modules_folder, realpath, "init.ar"),
+			filepath.Join(executable, modules_folder, path),
 		}
 	}
 
