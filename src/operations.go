@@ -66,6 +66,9 @@ func parseOperations(code UNPARSEcode, index int, codelines []UNPARSEcode) (oper
 				continue
 			}
 			for k := 0; k < len(split)-1; k++ {
+				if (len(strings.TrimSpace(split[k])) == 0 || len(strings.TrimSpace(split[k+1])) == 0) && operations[i][j] != "-" {
+					break
+				}
 				val1, worked, err, step1 := translateVal(UNPARSEcode{
 					code:     strings.Join(split[:k+1], operations[i][j]),
 					realcode: code.realcode,
