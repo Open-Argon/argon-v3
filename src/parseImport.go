@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-var genericImportCompiled = makeRegex(`import( )+(.|\n)+( )+as( )+([a-zA-Z_]|(\p{L}\p{M}*))([a-zA-Z0-9_]|(\p{L}\p{M}*))*( *)`)
+var genericImportCompiled = makeRegex(`import( )+(.|\n)+(( )+as( )+([a-zA-Z_]|(\p{L}\p{M}*))([a-zA-Z0-9_]|(\p{L}\p{M}*))*)?( *)`)
 
 type ArImport struct {
 	filePath any
@@ -22,18 +22,49 @@ func isGenericImport(code UNPARSEcode) bool {
 func parseGenericImport(code UNPARSEcode, index int, codeline []UNPARSEcode) (ArImport, bool, ArErr, int) {
 	trim := strings.Trim(code.code, " ")
 	pathAndAs := trim[6:]
-	split := strings.SplitN(pathAndAs, " as ", 2)
-	toImportstr := strings.TrimSpace(split[0])
-	asStr := strings.TrimSpace(split[1])
-	toImport, worked, err, i := translateVal(UNPARSEcode{
-		code:     toImportstr,
-		realcode: code.realcode,
-		line:     code.line,
-		path:     code.path,
-	}, index, codeline, 0)
-	if !worked {
-		return ArImport{}, false, err, i
+	split := strings.Split(pathAndAs, " as ")
+	var toImport any
+	var asStr any
+	var i = 1
+	if len(split) == 1 {
+		toImportval, worked, err, I := translateVal(UNPARSEcode{
+			code:     strings.Trim(split[0], " "),
+			realcode: code.realcode,
+			line:     code.line,
+			path:     code.path,
+		}, index, codeline, 0)
+		if !worked || err.EXISTS {
+			return ArImport{}, worked, err, I
+		}
+		toImport = toImportval
+		i = I
+	} else {
+		for i := 1; i < len(split); i++ {
+			before := strings.Trim(strings.Join(split[:i], " as "), " ")
+			after := strings.Trim(strings.Join(split[i:], " as "), " ")
+			toImportval, worked, err, I := translateVal(UNPARSEcode{
+				code:     before,
+				realcode: code.realcode,
+				line:     code.line,
+				path:     code.path,
+			}, index, codeline, 0)
+			i = I
+			if !worked || err.EXISTS {
+				if i == len(split)-1 {
+					return ArImport{}, worked, err, i
+				}
+				continue
+			}
+			if after == "" {
+			} else if variableCompile.MatchString(after) {
+				asStr = after
+			} else {
+				return ArImport{}, false, ArErr{"Syntax Error", "invalid variable name '" + after + "'", code.line, code.path, code.realcode, true}, i
+			}
+			toImport = toImportval
+		}
 	}
+
 	return ArImport{
 		toImport,
 		asStr,

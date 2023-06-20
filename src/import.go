@@ -95,9 +95,9 @@ func importMod(realpath string, origin string, main bool, global ArObject) (ArOb
 	}
 
 	if !found {
-		return ArObject{}, ArErr{TYPE: "Import Error", message: "File does not exist: " + realpath, EXISTS: true}
+		return ArObject{}, ArErr{TYPE: "Import Error", message: "File does not exist: " + path, EXISTS: true}
 	} else if importing[p] {
-		return ArObject{}, ArErr{TYPE: "Import Error", message: "Circular import: " + realpath, EXISTS: true}
+		return ArObject{}, ArErr{TYPE: "Import Error", message: "Circular import: " + path, EXISTS: true}
 	} else if _, ok := imported[p]; ok {
 		return imported[p], ArErr{}
 	}
@@ -136,8 +136,7 @@ func importMod(realpath string, origin string, main bool, global ArObject) (ArOb
 				"name": filepath.Base(p),
 				"path": p,
 			}),
-			"main":  main,
-			"scope": global,
+			"main": main,
 		}),
 	})
 	_, runimeErr := ThrowOnNonLoop(run(translated, stack{global, localvars, local}))
