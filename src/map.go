@@ -318,5 +318,17 @@ func Map(m anymap) ArObject {
 			return keys, ArErr{}
 		},
 	}
+	obj.obj["__Boolean__"] = builtinFunc{
+		"__Boolean__",
+		func(args ...any) (any, ArErr) {
+			mutex.RLock()
+			if len(m) == 0 {
+				mutex.RUnlock()
+				return false, ArErr{}
+			}
+			mutex.RUnlock()
+			return true, ArErr{}
+		},
+	}
 	return obj
 }

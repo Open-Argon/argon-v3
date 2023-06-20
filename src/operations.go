@@ -626,7 +626,7 @@ func calcOr(o operationType, stack stack, stacklevel int) (any, ArErr) {
 		return resp, ArErr{}
 	}
 	resp, err = runVal(
-		o.value1,
+		o.value2,
 		stack,
 		stacklevel+1,
 	)

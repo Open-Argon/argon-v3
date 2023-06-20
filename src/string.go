@@ -639,5 +639,10 @@ func ArString(str string) ArObject {
 			}
 			return ArArray(output), ArErr{}
 		}}
+	obj.obj["__Boolean__"] = builtinFunc{
+		"__Boolean__",
+		func(a ...any) (any, ArErr) {
+			return len(str) > 0, ArErr{}
+		}}
 	return obj
 }

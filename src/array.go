@@ -589,6 +589,14 @@ func ArArray(arr []any) ArObject {
 			return false, ArErr{}
 		},
 	}
+	val.obj["__Boolean__"] = builtinFunc{
+		"__Boolean__",
+		func(args ...any) (any, ArErr) {
+			return len(
+				arr,
+			) > 0, ArErr{}
+		},
+	}
 	return val
 }
 
