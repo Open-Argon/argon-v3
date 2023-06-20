@@ -9,7 +9,7 @@ import (
 var mapCompiled = makeRegex(`( )*{( |\n)*(((.|\n)+)(,(.|\n)+)*)?( |\n)*}( )*`)
 
 type createMap struct {
-	body anymap
+	body [][2]any
 	code string
 	line int
 	path string
@@ -19,11 +19,99 @@ func isMap(code UNPARSEcode) bool {
 	return mapCompiled.MatchString(code.code)
 }
 
+func runCreateMap(m createMap, stack stack, stacklevel int) (any, ArErr) {
+	var body = m.body
+	var newmap = anymap{}
+	for _, pair := range body {
+		key := pair[0]
+		val := pair[1]
+		keyVal, err := runVal(key, stack, stacklevel+1)
+		if err.EXISTS {
+			return nil, err
+		}
+		keyVal = ArValidToAny(keyVal)
+		valVal, err := runVal(val, stack, stacklevel+1)
+		if err.EXISTS {
+			return nil, err
+		}
+		if isUnhashable(keyVal) {
+			return nil, ArErr{
+				"TypeError",
+				"unhashable type: '" + typeof(keyVal) + "'",
+				m.line,
+				m.path,
+				m.code,
+				true,
+			}
+		}
+		newmap[key] = valVal
+	}
+	return newmap, ArErr{}
+}
+
 func parseMap(code UNPARSEcode, index int, codelines []UNPARSEcode) (any, bool, ArErr, int) {
 	trimmed := strings.TrimSpace(code.code)
 	trimmed = trimmed[1 : len(trimmed)-1]
-	debugPrintln(trimmed)
-	return Map(anymap{}), true, ArErr{}, 1
+	if len(trimmed) == 0 {
+		return createMap{
+			body: [][2]any{},
+			code: code.realcode,
+			line: code.line,
+			path: code.path,
+		}, true, ArErr{}, 1
+	}
+	var body [][2]any
+	var LookingAtKey bool = true
+	var current int
+	var currentKey any
+	var countIndex int = 1
+	for i := 0; i < len(trimmed); i++ {
+		var str string
+		if LookingAtKey {
+			if trimmed[i] != ':' {
+				continue
+			}
+			str = trimmed[current:i]
+		} else {
+			if trimmed[i] != ',' && i != len(trimmed)-1 {
+				continue
+			}
+			if i == len(trimmed)-1 {
+				str = trimmed[current:]
+			} else {
+				str = trimmed[current:i]
+			}
+		}
+		var value any
+		if LookingAtKey && variableCompile.MatchString(str) {
+			value = strings.TrimSpace(str)
+		} else {
+			val1, worked, err, indexcounted := translateVal(UNPARSEcode{code: str, realcode: code.realcode, line: code.line, path: code.path}, index, codelines, 0)
+			if !worked || err.EXISTS {
+				if i == len(trimmed)-1 {
+					return val1, worked, err, i
+				}
+				continue
+			}
+			value = val1
+			countIndex += indexcounted - 1
+		}
+		if LookingAtKey {
+			currentKey = value
+			current = i + 1
+			LookingAtKey = false
+		} else {
+			body = append(body, [2]any{currentKey, value})
+			current = i + 1
+			LookingAtKey = true
+		}
+	}
+	return createMap{
+		body: body,
+		code: code.realcode,
+		line: code.line,
+		path: code.path,
+	}, true, ArErr{}, countIndex
 }
 
 func Map(m anymap) ArObject {
@@ -211,14 +299,24 @@ func Map(m anymap) ArObject {
 			return true, ArErr{}
 		},
 	}
-	obj.obj["__dir__"] = builtinFunc{
-		"__dir__",
+	obj.obj["keys"] = builtinFunc{
+		"keys",
 		func(args ...any) (any, ArErr) {
-			x := []any{}
-			for k := range m {
-				x = append(x, k)
+			if len(args) != 0 {
+				return nil, ArErr{
+					TYPE:    "TypeError",
+					message: "expected 0 arguments, got " + fmt.Sprint(len(args)),
+					EXISTS:  true,
+				}
 			}
-			return x, ArErr{}
-		}}
+			mutex.RLock()
+			keys := []any{}
+			for k := range m {
+				keys = append(keys, k)
+			}
+			mutex.RUnlock()
+			return keys, ArErr{}
+		},
+	}
 	return obj
 }

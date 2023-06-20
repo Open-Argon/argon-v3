@@ -81,6 +81,7 @@ func runCall(c call, stack stack, stacklevel int) (any, ArErr) {
 			callable_, err := mapGet(ArMapGet{
 				x,
 				[]any{"__call__"},
+				true,
 				c.line,
 				c.code,
 				c.path,
