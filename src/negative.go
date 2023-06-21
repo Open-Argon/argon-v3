@@ -6,6 +6,7 @@ var negativeCompile = makeRegex(`( *)-(.|\n)+( *)`)
 
 type negative struct {
 	VAL  any
+	sign bool
 	line int
 	code string
 	path string
@@ -26,11 +27,9 @@ func parseNegative(code UNPARSEcode, index int, codeline []UNPARSEcode) (any, bo
 		path:     code.path,
 	}, index, codeline, 0)
 
-	if difference%2 == 0 {
-		return resp, worked, err, i
-	}
 	return negative{
 		VAL:  resp,
+		sign: difference%2 == 0,
 		line: code.line,
 		code: code.realcode,
 		path: code.path,

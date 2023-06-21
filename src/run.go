@@ -70,7 +70,10 @@ func runVal(line any, stack stack, stacklevel int) (any, ArErr) {
 		}
 		switch y := resp.(type) {
 		case number:
-			return newNumber().Neg(y), ArErr{}
+			if !x.sign {
+				return newNumber().Neg(y), ArErr{}
+			}
+			return y, ArErr{}
 		}
 		return nil, ArErr{
 			TYPE:    "TypeError",
