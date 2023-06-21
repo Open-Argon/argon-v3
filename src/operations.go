@@ -407,6 +407,14 @@ func calcDivide(o operationType, stack stack, stacklevel int) (any, ArErr) {
 	if err.EXISTS {
 		return nil, err
 	}
+	var outputErr ArErr = ArErr{
+		"Runtime Error",
+		"Cannot divide type '" + typeof(resp) + "'",
+		o.line,
+		o.path,
+		o.code,
+		true,
+	}
 	if typeof(resp) == "number" && typeof(output) == "number" {
 		output = output.(number).Quo(output.(number), resp.(number))
 		return output, ArErr{}
@@ -423,6 +431,7 @@ func calcDivide(o operationType, stack stack, stacklevel int) (any, ArErr) {
 			if !err.EXISTS {
 				return val, ArErr{}
 			}
+			outputErr = err
 		}
 	}
 
@@ -442,14 +451,7 @@ func calcDivide(o operationType, stack stack, stacklevel int) (any, ArErr) {
 			return val, ArErr{}
 		}
 	}
-	return nil, ArErr{
-		"Runtime Error",
-		"Cannot divide type '" + typeof(resp) + "'",
-		o.line,
-		o.path,
-		o.code,
-		true,
-	}
+	return nil, outputErr
 }
 
 func calcAdd(o operationType, stack stack, stacklevel int) (any, ArErr) {

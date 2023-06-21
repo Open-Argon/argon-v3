@@ -330,5 +330,20 @@ func Map(m anymap) ArObject {
 			return true, ArErr{}
 		},
 	}
+	obj.obj["object"] = builtinFunc{
+		"object",
+		func(args ...any) (any, ArErr) {
+			if len(args) != 0 {
+				return nil, ArErr{
+					TYPE:    "TypeError",
+					message: "expected 0 arguments, got " + fmt.Sprint(len(args)),
+					EXISTS:  true,
+				}
+			}
+			return ArObject{
+				obj: m,
+			}, ArErr{}
+		},
+	}
 	return obj
 }

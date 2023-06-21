@@ -275,13 +275,7 @@ func setVariableValue(v setVariable, stack stack, stacklevel int) (any, ArErr) {
 			case ArObject:
 				if _, ok := y.obj["__setindex__"]; ok {
 					callable := y.obj["__setindex__"]
-					_, err := runCall(call{
-						callable: callable,
-						args:     []any{key, resp},
-						line:     v.line,
-						path:     v.path,
-						code:     v.code,
-					}, stack, stacklevel+1)
+					builtinCall(callable, []any{key, resp})
 					if err.EXISTS {
 						return nil, err
 					}

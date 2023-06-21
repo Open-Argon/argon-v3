@@ -195,23 +195,6 @@ func makeGlobal() ArObject {
 		return ArArray([]any{}), ArErr{}
 	}}
 	vars["subprocess"] = builtinFunc{"subprocess", ArSubprocess}
-	vars["object"] = builtinFunc{"object", func(a ...any) (any, ArErr) {
-		if len(a) == 0 {
-			return nil, ArErr{TYPE: "TypeError", message: "Cannot create class from '" + typeof(a[0]) + "'", EXISTS: true}
-		}
-		switch x := a[0].(type) {
-		case ArObject:
-			if typeof(x) == "object" {
-				return x, ArErr{}
-			}
-			newclass := ArObject{obj: anymap{}}
-			for key, val := range x.obj {
-				newclass.obj[key] = val
-			}
-			return newclass, ArErr{}
-		}
-		return nil, ArErr{TYPE: "TypeError", message: "Cannot create class from '" + typeof(a[0]) + "'", EXISTS: true}
-	}}
 	vars["sequence"] = builtinFunc{"sequence", ArSequence}
 	vars["exit"] = builtinFunc{"exit", func(a ...any) (any, ArErr) {
 		if len(a) == 0 {

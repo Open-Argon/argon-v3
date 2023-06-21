@@ -1,0 +1,24 @@
+let toyTank(colour , name) = do
+    let class = {}
+    class.getColour() = do
+        term.log("My colour is", colour)
+    class.getName() = do
+        term.log("My name is", name)
+    class.setColour(newColour) = do
+        colour = newColour
+    class.setName(newName) = do
+        name = newName
+    return class.object()
+
+
+let tanks = []
+for (i from 0 to 10) tanks.append(toyTank("red", "tank" + (i+1)))
+term.log(dir(tanks[0]))
+for (i from 0 to tanks.length) do
+    tanks[i].getName()
+    tanks[i].getColour()
+    tanks[i].setColour("blue")
+    tanks[i].setName("tank" + (i + 11))
+    tanks[i].getName()
+    tanks[i].getColour()
+    term.log()

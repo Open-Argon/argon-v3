@@ -115,6 +115,7 @@ func ArArray(arr []any) ArObject {
 					step = int(a[2].(number).Num().Int64())
 				}
 			}
+			var ogStart = start
 			if start < 0 {
 				start = len(arr) + start
 			}
@@ -123,6 +124,13 @@ func ArArray(arr []any) ArObject {
 			}
 			if end != nil && end.(int) > len(arr) {
 				end = len(arr)
+			}
+			if start >= len(arr) || start < 0 {
+				return "", ArErr{
+					TYPE:    "IndexError",
+					message: "index out of range, trying to access index " + fmt.Sprint(ogStart) + " in array of length " + fmt.Sprint(len(arr)),
+					EXISTS:  true,
+				}
 			}
 			if end == nil {
 				return arr[start], ArErr{}

@@ -42,9 +42,7 @@ func mapGet(r ArMapGet, stack stack, stacklevel int) (any, ArErr) {
 				path:     r.path,
 				code:     r.code,
 			}, stack, stacklevel+1)
-			if !err.EXISTS {
-				return resp, ArErr{}
-			}
+			return resp, err
 		}
 	}
 
