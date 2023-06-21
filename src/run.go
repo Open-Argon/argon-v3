@@ -216,7 +216,7 @@ func runVal(line any, stack stack, stacklevel int) (any, ArErr) {
 			break
 		}
 		return runTryCatch(x, stack, stacklevel+1)
-	case bool, ArObject, number, nil:
+	case bool, ArObject, number, nil, Callable:
 		return x, ArErr{}
 	}
 	if stackoverflow {
