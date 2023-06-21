@@ -416,6 +416,16 @@ func calcDivide(o operationType, stack stack, stacklevel int) (any, ArErr) {
 		true,
 	}
 	if typeof(resp) == "number" && typeof(output) == "number" {
+		if resp.(number).Cmp(newNumber()) == 0 {
+			return nil, ArErr{
+				"Runtime Error",
+				"Cannot divide by zero",
+				o.line,
+				o.path,
+				o.code,
+				true,
+			}
+		}
 		output = output.(number).Quo(output.(number), resp.(number))
 		return output, ArErr{}
 	} else if x, ok := output.(ArObject); ok {
