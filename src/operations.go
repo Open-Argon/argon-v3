@@ -806,7 +806,7 @@ func equals(a any, b any, o operationType, stack stack, stacklevel int) (bool, A
 		}
 	}
 	if x, ok := b.(ArObject); ok {
-		if y, ok := x.obj["__GreaterThanEqual__"]; ok {
+		if y, ok := x.obj["__Equal__"]; ok {
 			val, err := runCall(
 				call{
 					y,

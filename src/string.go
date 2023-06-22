@@ -553,7 +553,6 @@ func ArString(str string) ArObject {
 				return nil, ArErr{"TypeError", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
 			}
 			a[0] = ArValidToAny(a[0])
-			fmt.Println(str, a[0])
 			return str != a[0], ArErr{}
 		}}
 	obj.obj["__Add__"] = builtinFunc{

@@ -583,7 +583,7 @@ func ArArray(arr []any) ArObject {
 			}
 			for _, v := range arr {
 				res, err := runOperation(operationType{
-					operation: 8,
+					operation: 9,
 					value1:    v,
 					value2:    args[0],
 				}, stack{}, 0)
