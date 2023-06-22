@@ -35,7 +35,7 @@ func parseDoWrap(code UNPARSEcode, index int, codelines []UNPARSEcode) (any, boo
 			break
 		}
 		if indent != setindent {
-			return nil, false, ArErr{"Syntax Error", "invalid indent", code.line, code.path, code.realcode, true}, 1
+			return nil, false, ArErr{"Syntax Error", "invalid indent", i, code.path, codelines[i].code, true}, 1
 		}
 
 		val, _, err, step := translateVal(codelines[i], i, codelines, 2)
@@ -56,9 +56,7 @@ func runDoWrap(d dowrap, stack stack, stacklevel int) (any, ArErr) {
 			return nil, err
 		}
 		switch x := val.(type) {
-		case Return:
-			return x, ArErr{}
-		case Break:
+		case Return, Break, Continue:
 			return x, ArErr{}
 		}
 	}

@@ -254,7 +254,7 @@ func ArString(str string) ArObject {
 			if typeof(a[0]) != "string" {
 				return nil, ArErr{"TypeError", "expected string, got " + typeof(a[0]), 0, "", "", true}
 			}
-			splitby := a[0].(ArObject).obj["__value__"].(string)
+			splitby := ArValidToAny(a[0]).(string)
 			output := []any{}
 			splitted := (strings.Split(str, splitby))
 			for _, v := range splitted {
@@ -553,6 +553,7 @@ func ArString(str string) ArObject {
 				return nil, ArErr{"TypeError", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
 			}
 			a[0] = ArValidToAny(a[0])
+			fmt.Println(str, a[0])
 			return str != a[0], ArErr{}
 		}}
 	obj.obj["__Add__"] = builtinFunc{

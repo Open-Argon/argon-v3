@@ -763,7 +763,7 @@ func notequals(a any, b any, o operationType, stack stack, stacklevel int) (bool
 					o.path,
 				}, stack, stacklevel+1)
 			if !err.EXISTS {
-				return !anyToBool(val), ArErr{}
+				return anyToBool(val), ArErr{}
 			}
 		}
 	}

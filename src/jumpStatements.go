@@ -4,7 +4,7 @@ import (
 	"strings"
 )
 
-var returnCompile = makeRegex(`( *)return( +)(.|\n)+`)
+var returnCompile = makeRegex(`( *)return(( +)(.|\n)+)?`)
 var breakCompile = makeRegex(`( *)break( *)`)
 var continueCompile = makeRegex(`( *)continue( *)`)
 
@@ -45,12 +45,17 @@ func isContinue(code UNPARSEcode) bool {
 }
 
 func parseReturn(code UNPARSEcode, index int, codeline []UNPARSEcode) (CallReturn, bool, ArErr, int) {
-	resp, worked, err, i := translateVal(UNPARSEcode{
-		code:     strings.TrimSpace(code.code)[6:],
-		realcode: code.realcode,
-		line:     code.line,
-		path:     code.path,
-	}, index, codeline, 1)
+	val := strings.TrimSpace(code.code)[6:]
+	var resp any
+	var worked, err, i = true, ArErr{}, 1
+	if val != "" {
+		resp, worked, err, i = translateVal(UNPARSEcode{
+			code:     val,
+			realcode: code.realcode,
+			line:     code.line,
+			path:     code.path,
+		}, index, codeline, 1)
+	}
 	return CallReturn{
 		value: resp,
 		line:  code.line,

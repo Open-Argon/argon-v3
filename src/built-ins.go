@@ -48,6 +48,22 @@ func makeGlobal() ArObject {
 		}
 		return nil, ArErr{TYPE: "TypeError", message: "Cannot create map from '" + typeof(a[0]) + "'", EXISTS: true}
 	}}
+	vars["hex"] = builtinFunc{"hex", func(a ...any) (any, ArErr) {
+		if len(a) != 1 {
+			return nil, ArErr{TYPE: "TypeError", message: "expected 1 argument, got " + fmt.Sprint(len(a)), EXISTS: true}
+		}
+		a[0] = ArValidToAny(a[0])
+		switch x := a[0].(type) {
+		case number:
+			if x.Denom().Cmp(one.Denom()) != 0 {
+				return nil, ArErr{TYPE: "TypeError", message: "Cannot convert non-integer to hex", EXISTS: true}
+			}
+			n := x.Num().Int64()
+			return ArString(fmt.Sprintf("%x", n)), ArErr{}
+		}
+		return nil, ArErr{TYPE: "TypeError", message: "Cannot convert '" + typeof(a[0]) + "' to hex", EXISTS: true}
+	}}
+	vars["throwError"] = builtinFunc{"throwError", ArThrowError}
 	vars["array"] = builtinFunc{"array", func(a ...any) (any, ArErr) {
 		if len(a) == 0 {
 			return ArArray([]any{}), ArErr{}
@@ -238,6 +254,20 @@ func makeGlobal() ArObject {
 		switch x := a[0].(type) {
 		case number:
 			return string([]rune{rune(floor(x).Num().Int64())}), ArErr{}
+		}
+		return nil, ArErr{TYPE: "TypeError", message: "Cannot convert '" + typeof(a[0]) + "' to string", EXISTS: true}
+	}}
+	vars["ord"] = builtinFunc{"ord", func(a ...any) (any, ArErr) {
+		if len(a) != 1 {
+			return nil, ArErr{TYPE: "ord", message: "ord takes 1 argument, got " + fmt.Sprint(len(a)), EXISTS: true}
+		}
+		a[0] = ArValidToAny(a[0])
+		switch x := a[0].(type) {
+		case string:
+			if len(x) != 1 {
+				return nil, ArErr{TYPE: "ord", message: "ord takes a string with only one character, got " + fmt.Sprint(len(a)), EXISTS: true}
+			}
+			return floor(newNumber().SetInt64(int64([]rune(x)[0]))), ArErr{}
 		}
 		return nil, ArErr{TYPE: "TypeError", message: "Cannot convert '" + typeof(a[0]) + "' to string", EXISTS: true}
 	}}

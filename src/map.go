@@ -44,7 +44,7 @@ func runCreateMap(m createMap, stack stack, stacklevel int) (any, ArErr) {
 				true,
 			}
 		}
-		newmap[key] = valVal
+		newmap[keyVal] = valVal
 	}
 	return newmap, ArErr{}
 }
