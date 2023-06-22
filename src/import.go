@@ -73,18 +73,17 @@ func importMod(realpath string, origin string, main bool, global ArObject) (ArOb
 		}
 	} else {
 		pathsToTest = []string{
-			filepath.Join(origin, realpath, "init.ar"),
 			filepath.Join(origin, path),
+			filepath.Join(origin, realpath, "init.ar"),
 			filepath.Join(origin, modules_folder, path),
 			filepath.Join(origin, modules_folder, realpath, "init.ar"),
 			filepath.Join(ex, path),
-			filepath.Join(ex, modules_folder, realpath, "init.ar"),
 			filepath.Join(ex, modules_folder, path),
-			filepath.Join(executable, modules_folder, realpath, "init.ar"),
+			filepath.Join(ex, modules_folder, realpath, "init.ar"),
 			filepath.Join(executable, modules_folder, path),
+			filepath.Join(executable, modules_folder, realpath, "init.ar"),
 		}
 	}
-
 	var p string
 	var found bool
 	for _, p = range pathsToTest {

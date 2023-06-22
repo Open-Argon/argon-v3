@@ -1,7 +1,7 @@
 package main
 
 import (
-	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -84,11 +84,8 @@ func runImport(importOBJ ArImport, stack stack, stacklevel int) (any, ArErr) {
 		return nil, ArErr{"Type Error", "import requires a string, got type '" + typeof(val) + "'", importOBJ.line, importOBJ.path, importOBJ.code, true}
 	}
 	path := val.(string)
-	ex, e := os.Getwd()
-	if e != nil {
-		return nil, ArErr{"File Error", "could not get current working directory", importOBJ.line, importOBJ.path, importOBJ.code, true}
-	}
-	stackMap, err := importMod(path, ex, false, stack[0])
+	parent := filepath.Dir(importOBJ.path)
+	stackMap, err := importMod(path, parent, false, stack[0])
 	if err.EXISTS {
 		if err.line == 0 {
 			err.line = importOBJ.line

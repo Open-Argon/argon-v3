@@ -127,5 +127,11 @@ func ArSocket(args ...any) (any, ArErr) {
 				return nil, ArErr{}
 			},
 		},
+		"isClosed": builtinFunc{
+			"isClosed",
+			func(args ...any) (any, ArErr) {
+				return ln == nil, ArErr{}
+			},
+		},
 	}), ArErr{}
 }
