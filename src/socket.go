@@ -35,7 +35,6 @@ func ArSocket(args ...any) (any, ArErr) {
 		}
 	}
 	ln, err := net.Listen(networktype, ":"+fmt.Sprint(port.Num().Int64()))
-	fmt.Println("Listening on port " + fmt.Sprint(port.Num().Int64()))
 	if err != nil {
 		return ArObject{}, ArErr{
 			TYPE:    "SocketError",
