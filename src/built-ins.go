@@ -11,6 +11,7 @@ func makeGlobal() ArObject {
 	vars["term"] = ArTerm
 	vars["number"] = builtinFunc{"number", ArgonNumber}
 	vars["string"] = builtinFunc{"string", ArgonString}
+	vars["socket"] = builtinFunc{"boolean", ArSocket}
 	vars["infinity"] = infinity
 	vars["map"] = builtinFunc{"map", func(a ...any) (any, ArErr) {
 		if len(a) == 0 {

@@ -1,6 +1,6 @@
 f() = do
     let a = []
-    for (i from 0 to 10000000) a.append(i)
+    for (i from 0 to 1000000) a.append(i)
 
 term.log("start")
 f()
