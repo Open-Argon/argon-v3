@@ -108,6 +108,7 @@ func ArSocket(args ...any) (any, ArErr) {
 						"close",
 						func(args ...any) (any, ArErr) {
 							conn.Close()
+							conn = nil
 							return nil, ArErr{}
 						},
 					},
@@ -124,6 +125,7 @@ func ArSocket(args ...any) (any, ArErr) {
 			"close",
 			func(args ...any) (any, ArErr) {
 				ln.Close()
+				ln = nil
 				return nil, ArErr{}
 			},
 		},

@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+
+	"github.com/gabriel-vasile/mimetype"
 )
 
 var ArFile = Map(anymap{
@@ -19,6 +21,15 @@ func readtext(file *os.File) (string, error) {
 		return "", err
 	}
 	return buf.String(), nil
+}
+
+func readbinary(file *os.File) ([]byte, error) {
+	var buf bytes.Buffer
+	_, err := io.Copy(&buf, file)
+	if err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
 }
 
 func ArRead(args ...any) (any, ArErr) {
@@ -48,6 +59,24 @@ func ArRead(args ...any) (any, ArErr) {
 				return ArObject{}, ArErr{TYPE: "Runtime Error", message: err.Error(), EXISTS: true}
 			}
 			return jsonparse(text), ArErr{}
+		}},
+		"contentType": builtinFunc{"contentType", func(...any) (any, ArErr) {
+			mimetype, err := mimetype.DetectFile(filename)
+			if err != nil {
+				return ArObject{}, ArErr{TYPE: "Runtime Error", message: err.Error(), EXISTS: true}
+			}
+			return mimetype.String(), ArErr{}
+		}},
+		"bytes": builtinFunc{"bytes", func(...any) (any, ArErr) {
+			bytes, err := readbinary(file)
+			if err != nil {
+				return ArObject{}, ArErr{TYPE: "Runtime Error", message: err.Error(), EXISTS: true}
+			}
+			ArBinary := []any{}
+			for _, b := range bytes {
+				ArBinary = append(ArBinary, newNumber().SetInt64(int64(b)))
+			}
+			return ArBinary, ArErr{}
 		}},
 	}), ArErr{}
 }
