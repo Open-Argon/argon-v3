@@ -63,6 +63,12 @@ func makeGlobal() ArObject {
 		}
 		return nil, ArErr{TYPE: "TypeError", message: "Cannot convert '" + typeof(a[0]) + "' to hex", EXISTS: true}
 	}}
+	vars["buffer"] = builtinFunc{"buffer", func(a ...any) (any, ArErr) {
+		if len(a) != 0 {
+			return nil, ArErr{TYPE: "TypeError", message: "expected 0 arguments, got " + fmt.Sprint(len(a)), EXISTS: true}
+		}
+		return ArBuffer([]byte{}), ArErr{}
+	}}
 	vars["throwError"] = builtinFunc{"throwError", ArThrowError}
 	vars["array"] = builtinFunc{"array", func(a ...any) (any, ArErr) {
 		if len(a) == 0 {

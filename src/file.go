@@ -67,16 +67,30 @@ func ArRead(args ...any) (any, ArErr) {
 			}
 			return mimetype.String(), ArErr{}
 		}},
-		"bytes": builtinFunc{"bytes", func(...any) (any, ArErr) {
+		"buffer": builtinFunc{"buffer", func(args ...any) (any, ArErr) {
+			if len(args) > 1 {
+				return ArObject{}, ArErr{TYPE: "Runtime Error", message: "buffer takes 0 or 1 argument, got " + fmt.Sprint(len(args)), EXISTS: true}
+			}
+			if len(args) == 1 {
+				if typeof(args[0]) != "number" {
+					return ArObject{}, ArErr{TYPE: "Runtime Error", message: "buffer takes a number not type '" + typeof(args[0]) + "'", EXISTS: true}
+				}
+				size := args[0].(number)
+				if size.Denom().Int64() != 1 {
+					return ArObject{}, ArErr{TYPE: "Runtime Error", message: "buffer takes an integer not type '" + typeof(args[0]) + "'", EXISTS: true}
+				}
+				buf := make([]byte, size.Num().Int64())
+				n, err := file.Read(buf)
+				if err != nil {
+					return ArObject{}, ArErr{TYPE: "Runtime Error", message: err.Error(), EXISTS: true}
+				}
+				return ArBuffer(buf[:n]), ArErr{}
+			}
 			bytes, err := readbinary(file)
 			if err != nil {
 				return ArObject{}, ArErr{TYPE: "Runtime Error", message: err.Error(), EXISTS: true}
 			}
-			ArBinary := []any{}
-			for _, b := range bytes {
-				ArBinary = append(ArBinary, newNumber().SetInt64(int64(b)))
-			}
-			return ArBinary, ArErr{}
+			return ArBuffer(bytes), ArErr{}
 		}},
 	}), ArErr{}
 }
@@ -103,6 +117,17 @@ func ArWrite(args ...any) (any, ArErr) {
 				return ArObject{}, ArErr{TYPE: "Runtime Error", message: "text takes a string not type '" + typeof(args[0]) + "'", EXISTS: true}
 			}
 			file.Write([]byte(args[0].(string)))
+			return nil, ArErr{}
+		}},
+		"buffer": builtinFunc{"buffer", func(args ...any) (any, ArErr) {
+			if len(args) != 1 {
+				return ArObject{}, ArErr{TYPE: "Runtime Error", message: "buffer takes 1 argument, got " + fmt.Sprint(len(args)), EXISTS: true}
+			}
+			if typeof(args[0]) != "buffer" {
+				return ArObject{}, ArErr{TYPE: "Runtime Error", message: "buffer takes a buffer not type '" + typeof(args[0]) + "'", EXISTS: true}
+			}
+			args[0] = ArValidToAny(args[0])
+			file.Write(args[0].([]byte))
 			return nil, ArErr{}
 		}},
 		"json": builtinFunc{"json", func(args ...any) (any, ArErr) {

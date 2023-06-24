@@ -12,7 +12,6 @@ import (
 )
 
 func anyToArgon(x any, quote bool, simplify bool, depth int, indent int, colored bool, plain int) string {
-	x = ArValidToAny(x)
 	output := []string{}
 	maybenewline := ""
 	if plain == 1 {
@@ -75,7 +74,37 @@ func anyToArgon(x any, quote bool, simplify bool, depth int, indent int, colored
 			output = append(output, "\x1b[0m")
 		}
 	case ArObject:
-
+		if callable, ok := x.obj["__string__"]; ok && !quote {
+			val, err := runCall(
+				call{
+					callable: callable,
+					args:     []any{},
+				},
+				stack{},
+				0,
+			)
+			if !err.EXISTS {
+				output = append(output, anyToArgon(val, false, simplify, depth, indent, colored, plain))
+				break
+			}
+		} else if callable, ok := x.obj["__repr__"]; ok {
+			val, err := runCall(
+				call{
+					callable: callable,
+					args:     []any{},
+				},
+				stack{},
+				0,
+			)
+			if !err.EXISTS {
+				output = append(output, anyToArgon(val, false, simplify, depth, indent, colored, plain))
+				break
+			}
+		} else if val, ok := x.obj["__value__"]; ok {
+			output = append(output, anyToArgon(val, quote, simplify, depth, indent, colored, plain))
+			break
+		}
+		output = append(output, "<object>")
 	case anymap:
 		if len(x) == 0 {
 			return "{}"

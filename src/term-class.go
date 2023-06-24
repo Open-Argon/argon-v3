@@ -2,10 +2,12 @@ package main
 
 import (
 	"fmt"
+	"sync"
 	"time"
 )
 
 var timing = anymap{}
+var timingSync = sync.RWMutex{}
 
 var ArTerm = Map(anymap{
 	"log": builtinFunc{"log", func(args ...any) (any, ArErr) {
@@ -100,7 +102,9 @@ var ArTerm = Map(anymap{
 		if len(args) > 0 {
 			id = ArValidToAny(args[0])
 		}
+		timingSync.Lock()
 		timing[id] = time.Now()
+		timingSync.Unlock()
 		return nil, ArErr{}
 	},
 	},
@@ -109,11 +113,15 @@ var ArTerm = Map(anymap{
 		if len(args) > 0 {
 			id = ArValidToAny(args[0])
 		}
+		timingSync.RLock()
 		if _, ok := timing[id]; !ok {
 			return nil, ArErr{TYPE: "TypeError", message: "Cannot find timer with id '" + fmt.Sprint(id) + "'", EXISTS: true}
 		}
 		timesince := time.Since(timing[id].(time.Time))
+		timingSync.RUnlock()
+		timingSync.Lock()
 		delete(timing, id)
+		timingSync.Unlock()
 		if id == nil {
 			id = "Timer"
 		}

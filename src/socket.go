@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net"
+	"time"
 )
 
 func ArSocket(args ...any) (any, ArErr) {
@@ -46,6 +47,13 @@ func ArSocket(args ...any) (any, ArErr) {
 		"accept": builtinFunc{
 			"accept",
 			func(args ...any) (any, ArErr) {
+				if ln == nil {
+					return ArObject{}, ArErr{
+						TYPE:    "SocketError",
+						message: "Socket is closed",
+						EXISTS:  true,
+					}
+				}
 				conn, err := ln.Accept()
 				if err != nil {
 					return ArObject{}, ArErr{
@@ -61,13 +69,14 @@ func ArSocket(args ...any) (any, ArErr) {
 							if len(args) != 1 {
 								return ArObject{}, ArErr{
 									TYPE:    "SocketError",
-									message: "Socket.read() takes exactly 1 argument",
+									message: "Socket.readData() takes exactly 1 argument",
 									EXISTS:  true,
 								}
-							} else if typeof(args[0]) != "number" {
+							}
+							if conn == nil {
 								return ArObject{}, ArErr{
 									TYPE:    "SocketError",
-									message: "Socket.read() argument must be a number",
+									message: "Connection is closed",
 									EXISTS:  true,
 								}
 							}
@@ -80,33 +89,7 @@ func ArSocket(args ...any) (any, ArErr) {
 									EXISTS:  true,
 								}
 							}
-							return ArString(string(buf[:n])), ArErr{}
-						},
-					},
-					"writeData": builtinFunc{
-						"writeData",
-						func(args ...any) (any, ArErr) {
-							if len(args) != 1 {
-								return ArObject{}, ArErr{
-									TYPE:    "SocketError",
-									message: "Socket.writeData() takes exactly 1 argument",
-									EXISTS:  true,
-								}
-							}
-							data := ArValidToAny(args[0])
-							switch x := data.(type) {
-							case []any:
-								bytes := []byte{}
-								for _, v := range x {
-									bytes = append(bytes, byte(v.(number).Num().Int64()))
-								}
-								conn.Write(bytes)
-								return nil, ArErr{}
-							}
-							return nil, ArErr{
-								TYPE:    "SocketError",
-								message: "Socket.writeData() argument must be a array of numbers",
-							}
+							return ArBuffer(buf[:n]), ArErr{}
 						},
 					},
 					"write": builtinFunc{
@@ -115,24 +98,53 @@ func ArSocket(args ...any) (any, ArErr) {
 							if len(args) != 1 {
 								return ArObject{}, ArErr{
 									TYPE:    "SocketError",
-									message: "Socket.write() takes exactly 1 argument",
-									EXISTS:  true,
-								}
-							} else if typeof(args[0]) != "string" {
-								return ArObject{}, ArErr{
-									TYPE:    "SocketError",
-									message: "Socket.write() argument must be a string",
+									message: "Socket.writeData() takes exactly 1 argument",
 									EXISTS:  true,
 								}
 							}
-							data := ArValidToAny(args[0]).(string)
-							conn.Write([]byte(data))
-							return nil, ArErr{}
+							if conn == nil {
+								return ArObject{}, ArErr{
+									TYPE:    "SocketError",
+									message: "Connection is closed",
+									EXISTS:  true,
+								}
+							}
+							data := ArValidToAny(args[0])
+							switch x := data.(type) {
+							case []any:
+								bytes := []byte{}
+								for _, v := range x {
+									if typeof(v) != "number" && v.(number).Denom().Int64() != 1 {
+										return ArObject{}, ArErr{
+											TYPE:    "SocketError",
+											message: "Socket.writeData() argument must be a array of integers",
+											EXISTS:  true,
+										}
+									}
+									bytes = append(bytes, byte(v.(number).Num().Int64()))
+								}
+								conn.Write(bytes)
+								return nil, ArErr{}
+							case []byte:
+								conn.Write(x)
+								return nil, ArErr{}
+							}
+							return nil, ArErr{
+								TYPE:    "SocketError",
+								message: "Socket.writeData() argument must be a array of numbers",
+							}
 						},
 					},
 					"close": builtinFunc{
 						"close",
 						func(args ...any) (any, ArErr) {
+							if conn == nil {
+								return ArObject{}, ArErr{
+									TYPE:    "SocketError",
+									message: "Connection is already closed",
+									EXISTS:  true,
+								}
+							}
 							conn.Close()
 							conn = nil
 							return nil, ArErr{}
@@ -141,12 +153,31 @@ func ArSocket(args ...any) (any, ArErr) {
 					"isClosed": builtinFunc{
 						"isClosed",
 						func(args ...any) (any, ArErr) {
-							return conn == nil, ArErr{}
+							if conn == nil {
+								return true, ArErr{}
+							}
+							conn.SetWriteDeadline(time.Now().Add(1 * time.Millisecond))
+							_, err := conn.Write([]byte{})
+							conn.SetWriteDeadline(time.Time{})
+							if err != nil {
+								conn.Close()
+								conn = nil
+								return true, ArErr{}
+							}
+							return false, ArErr{}
+
 						},
 					},
 					"RemoteAddr": builtinFunc{
 						"RemoteAddr",
 						func(args ...any) (any, ArErr) {
+							if conn == nil {
+								return ArObject{}, ArErr{
+									TYPE:    "SocketError",
+									message: "Connection is closed",
+									EXISTS:  true,
+								}
+							}
 							return ArString(conn.RemoteAddr().String()), ArErr{}
 						},
 					},
@@ -162,6 +193,13 @@ func ArSocket(args ...any) (any, ArErr) {
 		"close": builtinFunc{
 			"close",
 			func(args ...any) (any, ArErr) {
+				if ln == nil {
+					return ArObject{}, ArErr{
+						TYPE:    "SocketError",
+						message: "Socket is already closed",
+						EXISTS:  true,
+					}
+				}
 				ln.Close()
 				ln = nil
 				return nil, ArErr{}

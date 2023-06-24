@@ -8,6 +8,10 @@ func AnyToArValid(arr any) any {
 		return ArString(arr)
 	case anymap:
 		return Map(arr)
+	case []byte:
+		return ArBuffer(arr)
+	case byte:
+		return ArByte(arr)
 	default:
 		return arr
 	}
