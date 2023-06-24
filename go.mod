@@ -8,7 +8,7 @@ require (
 )
 
 require (
-	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
+	github.com/gabriel-vasile/mimetype v1.4.2
 	golang.org/x/net v0.8.0 // indirect
 )
 

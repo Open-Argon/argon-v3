@@ -9,9 +9,13 @@ func makeGlobal() ArObject {
 	var vars = anymap{}
 	vars["global"] = vars
 	vars["term"] = ArTerm
+	vars["ArgonVersion"] = ArString(VERSION)
 	vars["number"] = builtinFunc{"number", ArgonNumber}
 	vars["string"] = builtinFunc{"string", ArgonString}
-	vars["socket"] = builtinFunc{"boolean", ArSocket}
+	vars["socket"] = Map(anymap{
+		"server": builtinFunc{"server", ArSocketServer},
+		"client": builtinFunc{"client", ArSocketClient},
+	})
 	vars["infinity"] = infinity
 	vars["map"] = builtinFunc{"map", func(a ...any) (any, ArErr) {
 		if len(a) == 0 {
@@ -276,6 +280,60 @@ func makeGlobal() ArObject {
 			return floor(newNumber().SetInt64(int64([]rune(x)[0]))), ArErr{}
 		}
 		return nil, ArErr{TYPE: "TypeError", message: "Cannot convert '" + typeof(a[0]) + "' to string", EXISTS: true}
+	}}
+	vars["max"] = builtinFunc{"max", func(a ...any) (any, ArErr) {
+		if len(a) != 1 {
+			return nil, ArErr{TYPE: "runtime Error", message: "max takes 1 argument, got " + fmt.Sprint(len(a)), EXISTS: true}
+		}
+		a[0] = ArValidToAny(a[0])
+		switch x := a[0].(type) {
+		case []any:
+			if len(x) == 0 {
+				return nil, ArErr{TYPE: "runtime Error", message: "max takes a non-empty array", EXISTS: true}
+			}
+			var max number
+			for i, v := range x {
+				switch m := v.(type) {
+				case number:
+					if i == 0 {
+						max = m
+					} else {
+						if m.Cmp(max) == 1 {
+							max = m
+						}
+					}
+				}
+			}
+			return max, ArErr{}
+		}
+		return nil, ArErr{TYPE: "TypeError", message: "Cannot get max of type '" + typeof(a[0]) + "'", EXISTS: true}
+	}}
+	vars["min"] = builtinFunc{"min", func(a ...any) (any, ArErr) {
+		if len(a) != 1 {
+			return nil, ArErr{TYPE: "runtime Error", message: "max takes 1 argument, got " + fmt.Sprint(len(a)), EXISTS: true}
+		}
+		a[0] = ArValidToAny(a[0])
+		switch x := a[0].(type) {
+		case []any:
+			if len(x) == 0 {
+				return nil, ArErr{TYPE: "runtime Error", message: "max takes a non-empty array", EXISTS: true}
+			}
+			var max number
+			for i, v := range x {
+				switch m := v.(type) {
+				case number:
+					if i == 0 {
+						max = m
+					} else {
+						if m.Cmp(max) == -1 {
+							max = m
+						}
+					}
+				}
+			}
+			return max, ArErr{}
+		}
+		return nil, ArErr{TYPE: "TypeError", message: "Cannot get max of type '" + typeof(a[0]) + "'", EXISTS: true}
 	}}
 	return Map(vars)
 }

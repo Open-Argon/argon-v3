@@ -92,6 +92,30 @@ func ArRead(args ...any) (any, ArErr) {
 			}
 			return ArBuffer(bytes), ArErr{}
 		}},
+		"seek": builtinFunc{"seek", func(args ...any) (any, ArErr) {
+			if len(args) != 1 {
+				return ArObject{}, ArErr{TYPE: "Runtime Error", message: "seek takes 1 argument, got " + fmt.Sprint(len(args)), EXISTS: true}
+			}
+			if typeof(args[0]) != "number" {
+				return ArObject{}, ArErr{TYPE: "Runtime Error", message: "seek takes a number not type '" + typeof(args[0]) + "'", EXISTS: true}
+			}
+			offset := args[0].(number)
+			if offset.Denom().Int64() != 1 {
+				return ArObject{}, ArErr{TYPE: "Runtime Error", message: "seek takes an integer not type '" + typeof(args[0]) + "'", EXISTS: true}
+			}
+			_, err := file.Seek(offset.Num().Int64(), io.SeekStart)
+			if err != nil {
+				return ArObject{}, ArErr{TYPE: "Runtime Error", message: err.Error(), EXISTS: true}
+			}
+			return nil, ArErr{}
+		}},
+		"size": builtinFunc{"size", func(...any) (any, ArErr) {
+			info, err := file.Stat()
+			if err != nil {
+				return ArObject{}, ArErr{TYPE: "Runtime Error", message: err.Error(), EXISTS: true}
+			}
+			return newNumber().SetInt64(info.Size()), ArErr{}
+		}},
 	}), ArErr{}
 }
 

@@ -71,9 +71,6 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine i
 			return resp, worked, err, i
 		}
 	}
-	if isnot(code) {
-		return parseNot(code, index, codelines, isLine)
-	}
 	if isSetVariable(code) {
 		resp, worked, err, i = parseSetVariable(code, index, codelines, isLine)
 		if worked {
@@ -119,6 +116,12 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine i
 			return operation, worked, err, step
 		} else if err.EXISTS {
 			return nil, worked, err, step
+		}
+	}
+	if isnot(code) {
+		resp, worked, err, i = parseNot(code, index, codelines, isLine)
+		if worked {
+			return resp, worked, err, i
 		}
 	}
 	if isCall(code) {

@@ -18,6 +18,10 @@ func typeof(val any) string {
 		return "function"
 	case builtinFunc:
 		return "function"
+	case byte:
+		return "byte"
+	case []byte:
+		return "buffer"
 	case ArObject:
 		if val, ok := x.obj["__name__"]; ok {
 			val := ArValidToAny(val)

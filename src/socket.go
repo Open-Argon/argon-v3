@@ -6,7 +6,152 @@ import (
 	"time"
 )
 
-func ArSocket(args ...any) (any, ArErr) {
+func ArSocketClient(args ...any) (any, ArErr) {
+	if len(args) != 2 {
+		return ArObject{}, ArErr{
+			TYPE:    "SocketError",
+			message: "Socket takes exactly 2 arguments",
+			EXISTS:  true,
+		}
+	} else if typeof(args[0]) != "string" {
+		return ArObject{}, ArErr{
+			TYPE:    "SocketError",
+			message: "Socket type must be a string",
+			EXISTS:  true,
+		}
+	} else if typeof(args[1]) != "string" {
+		return ArObject{}, ArErr{
+			TYPE:    "SocketError",
+			message: "Socket address must be a string",
+			EXISTS:  true,
+		}
+	}
+	networktype := ArValidToAny(args[0]).(string)
+	address := ArValidToAny(args[1]).(string)
+	conn, err := net.Dial(networktype, address)
+	if err != nil {
+		return ArObject{}, ArErr{
+			TYPE:    "SocketError",
+			message: fmt.Sprintf("Socket connection failed: %s", err.Error()),
+			EXISTS:  true,
+		}
+	}
+	return ArObject{
+		obj: anymap{
+			"read": builtinFunc{
+				"read",
+				func(args ...any) (any, ArErr) {
+					if len(args) != 1 {
+						return ArObject{}, ArErr{
+							TYPE:    "SocketError",
+							message: "Socket.readData() takes exactly 1 argument",
+							EXISTS:  true,
+						}
+					}
+					if conn == nil {
+						return ArObject{}, ArErr{
+							TYPE:    "SocketError",
+							message: "Connection is closed",
+							EXISTS:  true,
+						}
+					}
+					buf := make([]byte, args[0].(number).Num().Int64())
+					n, err := conn.Read(buf)
+					if err != nil {
+						return ArObject{}, ArErr{
+							TYPE:    "SocketError",
+							message: fmt.Sprintf("Socket read failed: %s", err.Error()),
+							EXISTS:  true,
+						}
+					}
+					return ArBuffer(buf[:n]), ArErr{}
+				}},
+			"write": builtinFunc{
+				"write",
+				func(args ...any) (any, ArErr) {
+					if len(args) != 1 {
+						return nil, ArErr{
+							TYPE:    "TypeError",
+							message: fmt.Sprintf("write() takes exactly 1 argument (%d given)", len(args)),
+							EXISTS:  true,
+						}
+					}
+					if typeof(args[0]) != "buffer" {
+						return ArObject{}, ArErr{
+							TYPE:    "TypeError",
+							message: fmt.Sprintf("write() argument must be a buffer, not %s", typeof(args[0])),
+							EXISTS:  true,
+						}
+					}
+					if conn == nil {
+						return ArObject{}, ArErr{
+							TYPE:    "SocketError",
+							message: "Connection is closed",
+							EXISTS:  true,
+						}
+					}
+					args[0] = ArValidToAny(args[0])
+					if typeof(args[0]) != "buffer" {
+						return ArObject{}, ArErr{
+							TYPE:    "TypeError",
+							message: fmt.Sprintf("write() argument must be a buffer, not %s", typeof(args[0])),
+							EXISTS:  true,
+						}
+					}
+					_, err := conn.Write(args[0].([]byte))
+					if err != nil {
+						return ArObject{}, ArErr{
+							TYPE:    "SocketError",
+							message: err.Error(),
+							EXISTS:  true,
+						}
+					}
+					return nil, ArErr{}
+				}},
+			"close": builtinFunc{
+				"close",
+				func(args ...any) (any, ArErr) {
+					if conn == nil {
+						return ArObject{}, ArErr{
+							TYPE:    "SocketError",
+							message: "Connection is already closed",
+							EXISTS:  true,
+						}
+					}
+					err := conn.Close()
+					if err != nil {
+						return ArObject{}, ArErr{
+							TYPE:    "SocketError",
+							message: err.Error(),
+							EXISTS:  true,
+						}
+					}
+					conn = nil
+					return nil, ArErr{}
+				},
+			},
+			"isClosed": builtinFunc{
+				"isClosed",
+				func(args ...any) (any, ArErr) {
+					if conn == nil {
+						return true, ArErr{}
+					}
+					conn.SetWriteDeadline(time.Now().Add(1 * time.Millisecond))
+					_, err := conn.Write([]byte{})
+					conn.SetWriteDeadline(time.Time{})
+					if err != nil {
+						conn.Close()
+						conn = nil
+						return true, ArErr{}
+					}
+					return false, ArErr{}
+
+				},
+			},
+		}}, ArErr{}
+}
+
+func ArSocketServer(args ...any) (any, ArErr) {
 	if len(args) != 2 {
 		return ArObject{}, ArErr{
 			TYPE:    "SocketError",

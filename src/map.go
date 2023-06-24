@@ -114,8 +114,9 @@ func parseMap(code UNPARSEcode, index int, codelines []UNPARSEcode) (any, bool, 
 	}, true, ArErr{}, countIndex
 }
 
+var mutex = sync.RWMutex{}
+
 func Map(m anymap) ArObject {
-	var mutex = sync.RWMutex{}
 	obj := ArObject{
 		obj: anymap{
 			"__value__": m,
