@@ -335,5 +335,6 @@ func makeGlobal() ArObject {
 		}
 		return nil, ArErr{TYPE: "TypeError", message: "Cannot get max of type '" + typeof(a[0]) + "'", EXISTS: true}
 	}}
+	vars["path"] = ArPath
 	return Map(vars)
 }

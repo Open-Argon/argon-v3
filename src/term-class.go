@@ -80,7 +80,7 @@ var ArTerm = Map(anymap{
 		}},
 	}),
 	"error": builtinFunc{"error", func(args ...any) (any, ArErr) {
-		output := []any{"error: "}
+		output := []any{}
 		for i := 0; i < len(args); i++ {
 			output = append(output, anyToArgon(args[i], false, true, 3, 0, false, 0))
 		}
@@ -89,7 +89,7 @@ var ArTerm = Map(anymap{
 	},
 	},
 	"warn": builtinFunc{"error", func(args ...any) (any, ArErr) {
-		output := []any{"warning: "}
+		output := []any{}
 		for i := 0; i < len(args); i++ {
 			output = append(output, anyToArgon(args[i], false, true, 3, 0, false, 0))
 		}

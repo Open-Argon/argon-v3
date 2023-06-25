@@ -116,6 +116,13 @@ func ArRead(args ...any) (any, ArErr) {
 			}
 			return newNumber().SetInt64(info.Size()), ArErr{}
 		}},
+		"ModTime": builtinFunc{"ModTime", func(...any) (any, ArErr) {
+			info, err := file.Stat()
+			if err != nil {
+				return ArObject{}, ArErr{TYPE: "Runtime Error", message: err.Error(), EXISTS: true}
+			}
+			return ArTimeClass(info.ModTime()), ArErr{}
+		}},
 	}), ArErr{}
 }
 
