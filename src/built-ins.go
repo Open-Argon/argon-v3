@@ -336,5 +336,11 @@ func makeGlobal() ArObject {
 		return nil, ArErr{TYPE: "TypeError", message: "Cannot get max of type '" + typeof(a[0]) + "'", EXISTS: true}
 	}}
 	vars["path"] = ArPath
+	vars["typeof"] = builtinFunc{"typeof", func(a ...any) (any, ArErr) {
+		if len(a) != 1 {
+			return nil, ArErr{TYPE: "typeof", message: "typeof takes 1 argument, got " + fmt.Sprint(len(a)), EXISTS: true}
+		}
+		return ArString(typeof(a[0])), ArErr{}
+	}}
 	return Map(vars)
 }
