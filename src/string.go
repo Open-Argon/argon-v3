@@ -565,7 +565,7 @@ func ArString(str string) ArObject {
 			if typeof(a[0]) != "string" {
 				a[0] = anyToArgon(a[0], false, false, 3, 0, false, 0)
 			}
-			return strings.Join([]string{str, a[0].(string)}, ""), ArErr{}
+			return str + a[0].(string), ArErr{}
 		}}
 	obj.obj["__PostAdd__"] = builtinFunc{
 		"__PostAdd__",
@@ -577,7 +577,7 @@ func ArString(str string) ArObject {
 			if typeof(a[0]) != "string" {
 				a[0] = anyToArgon(a[0], false, false, 3, 0, false, 0)
 			}
-			return strings.Join([]string{a[0].(string), str}, ""), ArErr{}
+			return a[0].(string) + str, ArErr{}
 		}}
 	obj.obj["__Multiply__"] = builtinFunc{
 		"__Multiply__",
@@ -596,6 +596,18 @@ func ArString(str string) ArObject {
 				return nil, ArErr{"ValueError", "cannot multiply string by negative number", 0, "", "", true}
 			}
 			return strings.Repeat(str, int(n.Num().Int64())), ArErr{}
+		}}
+	obj.obj["__NotContains__"] = builtinFunc{
+		"__NotContains__",
+		func(a ...any) (any, ArErr) {
+			if len(a) != 1 {
+				return nil, ArErr{"TypeError", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
+			}
+			if typeof(a[0]) != "string" {
+				return nil, ArErr{"TypeError", "cannot check if string contains " + typeof(a[0]), 0, "", "", true}
+			}
+			a[0] = ArValidToAny(a[0])
+			return !strings.Contains(str, a[0].(string)), ArErr{}
 		}}
 	obj.obj["__Contains__"] = builtinFunc{
 		"__Contains__",

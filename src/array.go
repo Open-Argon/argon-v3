@@ -597,6 +597,32 @@ func ArArray(arr []any) ArObject {
 			return false, ArErr{}
 		},
 	}
+	val.obj["__NotContains__"] = builtinFunc{
+		"__NotContains__",
+		func(args ...any) (any, ArErr) {
+			if len(args) != 1 {
+				return nil, ArErr{
+					TYPE:    "TypeError",
+					message: "missing argument",
+					EXISTS:  true,
+				}
+			}
+			for _, v := range arr {
+				res, err := runOperation(operationType{
+					operation: 9,
+					value1:    v,
+					value2:    args[0],
+				}, stack{}, 0)
+				if err.EXISTS {
+					return nil, err
+				}
+				if anyToBool(res) {
+					return false, ArErr{}
+				}
+			}
+			return true, ArErr{}
+		},
+	}
 	val.obj["__Boolean__"] = builtinFunc{
 		"__Boolean__",
 		func(args ...any) (any, ArErr) {

@@ -139,7 +139,7 @@ func ArBuffer(buf []byte) ArObject {
 			default:
 				return nil, ArErr{
 					TYPE:    "TypeError",
-					message: "expected string or []byte, got " + typeof(x),
+					message: "expected string or buffer, got " + typeof(x),
 					EXISTS:  true,
 				}
 			}
@@ -190,5 +190,170 @@ func ArBuffer(buf []byte) ArObject {
 			}
 		},
 	}
+	obj.obj["append"] = builtinFunc{
+		"append",
+		func(a ...any) (any, ArErr) {
+			if len(a) != 1 {
+				return nil, ArErr{
+					TYPE:    "TypeError",
+					message: "expected 1 argument, got " + fmt.Sprint(len(a)),
+					EXISTS:  true,
+				}
+			}
+			a[0] = ArValidToAny(a[0])
+			switch x := a[0].(type) {
+			case number:
+				if x.Denom().Cmp(one.Denom()) != 0 {
+					return nil, ArErr{
+						TYPE:    "TypeError",
+						message: "Cannot convert non-integer to byte",
+						EXISTS:  true,
+					}
+				}
+				buf = append(buf, byte(x.Num().Int64()))
+			case string:
+				buf = append(buf, []byte(x)...)
+			case []byte:
+				buf = append(buf, x...)
+			case []any:
+				for _, v := range x {
+					switch y := v.(type) {
+					case number:
+						if y.Denom().Cmp(one.Denom()) != 0 {
+							return nil, ArErr{
+								TYPE:    "TypeError",
+								message: "Cannot convert non-integer to byte",
+								EXISTS:  true,
+							}
+						}
+						buf = append(buf, byte(y.Num().Int64()))
+					default:
+						return nil, ArErr{
+							TYPE:    "TypeError",
+							message: "Cannot convert " + typeof(v) + " to byte",
+							EXISTS:  true,
+						}
+					}
+				}
+			default:
+				return nil, ArErr{
+					TYPE:    "TypeError",
+					message: "expected string, buffer or array, got " + typeof(x),
+					EXISTS:  true,
+				}
+			}
+			obj.obj["__value__"] = buf
+			obj.obj["length"] = newNumber().SetInt64(int64(len(buf)))
+			return obj, ArErr{}
+		},
+	}
+	obj.obj["insert"] = builtinFunc{
+		"insert",
+		func(a ...any) (any, ArErr) {
+			if len(a) != 2 {
+				return nil, ArErr{
+					TYPE:    "TypeError",
+					message: "expected 2 arguments, got " + fmt.Sprint(len(a)),
+					EXISTS:  true,
+				}
+			}
+			poss := ArValidToAny(a[0])
+			values := ArValidToAny(a[1])
+			if typeof(poss) != "number" {
+				return nil, ArErr{
+					TYPE:    "TypeError",
+					message: "expected number, got " + typeof(poss),
+					EXISTS:  true,
+				}
+			}
+			pos := poss.(number)
+			if pos.Denom().Cmp(one.Denom()) != 0 {
+				return nil, ArErr{
+					TYPE:    "TypeError",
+					message: "position must be an integer",
+					EXISTS:  true,
+				}
+			}
+			posNum := pos.Num().Int64()
+			switch x := values.(type) {
+			case number:
+				if x.Denom().Cmp(one.Denom()) != 0 {
+					return nil, ArErr{
+						TYPE:    "TypeError",
+						message: "Cannot convert non-integer to byte",
+						EXISTS:  true,
+					}
+				}
+				buf = append(buf[:posNum], append([]byte{byte(x.Num().Int64())}, buf[posNum:]...)...)
+			case string:
+				buf = append(buf[:posNum], append([]byte(x), buf[posNum:]...)...)
+			case []byte:
+				buf = append(buf[:posNum], append(x, buf[posNum:]...)...)
+			case []any:
+				for _, v := range x {
+					switch y := v.(type) {
+					case number:
+						if y.Denom().Cmp(one.Denom()) != 0 {
+							return nil, ArErr{
+								TYPE:    "TypeError",
+								message: "Cannot convert non-integer to byte",
+								EXISTS:  true,
+							}
+						}
+						buf = append(buf[:posNum], append([]byte{byte(y.Num().Int64())}, buf[posNum:]...)...)
+					default:
+						return nil, ArErr{
+							TYPE:    "TypeError",
+							message: "Cannot convert " + typeof(v) + " to byte",
+							EXISTS:  true,
+						}
+					}
+				}
+			default:
+				return nil, ArErr{
+					TYPE:    "TypeError",
+					message: "expected string or buffer, got " + typeof(x),
+					EXISTS:  true,
+				}
+			}
+			obj.obj["__value__"] = buf
+			obj.obj["length"] = newNumber().SetInt64(int64(len(buf)))
+			return obj, ArErr{}
+		},
+	}
+	obj.obj["remove"] = builtinFunc{
+		"remove",
+		func(a ...any) (any, ArErr) {
+			if len(a) != 1 {
+				return nil, ArErr{
+					TYPE:    "TypeError",
+					message: "expected 1 argument, got " + fmt.Sprint(len(a)),
+					EXISTS:  true,
+				}
+			}
+			poss := ArValidToAny(a[0])
+			if typeof(poss) != "number" {
+				return nil, ArErr{
+					TYPE:    "TypeError",
+					message: "expected number, got " + typeof(poss),
+					EXISTS:  true,
+				}
+			}
+			pos := poss.(number)
+			if pos.Denom().Cmp(one.Denom()) != 0 {
+				return nil, ArErr{
+					TYPE:    "TypeError",
+					message: "position must be an integer",
+					EXISTS:  true,
+				}
+			}
+			posNum := pos.Num().Int64()
+			buf = append(buf[:posNum], buf[posNum+1:]...)
+			obj.obj["__value__"] = buf
+			obj.obj["length"] = newNumber().SetInt64(int64(len(buf)))
+			return obj, ArErr{}
+		},
+	}
+
 	return obj
 }
