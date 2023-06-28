@@ -15,7 +15,7 @@ var octalCompile = makeRegex("( *)(-)?(0o[0-7]+(\\.[0-7]+)?(e((\\-|\\+)?([0-9]+(
 type number = *big.Rat
 
 // create a new number type
-func newNumber() *big.Rat {
+func newNumber() number {
 	return new(big.Rat)
 }
 

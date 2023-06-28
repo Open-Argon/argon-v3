@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"net"
 	"time"
 )
@@ -65,6 +66,59 @@ func ArSocketClient(args ...any) (any, ArErr) {
 						}
 					}
 					return ArBuffer(buf[:n]), ArErr{}
+				}},
+			"readUntil": builtinFunc{
+				"readUntil",
+				func(args ...any) (any, ArErr) {
+					if len(args) != 1 {
+						return ArObject{}, ArErr{
+							TYPE:    "SocketError",
+							message: "Socket.readUntil() takes exactly 1 argument",
+							EXISTS:  true,
+						}
+					}
+					if conn == nil {
+						return ArObject{}, ArErr{
+							TYPE:    "SocketError",
+							message: "Connection is closed",
+							EXISTS:  true,
+						}
+					}
+					value := ArValidToAny(args[0])
+					if typeof(value) != "buffer" {
+						return ArObject{}, ArErr{
+							TYPE:    "TypeError",
+							message: fmt.Sprintf("Socket.readUntil() argument must be a buffer, not %s", typeof(value)),
+							EXISTS:  true,
+						}
+					}
+					endBuf := value.([]byte)
+					reader := io.Reader(conn)
+					buf := make([]byte, len(endBuf))
+					var data []byte
+					for {
+						_, err := reader.Read(buf)
+						if err != nil {
+							return ArObject{}, ArErr{
+								TYPE:    "SocketError",
+								message: fmt.Sprintf("Socket read failed: %s", err.Error()),
+								EXISTS:  true,
+							}
+						}
+						data = append(data, buf[0])
+						if len(data) >= len(endBuf) {
+							dataSlice := data[len(data)-len(endBuf):]
+							for i := 0; i < len(endBuf); i++ {
+								if dataSlice[i] != endBuf[i] {
+									break
+								}
+								if i == len(endBuf)-1 {
+									return ArBuffer(data), ArErr{}
+								}
+							}
+						}
+					}
+
 				}},
 			"write": builtinFunc{
 				"write",
@@ -235,6 +289,120 @@ func ArSocketServer(args ...any) (any, ArErr) {
 								}
 							}
 							return ArBuffer(buf[:n]), ArErr{}
+						},
+					},
+					"readUntil": builtinFunc{
+						"readUntil",
+						func(args ...any) (any, ArErr) {
+							if len(args) != 1 {
+								return ArObject{}, ArErr{
+									TYPE:    "SocketError",
+									message: "Socket.readUntil() takes exactly 1 argument",
+									EXISTS:  true,
+								}
+							}
+							if conn == nil {
+								return ArObject{}, ArErr{
+									TYPE:    "SocketError",
+									message: "Connection is closed",
+									EXISTS:  true,
+								}
+							}
+							value := ArValidToAny(args[0])
+							if typeof(value) != "buffer" {
+								return ArObject{}, ArErr{
+									TYPE:    "TypeError",
+									message: fmt.Sprintf("Socket.readUntil() argument must be a buffer, not %s", typeof(value)),
+									EXISTS:  true,
+								}
+							}
+							endBuf := value.([]byte)
+							var data []byte
+							buf := make([]byte, 1)
+							lookingAt := 0
+							for {
+								n, err := io.ReadFull(conn, buf)
+								if err != nil {
+									return ArBuffer(data), ArErr{}
+								}
+								chunk := buf[:n]
+								data = append(data, chunk...)
+								for i := 0; i < n; i++ {
+									if chunk[i] == endBuf[lookingAt] {
+										lookingAt++
+										if lookingAt == len(endBuf) {
+											data = append(data, chunk...)
+											return ArBuffer(data), ArErr{}
+										}
+									} else {
+										lookingAt = 0
+									}
+								}
+
+							}
+						}},
+					"clearTimeout": builtinFunc{
+						"clearTimeout",
+						func(args ...any) (any, ArErr) {
+							if len(args) != 0 {
+								return ArObject{}, ArErr{
+									TYPE:    "SocketError",
+									message: "Socket.clearTimeout() takes exactly 0 arguments",
+									EXISTS:  true,
+								}
+							}
+							if conn == nil {
+								return ArObject{}, ArErr{
+									TYPE:    "SocketError",
+									message: "Connection is closed",
+									EXISTS:  true,
+								}
+							}
+							conn.SetDeadline(time.Time{})
+							return ArObject{}, ArErr{}
+						},
+					},
+					"setTimeout": builtinFunc{
+						"setTimeout",
+						func(args ...any) (any, ArErr) {
+							if len(args) != 1 {
+								return ArObject{}, ArErr{
+									TYPE:    "SocketError",
+									message: "Socket.setTimeout() takes exactly 1 argument",
+									EXISTS:  true,
+								}
+							}
+							if typeof(args[0]) != "number" {
+								return ArObject{}, ArErr{
+									TYPE:    "SocketError",
+									message: "Socket timeout must be a number",
+									EXISTS:  true,
+								}
+							}
+							if conn == nil {
+								return ArObject{}, ArErr{
+									TYPE:    "SocketError",
+									message: "Connection is closed",
+									EXISTS:  true,
+								}
+							}
+							timeout := args[0].(number)
+							if timeout.Denom().Int64() != 1 {
+								return ArObject{}, ArErr{
+									TYPE:    "SocketError",
+									message: "Socket timeout must be an integer",
+									EXISTS:  true,
+								}
+							}
+							err := conn.SetDeadline(time.Now().Add(time.Duration(timeout.Num().Int64()) * time.Millisecond))
+							if err != nil {
+								return ArObject{}, ArErr{
+									TYPE:    "SocketError",
+									message: err.Error(),
+									EXISTS:  true,
+								}
+							}
+							return ArObject{}, ArErr{}
 						},
 					},
 					"write": builtinFunc{

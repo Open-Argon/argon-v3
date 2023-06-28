@@ -37,10 +37,10 @@ var blockedVariableNames = map[string]bool{
 }
 
 type accessVariable struct {
-	name string
-	line int
-	code string
-	path string
+	Name string
+	Line int
+	Code string
+	Path string
 }
 
 type setVariable struct {
@@ -72,7 +72,7 @@ func isVariable(code UNPARSEcode) bool {
 
 func parseVariable(code UNPARSEcode) (accessVariable, bool, ArErr, int) {
 	name := strings.TrimSpace(code.code)
-	return accessVariable{name: name, code: code.realcode, line: code.line, path: code.path}, true, ArErr{}, 1
+	return accessVariable{Name: name, Code: code.realcode, Line: code.line, Path: code.path}, true, ArErr{}, 1
 }
 
 func readVariable(v accessVariable, stack stack) (any, ArErr) {
@@ -81,7 +81,7 @@ func readVariable(v accessVariable, stack stack) (any, ArErr) {
 		if !ok {
 			continue
 		}
-		contains, err := builtinCall(callable, []any{v.name})
+		contains, err := builtinCall(callable, []any{v.Name})
 		if err.EXISTS {
 			return nil, err
 		}
@@ -90,10 +90,10 @@ func readVariable(v accessVariable, stack stack) (any, ArErr) {
 			if !ok {
 				continue
 			}
-			return builtinCall(callable, []any{v.name})
+			return builtinCall(callable, []any{v.Name})
 		}
 	}
-	return nil, ArErr{"Name Error", "variable \"" + v.name + "\" does not exist", v.line, v.path, v.code, true}
+	return nil, ArErr{"Name Error", "variable \"" + v.Name + "\" does not exist", v.Line, v.Path, v.Code, true}
 }
 
 func isSetVariable(code UNPARSEcode) bool {
@@ -220,14 +220,14 @@ func setVariableValue(v setVariable, stack stack, stacklevel int) (any, ArErr) {
 		if !ok {
 			return nil, ArErr{"Type Error", "stack doesn't have __setindex__", v.line, v.path, v.code, true}
 		}
-		_, err := builtinCall(stackcallable, []any{v.toset.(accessVariable).name, resp})
+		_, err := builtinCall(stackcallable, []any{v.toset.(accessVariable).Name, resp})
 		if err.EXISTS {
 			return nil, err
 		}
 	} else {
 		switch x := v.toset.(type) {
 		case accessVariable:
-			name := x.name
+			name := x.Name
 			hasSet := false
 			if v.function {
 				resp = Callable{name, v.params, v.value, v.code, stack, v.line}
@@ -263,10 +263,10 @@ func setVariableValue(v setVariable, stack stack, stacklevel int) (any, ArErr) {
 			if err.EXISTS {
 				return nil, err
 			}
-			if len(x.args) != 1 {
+			if len(x.Args) != 1 {
 				return nil, ArErr{"Runtime Error", "cannot set by slice", v.line, v.path, v.code, true}
 			}
-			key, err := runVal(x.args[0], stack, stacklevel+1)
+			key, err := runVal(x.Args[0], stack, stacklevel+1)
 			key = ArValidToAny(key)
 			if err.EXISTS {
 				return nil, err
@@ -276,11 +276,11 @@ func setVariableValue(v setVariable, stack stack, stacklevel int) (any, ArErr) {
 				if _, ok := y.obj["__setindex__"]; ok {
 					callable := y.obj["__setindex__"]
 					_, err := runCall(call{
-						callable: callable,
-						args:     []any{key, resp},
-						line:     v.line,
-						path:     v.path,
-						code:     v.code,
+						Callable: callable,
+						Args:     []any{key, resp},
+						Line:     v.line,
+						Path:     v.path,
+						Code:     v.code,
 					}, stack, stacklevel+1)
 					if err.EXISTS {
 						return nil, err
@@ -322,7 +322,7 @@ func runDelete(d ArDelete, stack stack, stacklevel int) (any, ArErr) {
 			if !ok {
 				continue
 			}
-			contains, err := builtinCall(callable, []any{x.name})
+			contains, err := builtinCall(callable, []any{x.Name})
 			if err.EXISTS {
 				return nil, err
 			}
@@ -331,19 +331,19 @@ func runDelete(d ArDelete, stack stack, stacklevel int) (any, ArErr) {
 				if !ok {
 					continue
 				}
-				return builtinCall(callable, []any{x.name})
+				return builtinCall(callable, []any{x.Name})
 			}
 		}
-		return nil, ArErr{"Name Error", "variable \"" + x.name + "\" does not exist", d.line, d.path, d.code, true}
+		return nil, ArErr{"Name Error", "variable \"" + x.Name + "\" does not exist", d.line, d.path, d.code, true}
 	case ArMapGet:
 		respp, err := runVal(x.VAL, stack, stacklevel+1)
 		if err.EXISTS {
 			return nil, err
 		}
-		if len(x.args) != 1 {
+		if len(x.Args) != 1 {
 			return nil, ArErr{"Runtime Error", "can't delete by slice", d.line, d.path, d.code, true}
 		}
-		key, err := runVal(x.args[0], stack, stacklevel+1)
+		key, err := runVal(x.Args[0], stack, stacklevel+1)
 		if err.EXISTS {
 			return nil, err
 		}

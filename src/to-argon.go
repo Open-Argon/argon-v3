@@ -77,8 +77,8 @@ func anyToArgon(x any, quote bool, simplify bool, depth int, indent int, colored
 		if callable, ok := x.obj["__string__"]; ok && !quote {
 			val, err := runCall(
 				call{
-					callable: callable,
-					args:     []any{},
+					Callable: callable,
+					Args:     []any{},
 				},
 				stack{},
 				0,
@@ -90,8 +90,8 @@ func anyToArgon(x any, quote bool, simplify bool, depth int, indent int, colored
 		} else if callable, ok := x.obj["__repr__"]; ok {
 			val, err := runCall(
 				call{
-					callable: callable,
-					args:     []any{},
+					Callable: callable,
+					Args:     []any{},
 				},
 				stack{},
 				0,

@@ -192,8 +192,8 @@ func makeGlobal() ArObject {
 			if callable, ok := x.obj["__fraction__"]; ok {
 				resp, err := runCall(
 					call{
-						callable: callable,
-						args:     []any{},
+						Callable: callable,
+						Args:     []any{},
 					},
 					stack{},
 					0,

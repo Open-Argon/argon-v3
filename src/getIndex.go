@@ -15,11 +15,11 @@ var indexGetCompile = makeRegex(`(.|\n)+\[(.|\n)+\]( *)`)
 
 type ArMapGet struct {
 	VAL                any
-	args               []any
-	includeConstuctors bool
-	line               int
-	code               string
-	path               string
+	Args               []any
+	IncludeConstuctors bool
+	Line               int
+	Code               string
+	Path               string
 }
 
 func mapGet(r ArMapGet, stack stack, stacklevel int) (any, ArErr) {
@@ -29,33 +29,33 @@ func mapGet(r ArMapGet, stack stack, stacklevel int) (any, ArErr) {
 	}
 	switch m := resp.(type) {
 	case ArObject:
-		if r.includeConstuctors {
-			if obj, ok := m.obj[r.args[0]]; ok {
+		if r.IncludeConstuctors {
+			if obj, ok := m.obj[r.Args[0]]; ok {
 				return obj, ArErr{}
 			}
 		}
 		if callable, ok := m.obj["__getindex__"]; ok {
 			resp, err := runCall(call{
-				callable: callable,
-				args:     r.args,
-				line:     r.line,
-				path:     r.path,
-				code:     r.code,
+				Callable: callable,
+				Args:     r.Args,
+				Line:     r.Line,
+				Path:     r.Path,
+				Code:     r.Code,
 			}, stack, stacklevel+1)
 			return resp, err
 		}
 	}
 
-	key, err := runVal(r.args[0], stack, stacklevel+1)
+	key, err := runVal(r.Args[0], stack, stacklevel+1)
 	if err.EXISTS {
 		return nil, err
 	}
 	return nil, ArErr{
 		"TypeError",
 		"cannot read " + anyToArgon(key, true, true, 3, 0, false, 0) + " from type '" + typeof(resp) + "'",
-		r.line,
-		r.path,
-		r.code,
+		r.Line,
+		r.Path,
+		r.Code,
 		true,
 	}
 }

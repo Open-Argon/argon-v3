@@ -1,6 +1,8 @@
 package main
 
-import "github.com/wadey/go-rounding"
+import (
+	"github.com/wadey/go-rounding"
+)
 
 func floor(x number) number {
 

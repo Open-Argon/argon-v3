@@ -1,6 +1,8 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type keyCache map[any]any
 
@@ -71,8 +73,8 @@ func compare(a, b any) (bool, error) {
 		if y, ok := x.obj["__LessThan__"]; ok {
 			resp, err := runCall(
 				call{
-					callable: y,
-					args:     []any{b},
+					Callable: y,
+					Args:     []any{b},
 				}, stack{}, 0)
 			if !err.EXISTS {
 				return anyToBool(resp), nil

@@ -11,7 +11,7 @@ import (
 var imported = make(map[string]ArObject)
 var importing = make(map[string]bool)
 
-var modules_folder = "argon_modules"
+const modules_folder = "argon_modules"
 
 func FileExists(filename string) bool {
 	if _, err := os.Stat(filename); err == nil {
@@ -36,8 +36,10 @@ func readFile(path string) []UNPARSEcode {
 	// optionally, resize scanner's capacity for lines over 64K, see next example
 	output := []UNPARSEcode{}
 	line := 1
+	textOutput := []string{}
 	for scanner.Scan() {
 		text := scanner.Text()
+		textOutput = append(textOutput, text)
 		output = append(output, UNPARSEcode{text, text, line, path})
 		line++
 	}
@@ -102,8 +104,8 @@ func importMod(realpath string, origin string, main bool, global ArObject) (ArOb
 	}
 	importing[p] = true
 	codelines := readFile(p)
-
 	translated, translationerr := translate(codelines)
+
 	if translationerr.EXISTS {
 		return ArObject{}, translationerr
 	}

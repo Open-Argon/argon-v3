@@ -8,11 +8,11 @@ import (
 var genericImportCompiled = makeRegex(`import( )+(.|\n)+(( )+as( )+([a-zA-Z_]|(\p{L}\p{M}*))([a-zA-Z0-9_]|(\p{L}\p{M}*))*)?( *)`)
 
 type ArImport struct {
-	filePath any
-	values   any
-	code     string
-	line     int
-	path     string
+	FilePath any
+	Values   any
+	Code     string
+	Line     int
+	Path     string
 }
 
 func isGenericImport(code UNPARSEcode) bool {
@@ -75,26 +75,26 @@ func parseGenericImport(code UNPARSEcode, index int, codeline []UNPARSEcode) (Ar
 }
 
 func runImport(importOBJ ArImport, stack stack, stacklevel int) (any, ArErr) {
-	val, err := runVal(importOBJ.filePath, stack, stacklevel+1)
+	val, err := runVal(importOBJ.FilePath, stack, stacklevel+1)
 	val = ArValidToAny(val)
 	if err.EXISTS {
 		return nil, err
 	}
 	if typeof(val) != "string" {
-		return nil, ArErr{"Type Error", "import requires a string, got type '" + typeof(val) + "'", importOBJ.line, importOBJ.path, importOBJ.code, true}
+		return nil, ArErr{"Type Error", "import requires a string, got type '" + typeof(val) + "'", importOBJ.Line, importOBJ.Path, importOBJ.Code, true}
 	}
 	path := val.(string)
-	parent := filepath.Dir(importOBJ.path)
+	parent := filepath.Dir(importOBJ.Path)
 	stackMap, err := importMod(path, parent, false, stack[0])
 	if err.EXISTS {
 		if err.line == 0 {
-			err.line = importOBJ.line
+			err.line = importOBJ.Line
 		}
 		if err.path == "" {
-			err.path = importOBJ.path
+			err.path = importOBJ.Path
 		}
 		if err.code == "" {
-			err.code = importOBJ.code
+			err.code = importOBJ.Code
 		}
 		return nil, err
 	}
@@ -103,18 +103,18 @@ func runImport(importOBJ ArImport, stack stack, stacklevel int) (any, ArErr) {
 		return nil, ArErr{
 			"Import Error",
 			"could not find __setindex__ in module scope",
-			importOBJ.line,
-			importOBJ.path,
-			importOBJ.code,
+			importOBJ.Line,
+			importOBJ.Path,
+			importOBJ.Code,
 			true,
 		}
 	}
-	switch x := importOBJ.values.(type) {
+	switch x := importOBJ.Values.(type) {
 	case []string:
 		for _, v := range x {
 			val, ok := stackMap.obj[v]
 			if !ok {
-				return nil, ArErr{"Import Error", "could not find value " + anyToArgon(v, true, false, 3, 0, false, 0) + " in module " + anyToArgon(path, true, false, 3, 0, false, 0), importOBJ.line, importOBJ.path, importOBJ.code, true}
+				return nil, ArErr{"Import Error", "could not find value " + anyToArgon(v, true, false, 3, 0, false, 0) + " in module " + anyToArgon(path, true, false, 3, 0, false, 0), importOBJ.Line, importOBJ.Path, importOBJ.Code, true}
 			}
 			builtinCall(setindex, []any{v, val})
 		}

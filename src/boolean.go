@@ -1,6 +1,8 @@
 package main
 
-import "strings"
+import (
+	"strings"
+)
 
 func anyToBool(x any) bool {
 	switch x := x.(type) {
@@ -16,8 +18,8 @@ func anyToBool(x any) bool {
 		if y, ok := x.obj["__Boolean__"]; ok {
 			val, err := runCall(
 				call{
-					callable: y,
-					args:     []any{},
+					Callable: y,
+					Args:     []any{},
 				}, stack{}, 0)
 			if err.EXISTS {
 				return false

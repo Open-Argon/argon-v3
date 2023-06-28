@@ -18,9 +18,9 @@ func runVal(line any, stack stack, stacklevel int) (any, ArErr) {
 		return ArString(x), ArErr{}
 	case call:
 		if stackoverflow {
-			linenum = x.line
-			path = x.path
-			code = x.code
+			linenum = x.Line
+			path = x.Path
+			code = x.Code
 			break
 		}
 		return runCall(x, stack, stacklevel+1)
@@ -34,17 +34,17 @@ func runVal(line any, stack stack, stacklevel int) (any, ArErr) {
 		return runFactorial(x, stack, stacklevel+1)
 	case accessVariable:
 		if stackoverflow {
-			linenum = x.line
-			path = x.path
-			code = x.code
+			linenum = x.Line
+			path = x.Path
+			code = x.Code
 			break
 		}
 		return readVariable(x, stack)
 	case ArMapGet:
 		if stackoverflow {
-			linenum = x.line
-			path = x.path
-			code = x.code
+			linenum = x.Line
+			path = x.Path
+			code = x.Code
 			break
 		}
 		return mapGet(x, stack, stacklevel+1)
@@ -194,9 +194,9 @@ func runVal(line any, stack stack, stacklevel int) (any, ArErr) {
 		return runCreateMap(x, stack, stacklevel+1)
 	case ArImport:
 		if stackoverflow {
-			linenum = x.line
-			path = x.path
-			code = x.code
+			linenum = x.Line
+			path = x.Path
+			code = x.Code
 			break
 		}
 		return runImport(x, stack, stacklevel+1)

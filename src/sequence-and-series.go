@@ -1,6 +1,8 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+)
 
 func ArSequence(a ...any) (any, ArErr) {
 	if len(a) < 1 || len(a) > 2 {

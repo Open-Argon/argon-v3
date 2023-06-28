@@ -12,6 +12,12 @@ type stack = []ArObject
 
 const VERSION = "3.0.0"
 
+// Example struct
+type Person struct {
+	Name string
+	Age  int
+}
+
 func newscope() ArObject {
 	return Map(anymap{})
 }

@@ -1,6 +1,8 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+)
 
 func ArByte(Byte byte) ArObject {
 	obj := ArObject{

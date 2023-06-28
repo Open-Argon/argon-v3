@@ -8,11 +8,11 @@ import (
 var callCompile = makeRegex("( *)(.|\n)+\\((.|\n)*\\)( *)")
 
 type call struct {
-	callable any
-	args     []any
-	code     string
-	line     int
-	path     string
+	Callable any
+	Args     []any
+	Code     string
+	Line     int
+	Path     string
 }
 
 type Callable struct {
@@ -61,18 +61,18 @@ func parseCall(code UNPARSEcode, index int, codelines []UNPARSEcode) (any, bool,
 	if !works {
 		return nil, false, ArErr{"Syntax Error", "invalid call", code.line, code.path, code.realcode, true}, 1
 	}
-	return call{callable: callable, args: arguments, line: code.line, code: code.realcode, path: code.path}, true, ArErr{}, 1
+	return call{Callable: callable, Args: arguments, Line: code.line, Code: code.realcode, Path: code.path}, true, ArErr{}, 1
 }
 
 func runCall(c call, stack stack, stacklevel int) (any, ArErr) {
-	var callable any = c.callable
-	switch x := c.callable.(type) {
+	var callable any = c.Callable
+	switch x := c.Callable.(type) {
 	case builtinFunc:
 		callable = x
 	case Callable:
 		callable = x
 	default:
-		callable_, err := runVal(c.callable, stack, stacklevel+1)
+		callable_, err := runVal(c.Callable, stack, stacklevel+1)
 		if err.EXISTS {
 			return nil, err
 		}
@@ -82,9 +82,9 @@ func runCall(c call, stack stack, stacklevel int) (any, ArErr) {
 				x,
 				[]any{"__call__"},
 				true,
-				c.line,
-				c.code,
-				c.path,
+				c.Line,
+				c.Code,
+				c.Path,
 			}, stack, stacklevel+1)
 			if !err.EXISTS {
 				callable = callable_
@@ -95,7 +95,7 @@ func runCall(c call, stack stack, stacklevel int) (any, ArErr) {
 	}
 	args := []any{}
 	level := append(stack, newscope())
-	for _, arg := range c.args {
+	for _, arg := range c.Args {
 		resp, err := runVal(arg, level, stacklevel+1)
 		if err.EXISTS {
 			return nil, err
@@ -109,20 +109,20 @@ func runCall(c call, stack stack, stacklevel int) (any, ArErr) {
 		resp = AnyToArValid(resp)
 		if err.EXISTS {
 			if err.line == 0 {
-				err.line = c.line
+				err.line = c.Line
 			}
 			if err.path == "" {
-				err.path = c.path
+				err.path = c.Path
 			}
 			if err.code == "" {
-				err.code = c.code
+				err.code = c.Code
 			}
 		}
 		return resp, err
 	case Callable:
 		debugPrintln(x.name, args)
 		if len(x.params) != len(args) {
-			return nil, ArErr{"Runtime Error", "expected " + fmt.Sprint(len(x.params)) + " arguments, got " + fmt.Sprint(len(args)), c.line, c.path, c.code, true}
+			return nil, ArErr{"Runtime Error", "expected " + fmt.Sprint(len(x.params)) + " arguments, got " + fmt.Sprint(len(args)), c.Line, c.Path, c.Code, true}
 		}
 		l := anymap{}
 		for i, param := range x.params {
@@ -131,7 +131,7 @@ func runCall(c call, stack stack, stacklevel int) (any, ArErr) {
 		resp, err := runVal(x.run, append(x.stack, Map(l)), stacklevel+1)
 		return ThrowOnNonLoop(openReturn(resp), err)
 	}
-	return nil, ArErr{"Runtime Error", "type '" + typeof(callable) + "' is not callable", c.line, c.path, c.code, true}
+	return nil, ArErr{"Runtime Error", "type '" + typeof(callable) + "' is not callable", c.Line, c.Path, c.Code, true}
 }
 
 func builtinCall(callable any, args []any) (any, ArErr) {

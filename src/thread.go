@@ -36,7 +36,7 @@ func ArThread(args ...any) (any, ArErr) {
 			}
 			hasrun = true
 			go func() {
-				resp, err = runCall(call{callable: tocall, args: []any{}}, nil, 0)
+				resp, err = runCall(call{Callable: tocall, Args: []any{}}, nil, 0)
 				wg <- true
 			}()
 			return nil, ArErr{}
