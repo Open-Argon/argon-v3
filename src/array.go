@@ -559,8 +559,7 @@ func ArArray(arr []any) ArObject {
 			for i, v := range arr {
 				res, err := runOperation(operationType{
 					operation: 8,
-					value1:    v,
-					value2:    args[0].(ArObject).obj["__value__"].([]any)[i],
+					values:    []any{v, args[0].(ArObject).obj["__value__"].([]any)[i]},
 				}, stack{}, 0)
 				if err.EXISTS {
 					return nil, err
@@ -584,8 +583,7 @@ func ArArray(arr []any) ArObject {
 			for _, v := range arr {
 				res, err := runOperation(operationType{
 					operation: 9,
-					value1:    v,
-					value2:    args[0],
+					values:    []any{v, args[0]},
 				}, stack{}, 0)
 				if err.EXISTS {
 					return nil, err
@@ -610,8 +608,7 @@ func ArArray(arr []any) ArObject {
 			for _, v := range arr {
 				res, err := runOperation(operationType{
 					operation: 9,
-					value1:    v,
-					value2:    args[0],
+					values:    []any{v, args[0]},
 				}, stack{}, 0)
 				if err.EXISTS {
 					return nil, err

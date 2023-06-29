@@ -7,52 +7,31 @@ import (
 	"strings"
 )
 
-var operations = [][]string{
-	{
-		"&&",
-		" and ",
-	}, {
-		"||",
-		" or ",
-	}, {
-		" not in ",
-	}, {
-		" in ",
-	}, {
-		"<=",
-	}, {
-		">=",
-	}, {
-		"<",
-	}, {
-		">",
-	}, {
-		"!=",
-	}, {
-		"==",
-	}, {
-		"+",
-	}, {
-		"-",
-	}, {
-		"*",
-	}, {
-		"%",
-	}, {
-		"//",
-	}, {
-		"/",
-	}, {
-		"^",
-		"**",
-	}}
+var operations = []string{
+	"&&",
+	"||",
+	" not in ",
+	" in ",
+	"<=",
+	">=",
+	"<",
+	">",
+	"!=",
+	"==",
+	"+",
+	"-",
+	"*",
+	"%",
+	"//",
+	"/",
+	"^",
+}
 
 var one = newNumber().SetInt64(1)
 
 type operationType struct {
 	operation int
-	value1    any
-	value2    any
+	values    []any
 	line      int
 	code      string
 	path      string
@@ -60,66 +39,70 @@ type operationType struct {
 
 func parseOperations(code UNPARSEcode, index int, codelines []UNPARSEcode) (operationType, bool, ArErr, int) {
 	for i := 0; i < len(operations); i++ {
-		for j := 0; j < len(operations[i]); j++ {
-			split := strings.Split(code.code, operations[i][j])
-			if len(split) <= 1 {
+		split := strings.Split(code.code, operations[i])
+		if len(split) < 2 {
+			continue
+		}
+		var values []any
+		lookingAt := 0
+		totalStep := 1
+		for j := 1; j < len(split); j++ {
+			if split[j-1] == "" {
 				continue
 			}
-			for k := 0; k < len(split)-1; k++ {
-				if (len(strings.TrimSpace(split[k])) == 0 || len(strings.TrimSpace(split[k+1])) == 0) && operations[i][j] != "-" {
-					break
-				}
-				val1, worked, err, step1 := translateVal(UNPARSEcode{
-					code:     strings.Join(split[:k+1], operations[i][j]),
+			joined := strings.Join(split[lookingAt:j], operations[i])
+			resp, success, err, respindex := translateVal(
+				UNPARSEcode{
+					code:     joined,
 					realcode: code.realcode,
 					line:     code.line,
 					path:     code.path,
 				}, index, codelines, 0)
-				if !worked || err.EXISTS {
-					if k == len(split)-1 {
-						return operationType{}, false, err, 0
-					} else {
-						if len(strings.TrimSpace(split[k])) == 0 || len(strings.TrimSpace(split[k+1])) == 0 {
-							break
-						}
-						continue
-					}
-				}
-
-				val2, worked, err, step2 := translateVal(UNPARSEcode{
-					code:     strings.Join(split[k+1:], operations[i][j]),
-					realcode: code.realcode,
-					line:     code.line,
-					path:     code.path,
-				}, index, codelines, 0)
-				if !worked || err.EXISTS {
-					if k == len(split)-1 {
-						return operationType{}, false, err, 0
-					} else {
-						if len(strings.TrimSpace(split[k])) == 0 || len(strings.TrimSpace(split[k+1])) == 0 {
-							break
-						}
-						continue
-					}
-				}
-				return operationType{
-					i,
-					val1,
-					val2,
-					code.line,
-					code.code,
-					code.path,
-				}, true, ArErr{}, step1 + step2 - 1
-
+			if !success || err.EXISTS {
+				continue
 			}
+			values = append(values, resp)
+			totalStep += respindex - 1
+			lookingAt = j
+		}
+		if len(values) > 0 {
+			resp, success, err, respindex := translateVal(
+				UNPARSEcode{
+					code:     strings.Join(split[lookingAt:], operations[i]),
+					realcode: code.realcode,
+					line:     code.line,
+					path:     code.path,
+				}, index, codelines, 0)
+			if !success || err.EXISTS {
+				return operationType{}, success, err, 0
+			}
+			values = append(values, resp)
+			totalStep += respindex - 1
+			return operationType{
+				operation: i,
+				values:    values,
+				line:      code.line,
+				code:      code.code,
+				path:      code.path,
+			}, true, ArErr{}, totalStep
 		}
 	}
 	return operationType{}, false, ArErr{}, 0
 }
 
 func compareValues(o operationType, stack stack, stacklevel int) (bool, ArErr) {
+	if len(o.values) != 2 {
+		return false, ArErr{
+			"Runtime Error",
+			"Invalid number of values for comparison",
+			o.line,
+			o.path,
+			o.code,
+			true,
+		}
+	}
 	resp, err := runVal(
-		o.value1,
+		o.values[0],
 		stack,
 		stacklevel+1,
 	)
@@ -128,7 +111,7 @@ func compareValues(o operationType, stack stack, stacklevel int) (bool, ArErr) {
 	}
 
 	resp2, err := runVal(
-		o.value2,
+		o.values[1],
 		stack,
 		stacklevel+1,
 	)
@@ -145,21 +128,6 @@ func compareValues(o operationType, stack stack, stacklevel int) (bool, ArErr) {
 					call{
 						y,
 						[]any{resp2},
-						o.code,
-						o.line,
-						o.path,
-					}, stack, stacklevel+1)
-				if !err.EXISTS {
-					return anyToBool(val), ArErr{}
-				}
-			}
-		}
-		if x, ok := resp2.(ArObject); ok {
-			if y, ok := x.obj["__GreaterThanEqual__"]; ok {
-				val, err := runCall(
-					call{
-						y,
-						[]any{resp},
 						o.code,
 						o.line,
 						o.path,
@@ -191,21 +159,6 @@ func compareValues(o operationType, stack stack, stacklevel int) (bool, ArErr) {
 						o.line,
 						o.path,
 					}, stack, stacklevel+1)
-				if !err.EXISTS {
-					return anyToBool(val), ArErr{}
-				}
-			}
-		}
-		if x, ok := resp2.(ArObject); ok {
-			if y, ok := x.obj["__LessThanEqual__"]; ok {
-				val, err := runCall(
-					call{
-						y,
-						[]any{resp},
-						o.code,
-						o.line,
-						o.path,
-					}, stack, stacklevel+1)
 				if err.EXISTS {
 					return false, err
 				}
@@ -233,25 +186,10 @@ func compareValues(o operationType, stack stack, stacklevel int) (bool, ArErr) {
 						o.line,
 						o.path,
 					}, stack, stacklevel+1)
-				if !err.EXISTS {
-					return anyToBool(val), ArErr{}
+				if err.EXISTS {
+					return false, err
 				}
-			}
-			if x, ok := resp2.(ArObject); ok {
-				if y, ok := x.obj["__GreaterThan__"]; ok {
-					val, err := runCall(
-						call{
-							y,
-							[]any{resp},
-							o.code,
-							o.line,
-							o.path,
-						}, stack, stacklevel+1)
-					if err.EXISTS {
-						return false, err
-					}
-					return anyToBool(val), ArErr{}
-				}
+				return anyToBool(val), ArErr{}
 			}
 		}
 		return false, ArErr{
@@ -271,21 +209,6 @@ func compareValues(o operationType, stack stack, stacklevel int) (bool, ArErr) {
 					call{
 						y,
 						[]any{resp2},
-						o.code,
-						o.line,
-						o.path,
-					}, stack, stacklevel+1)
-				if !err.EXISTS {
-					return anyToBool(val), ArErr{}
-				}
-			}
-		}
-		if x, ok := resp2.(ArObject); ok {
-			if y, ok := x.obj["__LessThan__"]; ok {
-				val, err := runCall(
-					call{
-						y,
-						[]any{resp},
 						o.code,
 						o.line,
 						o.path,
@@ -322,7 +245,7 @@ func compareValues(o operationType, stack stack, stacklevel int) (bool, ArErr) {
 
 func calcNegative(o operationType, stack stack, stacklevel int) (any, ArErr) {
 	resp, err := runVal(
-		o.value1,
+		o.values[0],
 		stack,
 		stacklevel+1,
 	)
@@ -333,61 +256,52 @@ func calcNegative(o operationType, stack stack, stacklevel int) (any, ArErr) {
 	if isAnyNumber(resp) {
 		output = newNumber().Set(resp.(number))
 	}
-	resp, err = runVal(
-		o.value2,
-		stack,
-		stacklevel+1,
-	)
-	if err.EXISTS {
-		return nil, err
-	}
-	if typeof(output) == "number" && typeof(resp) == "number" {
-		return output.(number).Sub(output.(number), resp.(number)), ArErr{}
-	} else if x, ok := output.(ArObject); ok {
-		if y, ok := x.obj["__Subtract__"]; ok {
-			val, err := runCall(
-				call{
-					y,
-					[]any{resp},
-					o.code,
-					o.line,
-					o.path,
-				}, stack, stacklevel+1)
-			if !err.EXISTS {
-				return val, ArErr{}
+	for i := 1; i < len(o.values); i++ {
+		resp, err := runVal(
+			o.values[i],
+			stack,
+			stacklevel+1,
+		)
+		if err.EXISTS {
+			return nil, err
+		}
+		if typeof(output) == "number" && typeof(resp) == "number" {
+			output = output.(number).Sub(output.(number), resp.(number))
+			continue
+		} else if x, ok := output.(ArObject); ok {
+			if y, ok := x.obj["__Subtract__"]; ok {
+				val, err := runCall(
+					call{
+						y,
+						[]any{resp},
+						o.code,
+						o.line,
+						o.path,
+					}, stack, stacklevel+1)
+				if err.EXISTS {
+					return nil, err
+				}
+				output = val
+				continue
 			}
 		}
-	}
-	if x, ok := resp.(ArObject); ok {
-		if y, ok := x.obj["__PostSubtract__"]; ok {
-			val, err := runCall(
-				call{
-					y,
-					[]any{output},
-					o.code,
-					o.line,
-					o.path,
-				}, stack, stacklevel+1)
-			if err.EXISTS {
-				return nil, err
-			}
-			return val, ArErr{}
+		return nil, ArErr{
+			"Runtime Error",
+			"Cannot subtract type '" + typeof(resp) + "' from type '" + typeof(output) + "'",
+			o.line,
+			o.path,
+			o.code,
+			true,
 		}
+
 	}
-	return nil, ArErr{
-		"Runtime Error",
-		"Cannot subtract type '" + typeof(resp) + "' from type '" + typeof(output) + "'",
-		o.line,
-		o.path,
-		o.code,
-		true,
-	}
+	return output, ArErr{}
 }
 
 func calcDivide(o operationType, stack stack, stacklevel int) (any, ArErr) {
 
 	resp, err := runVal(
-		o.value1,
+		o.values[0],
 		stack,
 		stacklevel+1,
 	)
@@ -398,76 +312,62 @@ func calcDivide(o operationType, stack stack, stacklevel int) (any, ArErr) {
 	if isAnyNumber(resp) {
 		output = newNumber().Set(resp.(number))
 	}
-	resp, err = runVal(
-		o.value2,
-		stack,
-		stacklevel+1,
-	)
-	resp = ArValidToAny(resp)
-	if err.EXISTS {
-		return nil, err
-	}
-	var outputErr ArErr = ArErr{
-		"Runtime Error",
-		"Cannot divide type '" + typeof(resp) + "'",
-		o.line,
-		o.path,
-		o.code,
-		true,
-	}
-	if typeof(resp) == "number" && typeof(output) == "number" {
-		if resp.(number).Cmp(newNumber()) == 0 {
-			return nil, ArErr{
-				"Runtime Error",
-				"Cannot divide by zero",
-				o.line,
-				o.path,
-				o.code,
-				true,
-			}
+	for i := 1; i < len(o.values); i++ {
+		resp, err := runVal(
+			o.values[i],
+			stack,
+			stacklevel+1,
+		)
+		resp = ArValidToAny(resp)
+		if err.EXISTS {
+			return nil, err
 		}
-		output = output.(number).Quo(output.(number), resp.(number))
-		return output, ArErr{}
-	} else if x, ok := output.(ArObject); ok {
-		if y, ok := x.obj["__Divide__"]; ok {
-			val, err := runCall(
-				call{
-					y,
-					[]any{resp},
-					o.code,
+		if typeof(resp) == "number" && typeof(output) == "number" {
+			if resp.(number).Cmp(newNumber().SetInt64(0)) == 0 {
+				return nil, ArErr{
+					"Runtime Error",
+					"Cannot divide by zero",
 					o.line,
 					o.path,
-				}, stack, stacklevel+1)
-			if !err.EXISTS {
-				return val, ArErr{}
-			}
-			outputErr = err
-		}
-	}
-
-	if x, ok := resp.(ArObject); ok {
-		if y, ok := x.obj["__PostDivide__"]; ok {
-			val, err := runCall(
-				call{
-					y,
-					[]any{output},
 					o.code,
-					o.line,
-					o.path,
-				}, stack, stacklevel+1)
-			if err.EXISTS {
-				return nil, err
+					true,
+				}
 			}
-			return val, ArErr{}
+			output = output.(number).Quo(output.(number), resp.(number))
+			continue
+		} else if x, ok := output.(ArObject); ok {
+			if y, ok := x.obj["__Divide__"]; ok {
+				val, err := runCall(
+					call{
+						y,
+						[]any{resp},
+						o.code,
+						o.line,
+						o.path,
+					}, stack, stacklevel+1)
+				if err.EXISTS {
+					return nil, err
+				}
+				output = val
+				continue
+			}
+		}
+		return nil, ArErr{
+			"Runtime Error",
+			"Cannot divide type '" + typeof(resp) + "'",
+			o.line,
+			o.path,
+			o.code,
+			true,
 		}
 	}
-	return nil, outputErr
+	return output, ArErr{}
 }
 
 func calcAdd(o operationType, stack stack, stacklevel int) (any, ArErr) {
 
 	resp, err := runVal(
-		o.value1,
+		o.values[0],
 		stack,
 		stacklevel+1,
 	)
@@ -478,64 +378,51 @@ func calcAdd(o operationType, stack stack, stacklevel int) (any, ArErr) {
 	if typeof(output) == "number" {
 		output = newNumber().Set(output.(number))
 	}
-	resp, err = runVal(
-		o.value2,
-		stack,
-		stacklevel+1,
-	)
-	if err.EXISTS {
-		return nil, err
-	}
-	if typeof(output) == "number" && typeof(resp) == "number" {
-		output = output.(number).Add(output.(number), resp.(number))
-		return output, ArErr{}
-	} else if x, ok := output.(ArObject); ok {
-		if y, ok := x.obj["__Add__"]; ok {
-			val, err := runCall(
-				call{
-					y,
-					[]any{resp},
-					o.code,
-					o.line,
-					o.path,
-				}, stack, stacklevel+1)
-			if !err.EXISTS {
+	for i := 1; i < len(o.values); i++ {
+		resp, err := runVal(
+			o.values[i],
+			stack,
+			stacklevel+1,
+		)
+		if err.EXISTS {
+			return nil, err
+		}
+		if typeof(output) == "number" && typeof(resp) == "number" {
+			output = output.(number).Add(output.(number), resp.(number))
+			continue
+		} else if x, ok := output.(ArObject); ok {
+			if y, ok := x.obj["__Add__"]; ok {
+				val, err := runCall(
+					call{
+						y,
+						[]any{resp},
+						o.code,
+						o.line,
+						o.path,
+					}, stack, stacklevel+1)
+				if err.EXISTS {
+					return nil, err
+				}
 				output = val
-				return output, ArErr{}
+				continue
 			}
 		}
-	}
-	if x, ok := resp.(ArObject); ok {
-		if y, ok := x.obj["__PostAdd__"]; ok {
-			val, err := runCall(
-				call{
-					y,
-					[]any{output},
-					o.code,
-					o.line,
-					o.path,
-				}, stack, stacklevel+1)
-			if !err.EXISTS {
-				output = val
-				return output, ArErr{}
-			}
+		return nil, ArErr{
+			"Runtime Error",
+			"Cannot add type '" + typeof(resp) + "' to type '" + typeof(output) + "'",
+			o.line,
+			o.path,
+			o.code,
+			true,
 		}
 	}
-
-	return nil, ArErr{
-		"Runtime Error",
-		"Cannot add type '" + typeof(resp) + "' to type '" + typeof(output) + "'",
-		o.line,
-		o.path,
-		o.code,
-		true,
-	}
+	return (output), ArErr{}
 }
 
 func calcMul(o operationType, stack stack, stacklevel int) (any, ArErr) {
 
 	resp, err := runVal(
-		o.value1,
+		o.values[0],
 		stack,
 		stacklevel+1,
 	)
@@ -546,113 +433,88 @@ func calcMul(o operationType, stack stack, stacklevel int) (any, ArErr) {
 	if isAnyNumber(resp) {
 		output = newNumber().Set(resp.(number))
 	}
-	resp, err = runVal(
-		o.value2,
-		stack,
-		stacklevel+1,
-	)
-	if err.EXISTS {
-		return nil, err
-	}
-	if typeof(output) == "number" && typeof(resp) == "number" {
-		output = output.(number).Mul(output.(number), resp.(number))
-		return output, ArErr{}
-	} else if x, ok := output.(ArObject); ok {
-		if y, ok := x.obj["__Multiply__"]; ok {
-			val, err := runCall(
-				call{
-					y,
-					[]any{resp},
-					o.code,
-					o.line,
-					o.path,
-				}, stack, stacklevel+1)
-			if !err.EXISTS {
+	for i := 1; i < len(o.values); i++ {
+		resp, err := runVal(
+			o.values[i],
+			stack,
+			stacklevel+1,
+		)
+		if err.EXISTS {
+			return nil, err
+		}
+		if typeof(output) == "number" && typeof(resp) == "number" {
+			output = output.(number).Mul(output.(number), resp.(number))
+			continue
+		} else if x, ok := output.(ArObject); ok {
+			if y, ok := x.obj["__Multiply__"]; ok {
+				val, err := runCall(
+					call{
+						y,
+						[]any{resp},
+						o.code,
+						o.line,
+						o.path,
+					}, stack, stacklevel+1)
+				if err.EXISTS {
+					return nil, err
+				}
 				output = val
-				return output, ArErr{}
+				continue
 			}
 		}
-	}
-	if x, ok := resp.(ArObject); ok {
-		if y, ok := x.obj["__PostMultiply__"]; ok {
-			val, err := runCall(
-				call{
-					y,
-					[]any{output},
-					o.code,
-					o.line,
-					o.path,
-				}, stack, stacklevel+1)
-			if err.EXISTS {
-				return nil, err
-			}
-			return val, ArErr{}
+		return nil, ArErr{
+			"Runtime Error",
+			"Cannot multiply type '" + typeof(resp) + "'",
+			o.line,
+			o.path,
+			o.code,
+			true,
 		}
+
 	}
-	return nil, ArErr{
-		"Runtime Error",
-		"Cannot multiply type '" + typeof(resp) + "'",
-		o.line,
-		o.path,
-		o.code,
-		true,
-	}
+	return output, ArErr{}
 }
 
 func calcAnd(o operationType, stack stack, stacklevel int) (any, ArErr) {
-	resp, err := runVal(
-		o.value1,
-		stack,
-		stacklevel+1,
-	)
-	if err.EXISTS {
-		return nil, err
+	var output any = false
+	for i := 0; i < len(o.values); i++ {
+		resp, err := runVal(
+			o.values[i],
+			stack,
+			stacklevel+1,
+		)
+		resp = ArValidToAny(resp)
+		if err.EXISTS {
+			return nil, err
+		}
+		if !anyToBool(resp) {
+			return resp, ArErr{}
+		}
+		output = resp
 	}
-	if !anyToBool(resp) {
-		return resp, ArErr{}
-	}
-	resp, err = runVal(
-		o.value2,
-		stack,
-		stacklevel+1,
-	)
-	if err.EXISTS {
-		return nil, err
-	}
-	if !anyToBool(resp) {
-		return resp, ArErr{}
-	}
-	return resp, ArErr{}
+	return output, ArErr{}
 }
 
 func calcOr(o operationType, stack stack, stacklevel int) (any, ArErr) {
-	resp, err := runVal(
-		o.value1,
-		stack,
-		stacklevel+1,
-	)
-	if err.EXISTS {
-		return nil, err
+	var output any = false
+	for i := 0; i < len(o.values); i++ {
+		resp, err := runVal(
+			o.values[i],
+			stack,
+			stacklevel+1,
+		)
+		resp = ArValidToAny(resp)
+		if err.EXISTS {
+			return nil, err
+		}
+		if anyToBool(resp) {
+			return resp, ArErr{}
+		}
+		output = resp
 	}
-	if anyToBool(resp) {
-		return resp, ArErr{}
-	}
-	resp, err = runVal(
-		o.value2,
-		stack,
-		stacklevel+1,
-	)
-	if err.EXISTS {
-		return nil, err
-	}
-	if anyToBool(resp) {
-		return resp, ArErr{}
-	}
-	return resp, ArErr{}
+	return output, ArErr{}
 }
 
-// InSlice checks if an element is present in a slice of any type.
-// It returns true if the element is found, false otherwise.
 func InSlice(a any, list []any) bool {
 	for _, b := range list {
 		if b == a {
@@ -661,23 +523,29 @@ func InSlice(a any, list []any) bool {
 	}
 	return false
 }
-
-// calcNotIn is a function that calculates the 'not in' operation between two values.
-// It takes in an operationType 'o', a stack 'stack', and a stack level 'stacklevel'.
-// It returns an 'any' value and an 'ArErr' error.
-// The 'o' parameter contains information about the operation to be performed, including the values to be compared, the line of code, and the file path.
 func calcNotIn(o operationType, stack stack, stacklevel int) (any, ArErr) {
+	if len(o.values) != 2 {
+		return false, ArErr{
+			"Runtime Error",
+			"Invalid number of arguments for 'not in'",
+			o.line,
+			o.path,
+			o.code,
+			true,
+		}
+	}
 	resp, err := runVal(
-		o.value1,
+		o.values[0],
 		stack,
 		stacklevel+1,
 	)
+	resp = ArValidToAny(resp)
 	if err.EXISTS {
 		return false, err
 	}
 
 	resp2, err := runVal(
-		o.value2,
+		o.values[1],
 		stack,
 		stacklevel+1,
 	)
@@ -706,13 +574,19 @@ func calcNotIn(o operationType, stack stack, stacklevel int) (any, ArErr) {
 	}
 }
 
-// calcIn is a function that calculates the 'in' operation between two values.
-// It takes in an operationType 'o', a stack 'stack', and a stack level 'stacklevel'.
-// It returns an 'any' value and an 'ArErr' error.
-// The 'o' parameter contains information about the operation to be performed, including the values to be compared, the line of code, and the file path.
 func calcIn(o operationType, stack stack, stacklevel int) (any, ArErr) {
+	if len(o.values) != 2 {
+		return false, ArErr{
+			"Runtime Error",
+			"Invalid number of arguments for 'not in'",
+			o.line,
+			o.path,
+			o.code,
+			true,
+		}
+	}
 	resp, err := runVal(
-		o.value1,
+		o.values[0],
 		stack,
 		stacklevel+1,
 	)
@@ -721,7 +595,7 @@ func calcIn(o operationType, stack stack, stacklevel int) (any, ArErr) {
 	}
 
 	resp2, err := runVal(
-		o.value2,
+		o.values[1],
 		stack,
 		stacklevel+1,
 	)
@@ -806,7 +680,7 @@ func equals(a any, b any, o operationType, stack stack, stacklevel int) (bool, A
 		}
 	}
 	if x, ok := b.(ArObject); ok {
-		if y, ok := x.obj["__Equal__"]; ok {
+		if y, ok := x.obj["__GreaterThanEqual__"]; ok {
 			val, err := runCall(
 				call{
 					y,
@@ -826,7 +700,7 @@ func equals(a any, b any, o operationType, stack stack, stacklevel int) (bool, A
 
 func calcMod(o operationType, stack stack, stacklevel int) (any, ArErr) {
 	resp, err := runVal(
-		o.value1,
+		o.values[0],
 		stack,
 		stacklevel+1,
 	)
@@ -837,68 +711,55 @@ func calcMod(o operationType, stack stack, stacklevel int) (any, ArErr) {
 	if isAnyNumber(resp) {
 		output = newNumber().Set(resp.(number))
 	}
-	resp, err = runVal(
-		o.value2,
-		stack,
-		stacklevel+1,
-	)
-	resp = ArValidToAny(resp)
-	if err.EXISTS {
-		return nil, err
-	}
-	if typeof(resp) == "number" && typeof(output) == "number" {
-		x := newNumber().Set(resp.(number))
-		x.Quo(output.(number), x)
-		x = floor(x)
-		x.Mul(x, resp.(number))
-		output.(number).Sub(output.(number), x)
-		return output, ArErr{}
-	} else if x, ok := output.(ArObject); ok {
-		if y, ok := x.obj["__Modulo__"]; ok {
-			val, err := runCall(
-				call{
-					y,
-					[]any{resp},
-					o.code,
-					o.line,
-					o.path,
-				}, stack, stacklevel+1)
-			if !err.EXISTS {
+	for i := 1; i < len(o.values); i++ {
+		resp, err := runVal(
+			o.values[i],
+			stack,
+			stacklevel+1,
+		)
+		resp = ArValidToAny(resp)
+		if err.EXISTS {
+			return nil, err
+		}
+		if typeof(resp) == "number" && typeof(output) == "number" {
+			x := newNumber().Set(resp.(number))
+			x.Quo(output.(number), x)
+			x = floor(x)
+			x.Mul(x, resp.(number))
+			output.(number).Sub(output.(number), x)
+			continue
+		} else if x, ok := output.(ArObject); ok {
+			if y, ok := x.obj["__Modulo__"]; ok {
+				val, err := runCall(
+					call{
+						y,
+						[]any{resp},
+						o.code,
+						o.line,
+						o.path,
+					}, stack, stacklevel+1)
+				if err.EXISTS {
+					return nil, err
+				}
 				output = val
-				return output, ArErr{}
+				continue
 			}
 		}
-	}
-
-	if x, ok := resp.(ArObject); ok {
-		if y, ok := x.obj["__PostModulo__"]; ok {
-			val, err := runCall(
-				call{
-					y,
-					[]any{output},
-					o.code,
-					o.line,
-					o.path,
-				}, stack, stacklevel+1)
-			if err.EXISTS {
-				return nil, err
-			}
-			return val, ArErr{}
+		return nil, ArErr{
+			"Runtime Error",
+			"Cannot calculate modulus of type '" + typeof(resp) + "'",
+			o.line,
+			o.path,
+			o.code,
+			true,
 		}
 	}
-	return nil, ArErr{
-		"Runtime Error",
-		"Cannot calculate modulus of type '" + typeof(resp) + "'",
-		o.line,
-		o.path,
-		o.code,
-		true,
-	}
+	return output, ArErr{}
 }
 
 func calcIntDiv(o operationType, stack stack, stacklevel int) (any, ArErr) {
 	resp, err := runVal(
-		o.value1,
+		o.values[0],
 		stack,
 		stacklevel+1,
 	)
@@ -909,63 +770,51 @@ func calcIntDiv(o operationType, stack stack, stacklevel int) (any, ArErr) {
 	if isAnyNumber(resp) {
 		output = newNumber().Set(resp.(number))
 	}
-	resp, err = runVal(
-		o.value2,
-		stack,
-		stacklevel+1,
-	)
-	resp = ArValidToAny(resp)
-	if err.EXISTS {
-		return nil, err
-	}
-	if typeof(resp) == "number" && typeof(output) == "number" {
-		output = output.(number).Quo(output.(number), resp.(number))
-		return output, ArErr{}
-	} else if x, ok := output.(ArObject); ok {
-		if y, ok := x.obj["__IntDivide__"]; ok {
-			val, err := runCall(
-				call{
-					y,
-					[]any{resp},
-					o.code,
-					o.line,
-					o.path,
-				}, stack, stacklevel+1)
-			if !err.EXISTS {
+	for i := 1; i < len(o.values); i++ {
+		resp, err := runVal(
+			o.values[i],
+			stack,
+			stacklevel+1,
+		)
+		resp = ArValidToAny(resp)
+		if err.EXISTS {
+			return nil, err
+		}
+		if typeof(resp) == "number" && typeof(output) == "number" {
+			output = output.(number).Quo(output.(number), resp.(number))
+			continue
+		} else if x, ok := output.(ArObject); ok {
+			if y, ok := x.obj["__IntDivide__"]; ok {
+				val, err := runCall(
+					call{
+						y,
+						[]any{resp},
+						o.code,
+						o.line,
+						o.path,
+					}, stack, stacklevel+1)
+				if err.EXISTS {
+					return nil, err
+				}
 				output = val
-				return output, ArErr{}
+				continue
 			}
 		}
-	}
-	if x, ok := resp.(ArObject); ok {
-		if y, ok := x.obj["__PostIntDivide__"]; ok {
-			val, err := runCall(
-				call{
-					y,
-					[]any{output},
-					o.code,
-					o.line,
-					o.path,
-				}, stack, stacklevel+1)
-			if err.EXISTS {
-				return nil, err
-			}
-			return val, ArErr{}
+		return nil, ArErr{
+			"Runtime Error",
+			"Cannot divide type '" + typeof(resp) + "'",
+			o.line,
+			o.path,
+			o.code,
+			true,
 		}
 	}
-	return nil, ArErr{
-		"Runtime Error",
-		"Cannot divide type '" + typeof(resp) + "'",
-		o.line,
-		o.path,
-		o.code,
-		true,
-	}
+	return output, ArErr{}
 }
 
-func calcPower(o operationType, stack stack, stacklevel int) (any, ArErr) {
+func calcPower(o operationType, stack stack, stacklevel int) (number, ArErr) {
 	resp, err := runVal(
-		o.value1,
+		o.values[0],
 		stack,
 		stacklevel+1,
 	)
@@ -984,91 +833,72 @@ func calcPower(o operationType, stack stack, stacklevel int) (any, ArErr) {
 		}
 	}
 	output := newNumber().Set(resp.(number))
-	resp, err = runVal(
-		o.value2,
-		stack,
-		stacklevel+1,
-	)
-	resp = ArValidToAny(resp)
-	if err.EXISTS {
-		return nil, err
-	}
-	if typeof(resp) == "number" {
-		n := newNumber().Set(resp.(number))
-		if n.Cmp(newNumber().SetInt64(10)) <= 0 {
-			toOut := newNumber().SetInt64(1)
-			clone := newNumber().Set(output)
-			nAbs := (abs(newNumber().Set(n)))
-			j := newNumber()
-			for ; j.Cmp(nAbs) < 0; j.Add(j, one) {
-				toOut.Mul(toOut, clone)
-			}
+	for i := 1; i < len(o.values); i++ {
+		resp, err := runVal(
+			o.values[i],
+			stack,
+			stacklevel+1,
+		)
+		resp = ArValidToAny(resp)
+		if err.EXISTS {
+			return nil, err
+		}
+		if typeof(resp) == "number" {
+			n := newNumber().Set(resp.(number))
+			if n.Cmp(newNumber().SetInt64(10)) <= 0 {
+				toOut := newNumber().SetInt64(1)
+				clone := newNumber().Set(output)
+				nAbs := (abs(newNumber().Set(n)))
+				j := newNumber()
+				for ; j.Cmp(nAbs) < 0; j.Add(j, one) {
+					toOut.Mul(toOut, clone)
+				}
 
-			nAbs.Sub(nAbs, j)
-			if nAbs.Cmp(newNumber()) < 0 {
-				j.Sub(j, one)
-				n1, _ := toOut.Float64()
-				n2, _ := nAbs.Float64()
+				nAbs.Sub(nAbs, j)
+				if nAbs.Cmp(newNumber()) < 0 {
+					j.Sub(j, one)
+					n1, _ := toOut.Float64()
+					n2, _ := nAbs.Float64()
+					calculated := newNumber().SetFloat64(math.Pow(n1, n2))
+					if calculated == nil {
+						calculated = infinity
+					}
+					toOut.Mul(toOut, calculated)
+				}
+				if n.Cmp(newNumber()) < 0 {
+					toOut.Quo(newNumber().SetInt64(1), toOut)
+				}
+				output.Set(toOut)
+			} else if n.Cmp(newNumber().SetInt64(1)) != 0 {
+				n1, _ := output.Float64()
+				n2, _ := n.Float64()
 				calculated := newNumber().SetFloat64(math.Pow(n1, n2))
 				if calculated == nil {
 					calculated = infinity
 				}
-				toOut.Mul(toOut, calculated)
+				output.Mul(output, calculated)
 			}
-			if n.Cmp(newNumber()) < 0 {
-				toOut.Quo(newNumber().SetInt64(1), toOut)
-			}
-			output.Set(toOut)
-		} else if n.Cmp(newNumber().SetInt64(1)) != 0 {
-			n1, _ := output.Float64()
-			n2, _ := n.Float64()
-			calculated := newNumber().SetFloat64(math.Pow(n1, n2))
-			if calculated == nil {
-				calculated = infinity
-			}
-			output.Mul(output, calculated)
-		}
-		return output, ArErr{}
-	} else if x, ok := resp.(ArObject); ok {
-		if y, ok := x.obj["__Power__"]; ok {
-			val, err := runCall(
-				call{
-					y,
-					[]any{output},
-					o.code,
-					o.line,
-					o.path,
-				}, stack, stacklevel+1)
-			if !err.EXISTS {
-				return val, ArErr{}
-			}
-		}
-	}
 
-	if x, ok := resp.(ArObject); ok {
-		if y, ok := x.obj["__PostPower__"]; ok {
-			val, err := runCall(
-				call{
-					y,
-					[]any{output},
-					o.code,
-					o.line,
-					o.path,
-				}, stack, stacklevel+1)
-			if err.EXISTS {
-				return nil, err
+			/*
+				n1, _ := output.Float64()
+				n2, _ := resp.(number).Float64()
+				output = newNumber().SetFloat64(math.Pow(n1, n2))
+				if output == nil {
+					output = infinity
+				}
+			*/
+		} else {
+			return nil, ArErr{
+				"Runtime Error",
+				"Cannot calculate power of type '" + typeof(resp) + "'",
+				o.line,
+				o.path,
+				o.code,
+				true,
 			}
-			return val, ArErr{}
 		}
 	}
-	return nil, ArErr{
-		"Runtime Error",
-		"Cannot calculate power of type '" + typeof(resp) + "'",
-		o.line,
-		o.path,
-		o.code,
-		true,
-	}
+	return output, ArErr{}
 }
 
 func runOperation(o operationType, stack stack, stacklevel int) (any, ArErr) {

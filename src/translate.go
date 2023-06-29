@@ -11,7 +11,30 @@ type UNPARSEcode struct {
 	path     string
 }
 
+var knownFailures = []string{}
+var knownFailuresErrs = []ArErr{}
+
+func StringExists(arr []string, target string) (bool, ArErr) {
+	for i, str := range arr {
+		if str == target {
+			return true, knownFailuresErrs[i]
+		}
+	}
+	return false, ArErr{}
+}
+
 func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine int) (any, bool, ArErr, int) {
+	known, knownErr := StringExists(knownFailures, code.code)
+	if known {
+		return nil, false, ArErr{
+			knownErr.TYPE,
+			knownErr.message,
+			code.line,
+			code.path,
+			code.realcode,
+			true,
+		}, 1
+	}
 	var (
 		resp   any   = nil
 		worked bool  = false
@@ -20,36 +43,91 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine i
 	)
 	if isLine == 2 {
 		if isDeleteVariable(code) {
-			return parseDelete(code, index, codelines)
+			resp, worked, err, i = parseDelete(code, index, codelines)
+			if !worked {
+				knownFailures = append(knownFailures, code.code)
+				knownFailuresErrs = append(knownFailuresErrs, err)
+			}
+			return resp, worked, err, i
 		} else if isComment(code) {
 			resp, worked, err, i = parseComment(code, index, codelines)
 			if worked {
 				return resp, worked, err, i
 			}
 		} else if isReturn(code) {
-			return parseReturn(code, index, codelines)
+			resp, worked, err, i = parseReturn(code, index, codelines)
+			if !worked {
+				knownFailures = append(knownFailures, code.code)
+				knownFailuresErrs = append(knownFailuresErrs, err)
+			}
+			return resp, worked, err, i
 		} else if isBreak(code) {
-			return parseBreak(code)
+			resp, worked, err, i = parseBreak(code)
+			if !worked {
+				knownFailures = append(knownFailures, code.code)
+				knownFailuresErrs = append(knownFailuresErrs, err)
+			}
+			return resp, worked, err, i
 		} else if isContinue(code) {
-			return parseContinue(code)
+			resp, worked, err, i = parseContinue(code)
+			if !worked {
+				knownFailures = append(knownFailures, code.code)
+				knownFailuresErrs = append(knownFailuresErrs, err)
+			}
+			return resp, worked, err, i
 		} else if isIfStatement(code) {
-			return parseIfStatement(code, index, codelines)
+			resp, worked, err, i = parseIfStatement(code, index, codelines)
+			if !worked {
+				knownFailures = append(knownFailures, code.code)
+				knownFailuresErrs = append(knownFailuresErrs, err)
+			}
+			return resp, worked, err, i
 		} else if isWhileLoop(code) {
-			return parseWhileLoop(code, index, codelines)
+			resp, worked, err, i = parseWhileLoop(code, index, codelines)
+			if !worked {
+				knownFailures = append(knownFailures, code.code)
+				knownFailuresErrs = append(knownFailuresErrs, err)
+			}
+			return resp, worked, err, i
 		} else if isForeverLoop(code) {
-			return parseForeverLoop(code, index, codelines)
+			resp, worked, err, i = parseForeverLoop(code, index, codelines)
+			if !worked {
+				knownFailures = append(knownFailures, code.code)
+				knownFailuresErrs = append(knownFailuresErrs, err)
+			}
+			return resp, worked, err, i
 		} else if isForLoop(code) {
-			return parseForLoop(code, index, codelines)
+			resp, worked, err, i = parseForLoop(code, index, codelines)
+			if !worked {
+				knownFailures = append(knownFailures, code.code)
+				knownFailuresErrs = append(knownFailuresErrs, err)
+			}
+			return resp, worked, err, i
 		} else if isGenericImport(code) {
-			return parseGenericImport(code, index, codelines)
+			resp, worked, err, i = parseGenericImport(code, index, codelines)
+			if !worked {
+				knownFailures = append(knownFailures, code.code)
+				knownFailuresErrs = append(knownFailuresErrs, err)
+			}
+			return resp, worked, err, i
 		} else if isTryCatch(code) {
-			return parseTryCatch(code, index, codelines)
+			resp, worked, err, i = parseTryCatch(code, index, codelines)
+			if !worked {
+				knownFailures = append(knownFailures, code.code)
+				knownFailuresErrs = append(knownFailuresErrs, err)
+			}
+			return resp, worked, err, i
 		}
 	}
 
 	if isLine >= 1 {
 		if isDoWrap(code) {
-			return parseDoWrap(code, index, codelines)
+			resp, worked, err, i = parseDoWrap(code, index, codelines)
+			if !worked {
+				knownFailures = append(knownFailures, code.code)
+				knownFailuresErrs = append(knownFailuresErrs, err)
+			}
+			return resp, worked, err, i
 		}
 	}
 
@@ -84,9 +162,19 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine i
 		}
 	}
 	if isNumber(code) {
-		return parseNumber(code)
+		resp, worked, err, i = parseNumber(code)
+		if !worked {
+			knownFailures = append(knownFailures, code.code)
+			knownFailuresErrs = append(knownFailuresErrs, err)
+		}
+		return resp, worked, err, i
 	} else if isString(code) {
-		return parseString(code)
+		resp, worked, err, i = parseString(code)
+		if !worked {
+			knownFailures = append(knownFailures, code.code)
+			knownFailuresErrs = append(knownFailuresErrs, err)
+		}
+		return resp, worked, err, i
 	} else if issquareroot(code) {
 		resp, worked, err, i = parseSquareroot(code, index, codelines)
 		if worked {
@@ -100,7 +188,12 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine i
 		}
 	}
 	if isVariable(code) {
-		return parseVariable(code)
+		resp, worked, err, i = parseVariable(code)
+		if !worked {
+			knownFailures = append(knownFailures, code.code)
+			knownFailuresErrs = append(knownFailuresErrs, err)
+		}
+		return resp, worked, err, i
 	}
 	if isArray(code) {
 		resp, worked, err, i = parseArray(code, index, codelines)
@@ -110,18 +203,18 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine i
 	} else if isMap(code) {
 		resp, worked, err, i = parseMap(code, index, codelines)
 	}
+	if isnot(code) {
+		resp, worked, err, i = parseNot(code, index, codelines, isLine)
+		if worked {
+			return resp, worked, err, i
+		}
+	}
 	{
 		operation, worked, err, step := parseOperations(code, index, codelines)
 		if worked {
 			return operation, worked, err, step
 		} else if err.EXISTS {
 			return nil, worked, err, step
-		}
-	}
-	if isnot(code) {
-		resp, worked, err, i = parseNot(code, index, codelines, isLine)
-		if worked {
-			return resp, worked, err, i
 		}
 	}
 	if isCall(code) {
@@ -131,14 +224,28 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine i
 		}
 	}
 	if isNegative(code) {
-		return parseNegative(code, index, codelines)
+		resp, worked, err, i = parseNegative(code, index, codelines)
+		if !worked {
+			knownFailures = append(knownFailures, code.code)
+			knownFailuresErrs = append(knownFailuresErrs, err)
+		}
+		return resp, worked, err, i
 	} else if isMapGet(code) {
-		return mapGetParse(code, index, codelines)
+		resp, worked, err, i = mapGetParse(code, index, codelines)
+		if !worked {
+			knownFailures = append(knownFailures, code.code)
+			knownFailuresErrs = append(knownFailuresErrs, err)
+		}
+		return resp, worked, err, i
 	} else if isIndexGet(code) {
 		resp, worked, err, i = indexGetParse(code, index, codelines)
 		if worked {
 			return resp, worked, err, i
 		}
+	}
+	if !worked {
+		knownFailures = append(knownFailures, code.code)
+		knownFailuresErrs = append(knownFailuresErrs, err)
 	}
 	return resp, worked, err, i
 }

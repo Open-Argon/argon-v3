@@ -342,5 +342,16 @@ func makeGlobal() ArObject {
 		}
 		return ArString(typeof(a[0])), ArErr{}
 	}}
+	vars["sha256"] = builtinFunc{"sha256", func(a ...any) (any, ArErr) {
+		if len(a) != 1 {
+			return nil, ArErr{TYPE: "sha256", message: "sha256 takes 1 argument, got " + fmt.Sprint(len(a)), EXISTS: true}
+		}
+		a[0] = ArValidToAny(a[0])
+		switch x := a[0].(type) {
+		case string:
+			return ArString(sha256Hash(x)), ArErr{}
+		}
+		return nil, ArErr{TYPE: "TypeError", message: "Cannot hash type '" + typeof(a[0]) + "'", EXISTS: true}
+	}}
 	return Map(vars)
 }

@@ -285,8 +285,7 @@ func Map(m anymap) ArObject {
 				}
 				val, err := runOperation(operationType{
 					operation: 9,
-					value1:    v,
-					value2:    a[k],
+					values:    []any{v, a[k]},
 				}, stack{}, 0)
 				if err.EXISTS {
 					return val, err

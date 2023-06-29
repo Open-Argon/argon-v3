@@ -50,8 +50,7 @@ func parseIfStatement(code UNPARSEcode, index int, codeline []UNPARSEcode) (ifst
 				},
 				i,
 				codeline,
-				0,
-			)
+				0)
 			if err.EXISTS || !worked {
 				if j == 1 {
 					return ifstatement{}, worked, err, step
