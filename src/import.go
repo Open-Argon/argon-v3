@@ -36,10 +36,8 @@ func readFile(path string) []UNPARSEcode {
 	// optionally, resize scanner's capacity for lines over 64K, see next example
 	output := []UNPARSEcode{}
 	line := 1
-	textOutput := []string{}
 	for scanner.Scan() {
 		text := scanner.Text()
-		textOutput = append(textOutput, text)
 		output = append(output, UNPARSEcode{text, text, line, path})
 		line++
 	}

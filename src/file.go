@@ -147,6 +147,7 @@ func ArWrite(args ...any) (any, ArErr) {
 			if typeof(args[0]) != "string" {
 				return ArObject{}, ArErr{TYPE: "Runtime Error", message: "text takes a string not type '" + typeof(args[0]) + "'", EXISTS: true}
 			}
+			args[0] = ArValidToAny(args[0])
 			file.Write([]byte(args[0].(string)))
 			return nil, ArErr{}
 		}},

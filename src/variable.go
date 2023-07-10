@@ -216,11 +216,15 @@ func setVariableValue(v setVariable, stack stack, stacklevel int) (any, ArErr) {
 	}
 
 	if v.TYPE == "let" {
+		name := v.toset.(accessVariable).Name
+		if v.function {
+			resp = Callable{name, v.params, v.value, v.code, stack, v.line}
+		}
 		stackcallable, ok := stack[len(stack)-1].obj["__setindex__"]
 		if !ok {
 			return nil, ArErr{"Type Error", "stack doesn't have __setindex__", v.line, v.path, v.code, true}
 		}
-		_, err := builtinCall(stackcallable, []any{v.toset.(accessVariable).Name, resp})
+		_, err := builtinCall(stackcallable, []any{name, resp})
 		if err.EXISTS {
 			return nil, err
 		}

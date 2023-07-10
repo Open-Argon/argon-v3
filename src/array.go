@@ -620,6 +620,14 @@ func ArArray(arr []any) ArObject {
 			return true, ArErr{}
 		},
 	}
+	val.obj["copy"] = builtinFunc{
+		"copy",
+		func(args ...any) (any, ArErr) {
+			arrCopy := make([]any, len(arr))
+			copy(arrCopy, arr)
+			return ArArray(arrCopy), ArErr{}
+		},
+	}
 	val.obj["__Boolean__"] = builtinFunc{
 		"__Boolean__",
 		func(args ...any) (any, ArErr) {

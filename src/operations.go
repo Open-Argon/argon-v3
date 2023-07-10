@@ -781,7 +781,7 @@ func calcIntDiv(o operationType, stack stack, stacklevel int) (any, ArErr) {
 			return nil, err
 		}
 		if typeof(resp) == "number" && typeof(output) == "number" {
-			output = output.(number).Quo(output.(number), resp.(number))
+			output = floor(output.(number).Quo(output.(number), resp.(number)))
 			continue
 		} else if x, ok := output.(ArObject); ok {
 			if y, ok := x.obj["__IntDivide__"]; ok {

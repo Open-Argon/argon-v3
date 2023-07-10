@@ -115,8 +115,11 @@ func parseMap(code UNPARSEcode, index int, codelines []UNPARSEcode) (any, bool, 
 }
 
 var mutex = sync.RWMutex{}
+var listenersMutex = sync.RWMutex{}
 
 func Map(m anymap) ArObject {
+	var currentID uint32 = 0
+	listeners := map[any]map[uint32]any{}
 	obj := ArObject{
 		obj: anymap{
 			"__value__": m,
@@ -168,12 +171,29 @@ func Map(m anymap) ArObject {
 						return false, ArErr{}
 					}
 					mutex.RLock()
-					if _, ok := m[key]; !ok {
+					if _, ok := m[key]; ok {
 						mutex.RUnlock()
-						return false, ArErr{}
+						return true, ArErr{}
+					}
+					for k := range m {
+						compare, err := runOperation(
+							operationType{
+								operation: 9,
+								values:    []any{key, k},
+							},
+							stack{},
+							0,
+						)
+						if err.EXISTS {
+							continue
+						}
+						if anyToBool(compare) {
+							mutex.RUnlock()
+							return true, ArErr{}
+						}
 					}
 					mutex.RUnlock()
-					return true, ArErr{}
+					return false, ArErr{}
 				},
 			},
 			"__NotContains__": builtinFunc{
@@ -191,12 +211,29 @@ func Map(m anymap) ArObject {
 						return true, ArErr{}
 					}
 					mutex.RLock()
-					if _, ok := m[key]; !ok {
+					if _, ok := m[key]; ok {
 						mutex.RUnlock()
-						return true, ArErr{}
+						return false, ArErr{}
+					}
+					for k := range m {
+						compare, err := runOperation(
+							operationType{
+								operation: 9,
+								values:    []any{key, k},
+							},
+							stack{},
+							0,
+						)
+						if err.EXISTS {
+							continue
+						}
+						if anyToBool(compare) {
+							mutex.RUnlock()
+							return false, ArErr{}
+						}
 					}
 					mutex.RUnlock()
-					return false, ArErr{}
+					return true, ArErr{}
 				},
 			},
 			"__setindex__": builtinFunc{
@@ -217,6 +254,20 @@ func Map(m anymap) ArObject {
 						}
 					}
 					key := ArValidToAny(args[0])
+					listenersMutex.RLock()
+					if _, ok := listeners[key]; ok {
+						for _, v := range listeners[key] {
+							runCall(
+								call{
+									Callable: v,
+									Args:     []any{args[1]},
+								},
+								stack{},
+								0,
+							)
+						}
+					}
+					listenersMutex.RUnlock()
 					mutex.Lock()
 					m[key] = args[1]
 					mutex.Unlock()
@@ -242,17 +293,33 @@ func Map(m anymap) ArObject {
 						}
 					}
 					mutex.RLock()
-					if _, ok := m[key]; !ok {
+					if v, ok := m[key]; ok {
 						mutex.RUnlock()
-						return nil, ArErr{
-							TYPE:    "KeyError",
-							message: "key " + fmt.Sprint(key) + " not found",
-							EXISTS:  true,
+						return v, ArErr{}
+					}
+					for k := range m {
+						compare, err := runOperation(
+							operationType{
+								operation: 9,
+								values:    []any{key, k},
+							},
+							stack{},
+							0,
+						)
+						if err.EXISTS {
+							continue
+						}
+						if anyToBool(compare) {
+							mutex.RUnlock()
+							return m[k], ArErr{}
 						}
 					}
-					v := m[key]
 					mutex.RUnlock()
-					return v, ArErr{}
+					return nil, ArErr{
+						TYPE:    "KeyError",
+						message: "key " + fmt.Sprint(key) + " not found",
+						EXISTS:  true,
+					}
 				},
 			},
 		},
@@ -297,6 +364,79 @@ func Map(m anymap) ArObject {
 			}
 			mutex.RUnlock()
 			return true, ArErr{}
+		},
+	}
+	obj.obj["copy"] = builtinFunc{
+		"copy",
+		func(args ...any) (any, ArErr) {
+			debugPrintln("copy", args)
+			if len(args) != 0 {
+				return nil, ArErr{
+					TYPE:    "TypeError",
+					message: "expected 0 arguments, got " + fmt.Sprint(len(args)),
+					EXISTS:  true,
+				}
+			}
+			mutex.RLock()
+			newMap := make(anymap)
+			for k, v := range m {
+				newMap[k] = v
+			}
+			mutex.RUnlock()
+			return newMap, ArErr{}
+		},
+	}
+	obj.obj["addKeyChangeListener"] = builtinFunc{
+		"addKeyChangeListener",
+		func(args ...any) (any, ArErr) {
+			if len(args) != 2 {
+				return nil, ArErr{
+					TYPE:    "TypeError",
+					message: "expected 2 arguments, got " + fmt.Sprint(len(args)),
+					EXISTS:  true,
+				}
+			}
+			key := ArValidToAny(args[0])
+			if isUnhashable(key) {
+				return nil, ArErr{
+					TYPE:    "Runtime Error",
+					message: "unhashable type: " + typeof(args[0]),
+					EXISTS:  true,
+				}
+			}
+			if typeof(args[1]) != "function" {
+				return nil, ArErr{
+					TYPE:    "TypeError",
+					message: "expected function, got " + typeof(args[1]),
+					EXISTS:  true,
+				}
+			}
+			id := currentID
+			currentID++
+			listenersMutex.Lock()
+			if _, ok := listeners[key]; !ok {
+				listeners[key] = map[uint32]any{}
+			}
+			listeners[key][id] = args[1]
+			listenersMutex.Unlock()
+			return anymap{
+				"remove": builtinFunc{
+					"remove",
+					func(args ...any) (any, ArErr) {
+						if len(args) != 0 {
+							return nil, ArErr{
+								TYPE:    "TypeError",
+								message: "expected 0 arguments, got " + fmt.Sprint(len(args)),
+								EXISTS:  true,
+							}
+						}
+						listenersMutex.Lock()
+						delete(listeners[key], id)
+						listenersMutex.Unlock()
+						return nil, ArErr{}
+					},
+				},
+			}, ArErr{}
 		},
 	}
 	obj.obj["keys"] = builtinFunc{

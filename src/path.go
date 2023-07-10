@@ -73,4 +73,25 @@ var ArPath = Map(
 					EXISTS:  true,
 				}
 			}},
+		"parent": builtinFunc{
+			"parent",
+			func(args ...any) (any, ArErr) {
+				if len(args) != 1 {
+					return nil, ArErr{
+						TYPE:    "runtime",
+						message: "parent takes exactly 1 argument, got " + fmt.Sprint(len(args)),
+						EXISTS:  true,
+					}
+				}
+				args[0] = ArValidToAny(args[0])
+				if typeof(args[0]) != "string" {
+					return nil, ArErr{
+						TYPE:    "runtime",
+						message: "parent argument must be a string, got " + typeof(args[0]),
+						EXISTS:  true,
+					}
+				}
+				return path.Dir(args[0].(string)), ArErr{}
+			},
+		},
 	})

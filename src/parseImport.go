@@ -56,6 +56,8 @@ func parseGenericImport(code UNPARSEcode, index int, codeline []UNPARSEcode) (Ar
 				continue
 			}
 			if after == "" {
+			} else if after == "*" {
+				asStr = true
 			} else if variableCompile.MatchString(after) {
 				asStr = after
 			} else {
@@ -120,6 +122,27 @@ func runImport(importOBJ ArImport, stack stack, stacklevel int) (any, ArErr) {
 		}
 	case string:
 		builtinCall(setindex, []any{x, stackMap})
+	case bool:
+		keyGetter, ok := stackMap.obj["keys"]
+		if !ok {
+			return nil, ArErr{"Import Error", "could not find keys in module scope", importOBJ.Line, importOBJ.Path, importOBJ.Code, true}
+		}
+		valueGetter, ok := stackMap.obj["__getindex__"]
+		if !ok {
+			return nil, ArErr{"Import Error", "could not find __getindex__ in module scope", importOBJ.Line, importOBJ.Path, importOBJ.Code, true}
+		}
+		keys, err := builtinCall(keyGetter, []any{})
+		if err.EXISTS {
+			return nil, err
+		}
+		keys = ArValidToAny(keys)
+		for _, v := range keys.([]any) {
+			val, err := builtinCall(valueGetter, []any{v})
+			if err.EXISTS {
+				return nil, err
+			}
+			builtinCall(setindex, []any{v, val})
+		}
 	}
 	return nil, ArErr{}
 }
