@@ -63,7 +63,7 @@ func importMod(realpath string, origin string, main bool, global ArObject) (ArOb
 	if err != nil {
 		return ArObject{}, ArErr{TYPE: "Import Error", message: "Could not get executable", EXISTS: true}
 	}
-	executable := filepath.Dir(exc)
+	executable := filepath.Dir(filepath.ToSlash(exc))
 	isABS := filepath.IsAbs(path)
 	var pathsToTest []string
 	if isABS {
@@ -127,7 +127,7 @@ func importMod(realpath string, origin string, main bool, global ArObject) (ArOb
 				if _, ok := args[0].(string); !ok {
 					return nil, ArErr{"Import Error", "Invalid argument type", 0, realpath, "", true}
 				}
-				return importMod(args[0].(string), filepath.Dir(p), false, global)
+				return importMod(args[0].(string), filepath.Dir(filepath.ToSlash(p)), false, global)
 			}},
 			"cwd": ex,
 			"exc": exc,

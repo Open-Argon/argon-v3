@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"path/filepath"
 )
 
 var ArPath = Map(
@@ -65,7 +66,7 @@ var ArPath = Map(
 						}
 						Path = append(Path, x.(string))
 					}
-					return path.Join(Path...), ArErr{}
+					return filepath.Join(Path...), ArErr{}
 				}
 				return nil, ArErr{
 					TYPE:    "runtime",
@@ -91,7 +92,7 @@ var ArPath = Map(
 						EXISTS:  true,
 					}
 				}
-				return path.Dir(args[0].(string)), ArErr{}
+				return path.Dir(filepath.ToSlash(args[0].(string))), ArErr{}
 			},
 		},
 	})

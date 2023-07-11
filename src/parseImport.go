@@ -86,7 +86,7 @@ func runImport(importOBJ ArImport, stack stack, stacklevel int) (any, ArErr) {
 		return nil, ArErr{"Type Error", "import requires a string, got type '" + typeof(val) + "'", importOBJ.Line, importOBJ.Path, importOBJ.Code, true}
 	}
 	path := val.(string)
-	parent := filepath.Dir(importOBJ.Path)
+	parent := filepath.Dir(filepath.ToSlash(importOBJ.Path))
 	stackMap, err := importMod(path, parent, false, stack[0])
 	if err.EXISTS {
 		if err.line == 0 {
