@@ -2,8 +2,6 @@ package main
 
 import (
 	"bufio"
-	"errors"
-	"log"
 	"os"
 	"path/filepath"
 )
@@ -14,21 +12,16 @@ var importing = make(map[string]bool)
 const modules_folder = "argon_modules"
 
 func FileExists(filename string) bool {
-	if _, err := os.Stat(filename); err == nil {
+	if info, err := os.Stat(filename); err == nil && !info.IsDir() {
 		return true
-
-	} else if errors.Is(err, os.ErrNotExist) {
-		return false
-	} else {
-		return false
 	}
+	return false
 }
 
-func readFile(path string) []UNPARSEcode {
+func readFile(path string) ([]UNPARSEcode, error) {
 	file, err := os.Open(path)
 	if err != nil {
-		log.Fatal(err)
-		return nil
+		return nil, err
 	}
 	defer file.Close()
 
@@ -43,10 +36,9 @@ func readFile(path string) []UNPARSEcode {
 	}
 
 	if err := scanner.Err(); err != nil {
-		log.Fatal(err)
-		return nil
+		return nil, err
 	}
-	return output
+	return output, nil
 }
 
 func importMod(realpath string, origin string, main bool, global ArObject) (ArObject, ArErr) {
@@ -63,7 +55,7 @@ func importMod(realpath string, origin string, main bool, global ArObject) (ArOb
 	if err != nil {
 		return ArObject{}, ArErr{TYPE: "Import Error", message: "Could not get executable", EXISTS: true}
 	}
-	executable := filepath.Dir(filepath.ToSlash(exc))
+	executable := filepath.Dir(exc)
 	isABS := filepath.IsAbs(path)
 	var pathsToTest []string
 	if isABS {
@@ -101,7 +93,10 @@ func importMod(realpath string, origin string, main bool, global ArObject) (ArOb
 		return imported[p], ArErr{}
 	}
 	importing[p] = true
-	codelines := readFile(p)
+	codelines, err := readFile(p)
+	if err != nil {
+		return ArObject{}, ArErr{TYPE: "Import Error", message: "Could not read file: " + path, EXISTS: true}
+	}
 	translated, translationerr := translate(codelines)
 
 	if translationerr.EXISTS {
