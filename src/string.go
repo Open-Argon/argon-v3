@@ -262,6 +262,27 @@ func ArString(str string) ArObject {
 			}
 			return output, ArErr{}
 		}}
+	obj.obj["splitN"] = builtinFunc{
+		"splitN",
+		func(a ...any) (any, ArErr) {
+			if len(a) != 2 {
+				return nil, ArErr{"TypeError", "expected 2 or more argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
+			}
+			if typeof(a[0]) != "string" {
+				return nil, ArErr{"TypeError", "expected string, got " + typeof(a[0]), 0, "", "", true}
+			}
+			if typeof(a[1]) != "number" || !a[1].(number).IsInt() {
+				return nil, ArErr{"TypeError", "expected integer, got " + typeof(a[1]), 0, "", "", true}
+			}
+			splitby := ArValidToAny(a[0]).(string)
+			n := int(a[1].(number).Num().Int64())
+			output := []any{}
+			splitted := (strings.SplitN(str, splitby, n))
+			for _, v := range splitted {
+				output = append(output, ArString(v))
+			}
+			return output, ArErr{}
+		}}
 	obj.obj["capitalise"] = builtinFunc{
 		"capitalise",
 		func(a ...any) (any, ArErr) {

@@ -41,6 +41,152 @@ var ArPath = Map(
 				}
 				return ret, ArErr{}
 			}},
+		"exists": builtinFunc{
+			"exists",
+			func(args ...any) (any, ArErr) {
+				if len(args) != 1 {
+					return nil, ArErr{
+						TYPE:    "runtime",
+						message: "exists takes exactly 1 argument, got " + fmt.Sprint(len(args)),
+						EXISTS:  true,
+					}
+				}
+				args[0] = ArValidToAny(args[0])
+				if typeof(args[0]) != "string" {
+					return nil, ArErr{
+						TYPE:    "runtime",
+						message: "exists argument must be a string, got " + typeof(args[0]),
+						EXISTS:  true,
+					}
+				}
+				_, err := os.Stat(args[0].(string))
+				if err != nil {
+					if os.IsNotExist(err) {
+						return false, ArErr{}
+					}
+					return nil, ArErr{
+						TYPE:    "runtime",
+						message: err.Error(),
+						EXISTS:  true,
+					}
+				}
+				return true, ArErr{}
+			}},
+		"mkAllDir": builtinFunc{
+			"mkAllDir",
+			func(args ...any) (any, ArErr) {
+				if len(args) != 1 {
+					return nil, ArErr{
+						TYPE:    "runtime",
+						message: "mkAllDir takes exactly 1 argument, got " + fmt.Sprint(len(args)),
+						EXISTS:  true,
+					}
+				}
+				args[0] = ArValidToAny(args[0])
+				if typeof(args[0]) != "string" {
+					return nil, ArErr{
+						TYPE:    "runtime",
+						message: "mkAllDir argument must be a string, got " + typeof(args[0]),
+						EXISTS:  true,
+					}
+				}
+				err := os.MkdirAll(args[0].(string), os.ModePerm)
+				if err != nil {
+					return nil, ArErr{
+						TYPE:    "runtime",
+						message: err.Error(),
+						EXISTS:  true,
+					}
+				}
+				return nil, ArErr{}
+			}},
+		"mkDir": builtinFunc{
+			"mkDir",
+			func(args ...any) (any, ArErr) {
+				if len(args) != 1 {
+					return nil, ArErr{
+						TYPE:    "runtime",
+						message: "mkDir takes exactly 1 argument, got " + fmt.Sprint(len(args)),
+						EXISTS:  true,
+					}
+				}
+				args[0] = ArValidToAny(args[0])
+				if typeof(args[0]) != "string" {
+					return nil, ArErr{
+						TYPE:    "runtime",
+						message: "mkDir argument must be a string, got " + typeof(args[0]),
+						EXISTS:  true,
+					}
+				}
+				err := os.Mkdir(args[0].(string), os.ModePerm)
+				if err != nil {
+					return nil, ArErr{
+						TYPE:    "runtime",
+						message: err.Error(),
+						EXISTS:  true,
+					}
+				}
+				return nil, ArErr{}
+			}},
+		"remove": builtinFunc{
+			"remove",
+			func(args ...any) (any, ArErr) {
+				if len(args) != 1 {
+					return nil, ArErr{
+						TYPE:    "runtime",
+						message: "remove takes exactly 1 argument, got " + fmt.Sprint(len(args)),
+						EXISTS:  true,
+					}
+				}
+				args[0] = ArValidToAny(args[0])
+				if typeof(args[0]) != "string" {
+					return nil, ArErr{
+						TYPE:    "runtime",
+						message: "remove argument must be a string, got " + typeof(args[0]),
+						EXISTS:  true,
+					}
+				}
+				err := os.Remove(args[0].(string))
+				if err != nil {
+					return nil, ArErr{
+						TYPE:    "runtime",
+						message: err.Error(),
+						EXISTS:  true,
+					}
+				}
+				return nil, ArErr{}
+			}},
+		"isDir": builtinFunc{
+			"isDir",
+			func(args ...any) (any, ArErr) {
+				if len(args) != 1 {
+					return nil, ArErr{
+						TYPE:    "runtime",
+						message: "isDir takes exactly 1 argument, got " + fmt.Sprint(len(args)),
+						EXISTS:  true,
+					}
+				}
+				args[0] = ArValidToAny(args[0])
+				if typeof(args[0]) != "string" {
+					return nil, ArErr{
+						TYPE:    "runtime",
+						message: "isDir argument must be a string, got " + typeof(args[0]),
+						EXISTS:  true,
+					}
+				}
+				stat, err := os.Stat(args[0].(string))
+				if err != nil {
+					if os.IsNotExist(err) {
+						return false, ArErr{}
+					}
+					return nil, ArErr{
+						TYPE:    "runtime",
+						message: err.Error(),
+						EXISTS:  true,
+					}
+				}
+				return stat.IsDir(), ArErr{}
+			}},
 		"join": builtinFunc{
 			"join",
 			func(args ...any) (any, ArErr) {

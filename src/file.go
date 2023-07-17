@@ -123,6 +123,13 @@ func ArRead(args ...any) (any, ArErr) {
 			}
 			return ArTimeClass(info.ModTime()), ArErr{}
 		}},
+		"close": builtinFunc{"close", func(...any) (any, ArErr) {
+			err := file.Close()
+			if err != nil {
+				return ArObject{}, ArErr{TYPE: "Runtime Error", message: err.Error(), EXISTS: true}
+			}
+			return nil, ArErr{}
+		}},
 	}), ArErr{}
 }
 
@@ -148,7 +155,10 @@ func ArWrite(args ...any) (any, ArErr) {
 				return ArObject{}, ArErr{TYPE: "Runtime Error", message: "text takes a string not type '" + typeof(args[0]) + "'", EXISTS: true}
 			}
 			args[0] = ArValidToAny(args[0])
-			file.Write([]byte(args[0].(string)))
+			_, err = file.Write([]byte(args[0].(string)))
+			if err != nil {
+				return ArObject{}, ArErr{TYPE: "Runtime Error", message: err.Error(), EXISTS: true}
+			}
 			return nil, ArErr{}
 		}},
 		"buffer": builtinFunc{"buffer", func(args ...any) (any, ArErr) {
@@ -159,7 +169,10 @@ func ArWrite(args ...any) (any, ArErr) {
 				return ArObject{}, ArErr{TYPE: "Runtime Error", message: "buffer takes a buffer not type '" + typeof(args[0]) + "'", EXISTS: true}
 			}
 			args[0] = ArValidToAny(args[0])
-			file.Write(args[0].([]byte))
+			_, err = file.Write(args[0].([]byte))
+			if err != nil {
+				return ArObject{}, ArErr{TYPE: "Runtime Error", message: err.Error(), EXISTS: true}
+			}
 			return nil, ArErr{}
 		}},
 		"json": builtinFunc{"json", func(args ...any) (any, ArErr) {
@@ -170,7 +183,17 @@ func ArWrite(args ...any) (any, ArErr) {
 			if err != nil {
 				return ArObject{}, ArErr{TYPE: "Runtime Error", message: err.Error(), EXISTS: true}
 			}
-			file.Write([]byte(jsonstr))
+			_, err = file.Write([]byte(jsonstr))
+			if err != nil {
+				return ArObject{}, ArErr{TYPE: "Runtime Error", message: err.Error(), EXISTS: true}
+			}
+			return nil, ArErr{}
+		}},
+		"close": builtinFunc{"close", func(...any) (any, ArErr) {
+			err := file.Close()
+			if err != nil {
+				return ArObject{}, ArErr{TYPE: "Runtime Error", message: err.Error(), EXISTS: true}
+			}
 			return nil, ArErr{}
 		}},
 	}), ArErr{}
