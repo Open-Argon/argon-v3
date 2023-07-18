@@ -15,20 +15,35 @@ func isString(code UNPARSEcode) bool {
 	return stringCompile.MatchString(code.code)
 }
 
+func swapQuotes(text string) string {
+	result := ""
+	for _, char := range text {
+		switch char {
+		case '"':
+			result += "'"
+		case '\'':
+			result += "\""
+		default:
+			result += string(char)
+		}
+	}
+	return result
+}
+
 func unquoted(
 	str string,
 ) (string, error) {
 	str = strings.Trim(str, " ")
-	if str[0] == '\'' {
-		str = strings.Replace(str, "\\\"", "\"", -1)
-		str = strings.Replace(str, "\"", "\\\"", -1)
+	char := str[0]
+	if char == '\'' {
+		str = swapQuotes(str)
 	}
-	str = str[1 : len(str)-1]
-	str = strings.Replace(str, "\\'", "'", -1)
-	str = "\"" + str + "\""
 	output, err := strconv.Unquote(str)
 	if err != nil {
 		return "", err
+	}
+	if char == '\'' {
+		output = swapQuotes(output)
 	}
 	return output, nil
 }
@@ -39,7 +54,7 @@ func parseString(code UNPARSEcode) (string, bool, ArErr, int) {
 
 	unquoted, err := unquoted(trim)
 	if err != nil {
-		return "", false, ArErr{"Syntax Error", "invalid string", code.line, code.path, code.realcode, true}, 1
+		return "", false, ArErr{"Syntax Error", "invalid escape sequence", code.line, code.path, code.realcode, true}, 1
 	}
 
 	return unquoted, true, ArErr{}, 1
