@@ -46,7 +46,7 @@ func runCreateMap(m createMap, stack stack, stacklevel int) (any, ArErr) {
 		}
 		newmap[keyVal] = valVal
 	}
-	return newmap, ArErr{}
+	return Map(newmap), ArErr{}
 }
 
 func parseMap(code UNPARSEcode, index int, codelines []UNPARSEcode) (any, bool, ArErr, int) {
