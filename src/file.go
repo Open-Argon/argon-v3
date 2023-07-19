@@ -45,6 +45,18 @@ func ArRead(args ...any) (any, ArErr) {
 	if err != nil {
 		return ArObject{}, ArErr{TYPE: "Runtime Error", message: err.Error(), EXISTS: true}
 	}
+
+	fileInfo, err := os.Stat(filename)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return ArObject{}, ArErr{TYPE: "Runtime Error", message: "File does not exist: " + filename, EXISTS: true}
+		} else {
+			return ArObject{}, ArErr{TYPE: "Runtime Error", message: err.Error(), EXISTS: true}
+		}
+	} else if fileInfo.Mode().IsDir() {
+		return ArObject{}, ArErr{TYPE: "Runtime Error", message: "path goes to a directory, not a file: " + filename, EXISTS: true}
+	}
+
 	return Map(anymap{
 		"text": builtinFunc{"text", func(...any) (any, ArErr) {
 			text, err := readtext(file)
@@ -61,7 +73,8 @@ func ArRead(args ...any) (any, ArErr) {
 			return jsonparse(text), ArErr{}
 		}},
 		"contentType": builtinFunc{"contentType", func(...any) (any, ArErr) {
-			mimetype, err := mimetype.DetectFile(filename)
+			file.Seek(0, io.SeekStart)
+			mimetype, err := mimetype.DetectReader(file)
 			if err != nil {
 				return ArObject{}, ArErr{TYPE: "Runtime Error", message: err.Error(), EXISTS: true}
 			}
