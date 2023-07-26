@@ -14,7 +14,7 @@ func ArgonString(args ...any) (any, ArErr) {
 		return ArString(""), ArErr{}
 	}
 	args[0] = ArValidToAny(args[0])
-	return ArString(anyToArgon(args[0], true, false, 3, 0, false, 0)), ArErr{}
+	return ArString(anyToArgon(args[0], false, false, 3, 0, false, 0)), ArErr{}
 }
 
 func ArgonNumber(args ...any) (any, ArErr) {
