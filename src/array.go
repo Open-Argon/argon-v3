@@ -321,7 +321,7 @@ func ArArray(arr []any) ArObject {
 				}
 			}
 			arr = append(arr, args[0].(ArObject).obj["__value__"].([]any)...)
-			val.obj["length"] = len(arr)
+			val.obj["length"] = newNumber().SetUint64(uint64(len(arr)))
 			val.obj["__value__"] = arr
 			return nil, ArErr{}
 		},
@@ -365,7 +365,7 @@ func ArArray(arr []any) ArObject {
 					return nil, err
 				}
 				arr = output
-				val.obj["length"] = len(arr)
+				val.obj["length"] = newNumber().SetUint64(uint64(len(arr)))
 				val.obj["__value__"] = arr
 				return nil, ArErr{}
 			}
@@ -381,7 +381,7 @@ func ArArray(arr []any) ArObject {
 				}
 			}
 			arr = output
-			val.obj["length"] = len(arr)
+			val.obj["length"] = newNumber().SetUint64(uint64(len(arr)))
 			val.obj["__value__"] = arr
 			return nil, ArErr{}
 		},

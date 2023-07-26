@@ -454,7 +454,7 @@ func ArString(str string) ArObject {
 					bytes[i] = b.(byte)
 				}
 				str = string(bytes)
-				obj.obj["length"] = len(str)
+				obj.obj["length"] = newNumber().SetUint64(uint64(len(str)))
 				obj.obj["__value__"] = str
 				return nil, ArErr{}
 			}
@@ -474,7 +474,7 @@ func ArString(str string) ArObject {
 				bytes[i] = b.(byte)
 			}
 			str = string(bytes)
-			obj.obj["length"] = len(str)
+			obj.obj["length"] = newNumber().SetUint64(uint64(len(str)))
 			obj.obj["__value__"] = str
 			return nil, ArErr{}
 		},
