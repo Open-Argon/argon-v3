@@ -4,8 +4,6 @@ import (
 	"fmt"
 )
 
-type keyCache map[any]any
-
 func quickSort(list []any, getKey func(any) (any, ArErr)) ([]any, ArErr) {
 	if len(list) <= 1 {
 		return list, ArErr{}
@@ -15,21 +13,19 @@ func quickSort(list []any, getKey func(any) (any, ArErr)) ([]any, ArErr) {
 	var left []any
 	var right []any
 
-	var cache = make(keyCache)
-
 	for _, v := range list[1:] {
-		val, err := getkeyCache(getKey, v, cache)
+		val, err := getkeyCache(getKey, v)
 		if err.EXISTS {
 			return nil, err
 		}
-		pivotval, err := getkeyCache(getKey, pivot, cache)
+		pivotval, err := getkeyCache(getKey, pivot)
 		if err.EXISTS {
 			return nil, err
 		}
 		comp, comperr := compare(val, pivotval)
 		if comperr != nil {
 			return nil, ArErr{
-				TYPE:    "TypeError",
+				TYPE:    "Runtime Error",
 				message: comperr.Error(),
 				EXISTS:  true,
 			}
@@ -53,16 +49,11 @@ func quickSort(list []any, getKey func(any) (any, ArErr)) ([]any, ArErr) {
 	return append(append(left, pivot), right...), ArErr{}
 }
 
-func getkeyCache(getKey func(any) (any, ArErr), index any, cache keyCache) (any, ArErr) {
-	key := ArValidToAny(index)
-	if cacheval, ok := cache[key]; ok {
-		return cacheval, ArErr{}
-	}
-	val, err := getKey(index)
+func getkeyCache(getKey func(any) (any, ArErr), key any) (any, ArErr) {
+	val, err := getKey(key)
 	if err.EXISTS {
 		return nil, err
 	}
-	cache[key] = val
 	return val, ArErr{}
 }
 

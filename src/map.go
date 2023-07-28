@@ -452,10 +452,10 @@ func Map(m anymap) ArObject {
 			mutex.RLock()
 			keys := []any{}
 			for k := range m {
-				keys = append(keys, k)
+				keys = append(keys, AnyToArValid(k))
 			}
 			mutex.RUnlock()
-			return keys, ArErr{}
+			return ArArray(keys), ArErr{}
 		},
 	}
 	obj.obj["__Boolean__"] = builtinFunc{
