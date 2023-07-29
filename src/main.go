@@ -66,4 +66,7 @@ func main() {
 		panicErr(err)
 		os.Exit(1)
 	}
+	if threadCount > 0 {
+		<-threadChan
+	}
 }

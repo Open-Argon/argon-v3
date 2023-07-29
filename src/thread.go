@@ -4,6 +4,9 @@ import (
 	"fmt"
 )
 
+var threadCount = 0
+var threadChan = make(chan bool)
+
 func ArThread(args ...any) (any, ArErr) {
 	if len(args) != 1 {
 		return nil, ArErr{TYPE: "TypeError", message: "Invalid number of arguments, expected 1, got " + fmt.Sprint(len(args)), EXISTS: true}
@@ -36,8 +39,13 @@ func ArThread(args ...any) (any, ArErr) {
 			}
 			hasrun = true
 			go func() {
+				threadCount++
 				resp, err = runCall(call{Callable: tocall, Args: []any{}}, nil, 0)
 				wg <- true
+				threadCount--
+				if threadCount == 0 {
+					threadChan <- true
+				}
 			}()
 			return nil, ArErr{}
 		}},
