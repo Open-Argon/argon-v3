@@ -364,6 +364,11 @@ func ArArray(arr []any) ArObject {
 				if err.EXISTS {
 					return nil, err
 				}
+				if reverse {
+					for i, j := 0, len(output)-1; i < j; i, j = i+1, j-1 {
+						output[i], output[j] = output[j], output[i]
+					}
+				}
 				arr = output
 				val.obj["length"] = newNumber().SetUint64(uint64(len(arr)))
 				val.obj["__value__"] = arr
