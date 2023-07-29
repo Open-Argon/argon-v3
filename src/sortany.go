@@ -54,7 +54,6 @@ func getkeyCache(getKey func(any) (any, ArErr), key any) (any, ArErr) {
 	if err.EXISTS {
 		return nil, err
 	}
-	fmt.Println(key, val)
 	return val, ArErr{}
 }
 
