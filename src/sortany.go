@@ -76,5 +76,6 @@ func compare(a, b any) (bool, error) {
 			return y < x, nil
 		}
 	}
+	fmt.Println(a, b)
 	return false, fmt.Errorf("cannot compare %s to %s", typeof(a), typeof(b))
 }
