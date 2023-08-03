@@ -2,7 +2,6 @@ package main
 
 import (
 	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/joho/godotenv"
@@ -15,16 +14,12 @@ func getEnv() ArObject {
 		pair := strings.Split(e, "=")
 		env[pair[0]] = ArString(pair[1])
 	}
-	cwd, err := os.Getwd()
+	err := godotenv.Load(".env")
 	if err == nil {
-		envfile := filepath.Join(cwd, ".env")
-		err := godotenv.Load(envfile)
+		values, err := godotenv.Read()
 		if err == nil {
-			values, err := godotenv.Read()
-			if err == nil {
-				for k, v := range values {
-					env[k] = ArString(v)
-				}
+			for k, v := range values {
+				env[k] = ArString(v)
 			}
 		}
 	}

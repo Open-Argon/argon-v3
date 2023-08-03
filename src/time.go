@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -102,11 +103,14 @@ func ArTimeClass(N time.Time) ArObject {
 
 var ArTime = Map(anymap{
 	"snooze": builtinFunc{"snooze", func(a ...any) (any, ArErr) {
-		if len(a) > 0 {
+		if len(a) == 1 {
 			float, _ := a[0].(number).Float64()
 			time.Sleep(time.Duration(float*1000000000) * time.Nanosecond)
 		}
-		return nil, ArErr{}
+		return nil, ArErr{
+			TYPE:    "Runtime Error",
+			message: "snooze requires 1 argument",
+		}
 	}},
 	"now": builtinFunc{"now", func(a ...any) (any, ArErr) {
 		return ArTimeClass(time.Now()), ArErr{}
@@ -129,7 +133,7 @@ var ArTime = Map(anymap{
 				}
 			}
 			return ArTimeClass(N), ArErr{}
-		} else if len(a) > 1 {
+		} else if len(a) == 2 {
 			if typeof(a[0]) != "string" {
 				return nil, ArErr{
 					TYPE:    "Runtime Error",
@@ -163,7 +167,7 @@ var ArTime = Map(anymap{
 		}
 	}},
 	"parseInLocation": builtinFunc{"parseInLocation", func(a ...any) (any, ArErr) {
-		if len(a) != 2 {
+		if len(a) == 2 {
 			if typeof(a[0]) != "string" || typeof(a[1]) != "string" {
 				return nil, ArErr{
 					TYPE:    "Runtime Error",
@@ -191,7 +195,8 @@ var ArTime = Map(anymap{
 	},
 	},
 	"date": builtinFunc{"date", func(a ...any) (any, ArErr) {
-		if len(a) != 1 {
+		fmt.Println(a, len(a))
+		if len(a) == 1 {
 			if typeof(a[0]) != "string" {
 				return nil, ArErr{
 					TYPE:    "Runtime Error",
@@ -218,7 +223,7 @@ var ArTime = Map(anymap{
 	},
 	},
 	"unix": builtinFunc{"unix", func(a ...any) (any, ArErr) {
-		if len(a) != 2 {
+		if len(a) == 2 {
 			if typeof(a[0]) != "number" || typeof(a[1]) != "number" {
 				return nil, ArErr{
 					TYPE:    "Runtime Error",
@@ -238,7 +243,7 @@ var ArTime = Map(anymap{
 	},
 	},
 	"unixMilli": builtinFunc{"unixMilli", func(a ...any) (any, ArErr) {
-		if len(a) != 1 {
+		if len(a) == 1 {
 			if typeof(a[0]) != "number" {
 				return nil, ArErr{
 					TYPE:    "Runtime Error",
@@ -257,7 +262,7 @@ var ArTime = Map(anymap{
 	},
 	},
 	"unixMicro": builtinFunc{"unixMicro", func(a ...any) (any, ArErr) {
-		if len(a) > 0 {
+		if len(a) == 1 {
 			if typeof(a[0]) != "number" {
 				return nil, ArErr{
 					TYPE:    "Runtime Error",
