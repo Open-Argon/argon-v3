@@ -16,6 +16,9 @@ RUN go mod download
 # Copy the source from the current directory to the Working Directory inside the container
 COPY ./src ./src
 
+# Copy License
+COPY LICENSE .
+
 # Build the Go app
 RUN go build -trimpath -ldflags="-s -w" -o bin/argon ./src
 
