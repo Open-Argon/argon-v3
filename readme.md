@@ -27,7 +27,7 @@ argon example.ar
 
 ## 🔍 Specification
 
-For a detailed specification of the Argon 3 language, please refer to [spec.md](spec.md).
+For a detailed specification of the Argon 3 language, please refer to [the docs](docs.argon.wbell.dev).
 
 ## 🚀 Example Code
 
