@@ -44,4 +44,4 @@ Please note that this example is subject to change as the specification is in be
 
 ## Licence
 
-MIT
+GNU General Public License v3.0
