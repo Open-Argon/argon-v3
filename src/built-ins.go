@@ -8,6 +8,7 @@ import (
 func makeGlobal() ArObject {
 	var vars = anymap{}
 	vars["global"] = vars
+	vars["env"] = env
 	vars["term"] = ArTerm
 	vars["ArgonVersion"] = ArString(VERSION)
 	vars["number"] = builtinFunc{"number", ArgonNumber}

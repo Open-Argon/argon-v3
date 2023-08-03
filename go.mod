@@ -7,6 +7,8 @@ require (
 	github.com/wadey/go-rounding v1.1.0
 )
 
+require github.com/joho/godotenv v1.5.1 // indirect
+
 require (
 	github.com/gabriel-vasile/mimetype v1.4.2
 	golang.org/x/net v0.8.0 // indirect
