@@ -26,3 +26,20 @@ func ArValidToAny(a any) any {
 	}
 	return a
 }
+
+func ArValidToHash(a any) (any, ArErr) {
+	switch a := a.(type) {
+	case ArObject:
+		if callable, ok := a.obj["__hash__"]; ok {
+			value, err := runCall(call{
+				Callable: callable,
+				Args:     []any{},
+			}, stack{}, 0)
+			if err.EXISTS {
+				return nil, err
+			}
+			return value, ArErr{}
+		}
+	}
+	return a, ArErr{}
+}

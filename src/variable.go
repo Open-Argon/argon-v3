@@ -171,36 +171,78 @@ func parseSetVariable(code UNPARSEcode, index int, lines []UNPARSEcode, isLine i
 	return setVariable{TYPE: "let", toset: toset, value: value, function: function, params: params, line: code.line, code: code.code, path: code.path}, true, ArErr{}, i + namei - 1
 }
 
+var operationsToInt = map[byte]int{
+	'+': 10,
+	'-': 11,
+	'*': 12,
+	'/': 15,
+	'^': 16,
+	'&': 0,
+	'|': 1,
+}
+
 func parseAutoAsignVariable(code UNPARSEcode, index int, lines []UNPARSEcode, isLine int) (setVariable, bool, ArErr, int) {
 	trim := strings.TrimSpace(code.code)
-	equalsplit := strings.SplitN(trim, "=", 2)
-	name := strings.TrimSpace(equalsplit[0])
-	params := []string{}
-	function := false
-	if blockedVariableNames[name] {
-		return setVariable{}, false, ArErr{"Naming Error", "\"" + name + "\" is a reserved keyword", code.line, code.path, code.realcode, true}, 1
+	equalsplit := strings.Split(trim, "=")
+	for i := 1; i < len(equalsplit); i++ {
+		name := strings.TrimSpace(strings.Join(equalsplit[:i], "="))
+		if name == "" {
+			continue
+		}
+		operation := name[len(name)-1]
+		var operationtype int = -1
+		if operation == '+' || operation == '-' || operation == '*' || operation == '/' || operation == '^' || operation == '&' || operation == '|' {
+			name = strings.TrimSpace(name[:len(name)-1])
+			if n, ok := operationsToInt[operation]; ok {
+				operationtype = n
+			}
+		}
+		params := []string{}
+		function := false
+		if blockedVariableNames[name] {
+			if i == len(equalsplit)-1 {
+				return setVariable{}, false, ArErr{"Naming Error", "\"" + name + "\" is a reserved keyword", code.line, code.path, code.realcode, true}, 1
+			}
+			continue
+		}
+		toset, success, err, namei := nameToTranslated(UNPARSEcode{code: name, realcode: code.realcode, line: code.line, path: code.path}, index, lines)
+		if err.EXISTS {
+			if i == len(equalsplit)-1 {
+				return setVariable{}, success, err, namei
+			}
+			continue
+		}
+		switch x := toset.(type) {
+		case accessVariable:
+			break
+		case ArMapGet:
+			break
+		case setFunction:
+			function = true
+			params = x.params
+			toset = x.toset
+		default:
+			if i == len(equalsplit)-1 {
+				return setVariable{}, false, ArErr{"Type Error", "can't set for non variable, did you mean to put 'let' before?", code.line, code.path, code.realcode, true}, 1
+			}
+			continue
+		}
+		value, success, err, i := translateVal(UNPARSEcode{code: strings.Join(equalsplit[i:], "="), realcode: code.realcode, line: code.line, path: code.path}, index, lines, isLine)
+		if !success {
+			return setVariable{}, false, err, i
+		}
+		if operationtype != -1 {
+			value = operationType{
+				operation: operationtype,
+				values:    []any{toset, value},
+				line:      code.line,
+				code:      code.code,
+				path:      code.path,
+			}
+		}
+		return setVariable{TYPE: "auto", toset: toset, value: value, function: function, params: params, line: code.line, code: code.code, path: code.path}, true, ArErr{}, i + namei - 1
 	}
-	toset, success, err, namei := nameToTranslated(UNPARSEcode{code: name, realcode: code.realcode, line: code.line, path: code.path}, index, lines)
-	if err.EXISTS {
-		return setVariable{}, success, err, namei
-	}
-	switch x := toset.(type) {
-	case accessVariable:
-		break
-	case ArMapGet:
-		break
-	case setFunction:
-		function = true
-		params = x.params
-		toset = x.toset
-	default:
-		return setVariable{}, false, ArErr{"Type Error", "can't set for non variable, did you mean '=='?", code.line, code.path, code.realcode, true}, 1
-	}
-	value, success, err, i := translateVal(UNPARSEcode{code: equalsplit[1], realcode: code.realcode, line: code.line, path: code.path}, index, lines, isLine)
-	if !success {
-		return setVariable{}, false, err, i
-	}
-	return setVariable{TYPE: "auto", toset: toset, value: value, function: function, params: params, line: code.line, code: code.code, path: code.path}, true, ArErr{}, i + namei - 1
+	return setVariable{}, false, ArErr{"Syntax Error", "invalid syntax", code.line, code.path, code.realcode, true}, 1
 }
 
 func setVariableValue(v setVariable, stack stack, stacklevel int) (any, ArErr) {

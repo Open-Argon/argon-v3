@@ -224,7 +224,7 @@ func makeGlobal() ArObject {
 	}}
 	vars["subprocess"] = builtinFunc{"subprocess", ArSubprocess}
 	vars["sequence"] = builtinFunc{"sequence", ArSequence}
-	vars["exit"] = builtinFunc{"exit", func(a ...any) (any, ArErr) {
+	vars["|"] = builtinFunc{"exit", func(a ...any) (any, ArErr) {
 		if len(a) == 0 {
 			os.Exit(0)
 		}
@@ -234,29 +234,6 @@ func makeGlobal() ArObject {
 		}
 		os.Exit(0)
 		return nil, ArErr{}
-	}}
-	vars["error"] = builtinFunc{"error", func(a ...any) (any, ArErr) {
-		if len(a) < 1 || len(a) > 2 {
-			return nil, ArErr{TYPE: "error", message: "error takes 1 or 2 arguments, got " + fmt.Sprint(len(a)), EXISTS: true}
-		}
-		if len(a) == 1 {
-			a[0] = ArValidToAny(a[0])
-			switch x := a[0].(type) {
-			case string:
-				return nil, ArErr{TYPE: "Error", message: x, EXISTS: true}
-			}
-		} else {
-			a[0] = ArValidToAny(a[0])
-			a[1] = ArValidToAny(a[1])
-			switch x := a[0].(type) {
-			case string:
-				switch y := a[1].(type) {
-				case string:
-					return nil, ArErr{TYPE: x, message: y, EXISTS: true}
-				}
-			}
-		}
-		return nil, ArErr{TYPE: "TypeError", message: "Cannot create error from '" + typeof(a[0]) + "'", EXISTS: true}
 	}}
 	vars["chr"] = builtinFunc{"chr", func(a ...any) (any, ArErr) {
 		if len(a) != 1 {
