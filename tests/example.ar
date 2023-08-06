@@ -1,10 +1,7 @@
 let getInitials(name) = do
     name = name.upper()
     namesplit = name.split(" ")
-    i = 0
-    while (i < namesplit.length) do
-        namesplit[i] = namesplit[i][0]
-        i = i + 1
+    for (i from 0 to namesplit.length) namesplit[i] = namesplit[i][0]
     return namesplit.join("")
 
 name = "william bell"

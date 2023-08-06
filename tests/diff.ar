@@ -11,4 +11,4 @@ forever do
     term.log("f"+("'"*d)+"("+x+") = "+n)
     if (n == 0) break
     f = diff(f)
-    d = d + 1
+    d += 1

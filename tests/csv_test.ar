@@ -1,4 +1,4 @@
-import "csv" as csv
+import "csv.ar" as csv
 
 let table = (csv.read("tests/test.csv"))
 
