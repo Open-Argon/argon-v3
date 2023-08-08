@@ -1,11 +1,10 @@
 # workflow name
 name: Generate release-artifacts
 
-# on events
 on:
   release:
-    types: 
-        - created
+    types:
+      - created
 
 # workflow tasks
 jobs:
