@@ -24,7 +24,7 @@ func parseComment(code UNPARSEcode, index int, codelines []UNPARSEcode) (any, bo
 		if isBlank(UNPARSEcode{code: joined, realcode: code.realcode, line: code.line, path: code.path}) {
 			return nil, true, ArErr{}, step
 		}
-		resp, worked, _, s := translateVal(UNPARSEcode{code: joined, realcode: code.realcode, line: code.line, path: code.path}, index, codelines, 2)
+		resp, worked, _, s := translateVal(UNPARSEcode{code: joined, realcode: code.realcode, line: code.line, path: code.path}, index, codelines, 3)
 		step += s - 1
 		if worked {
 			return resp, true, ArErr{}, step

@@ -30,36 +30,12 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine i
 		err    ArErr = ArErr{"Syntax Error", "invalid syntax", code.line, code.path, code.realcode, true}
 		i      int   = 1
 	)
-	if isLine == 2 {
-		if isDeleteVariable(code) {
-			resp, worked, err, i = parseDelete(code, index, codelines)
-			if !worked {
-				knownFailures[code.code] = err
-			}
-			return resp, worked, err, i
-		} else if isComment(code) {
+	if isLine == 3 {
+		if isComment(code) {
 			resp, worked, err, i = parseComment(code, index, codelines)
 			if worked {
 				return resp, worked, err, i
 			}
-		} else if isReturn(code) {
-			resp, worked, err, i = parseReturn(code, index, codelines)
-			if !worked {
-				knownFailures[code.code] = err
-			}
-			return resp, worked, err, i
-		} else if isBreak(code) {
-			resp, worked, err, i = parseBreak(code)
-			if !worked {
-				knownFailures[code.code] = err
-			}
-			return resp, worked, err, i
-		} else if isContinue(code) {
-			resp, worked, err, i = parseContinue(code)
-			if !worked {
-				knownFailures[code.code] = err
-			}
-			return resp, worked, err, i
 		} else if isIfStatement(code) {
 			resp, worked, err, i = parseIfStatement(code, index, codelines)
 			if !worked {
@@ -99,6 +75,34 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine i
 		}
 	}
 
+	if isLine >= 2 {
+		if isReturn(code) {
+			resp, worked, err, i = parseReturn(code, index, codelines)
+			if !worked {
+				knownFailures[code.code] = err
+			}
+			return resp, worked, err, i
+		} else if isBreak(code) {
+			resp, worked, err, i = parseBreak(code)
+			if !worked {
+				knownFailures[code.code] = err
+			}
+			return resp, worked, err, i
+		} else if isContinue(code) {
+			resp, worked, err, i = parseContinue(code)
+			if !worked {
+				knownFailures[code.code] = err
+			}
+			return resp, worked, err, i
+		} else if isDeleteVariable(code) {
+			resp, worked, err, i = parseDelete(code, index, codelines)
+			if !worked {
+				knownFailures[code.code] = err
+			}
+			return resp, worked, err, i
+		}
+	}
+
 	if isLine >= 1 {
 		if isDoWrap(code) {
 			resp, worked, err, i = parseDoWrap(code, index, codelines)
@@ -109,7 +113,7 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine i
 		}
 	}
 
-	if isLine == 2 {
+	if isLine > 1 {
 		isLine = 1
 	}
 
@@ -233,12 +237,12 @@ func translate(codelines []UNPARSEcode) ([]any, ArErr) {
 		if currentindent != 0 {
 			return nil, ArErr{"Syntax Error", "invalid indent", codelines[i].line, codelines[i].path, codelines[i].realcode, true}
 		}
-		val, _, err, step := translateVal(codelines[i], i, codelines, 2)
-		switch val.(type) {
-		case CallReturn:
-			return nil, ArErr{"Runtime Error", "Jump statment at top level", codelines[i].line, codelines[i].path, codelines[i].realcode, true}
-		}
+		val, _, err, step := translateVal(codelines[i], i, codelines, 3)
 		i += step
+		if err.EXISTS {
+			return nil, err
+		}
+		err = translateThrowOnNonLoop(val)
 		if err.EXISTS {
 			return nil, err
 		}

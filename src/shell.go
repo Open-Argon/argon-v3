@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"strings"
 )
 
 func shell(global ArObject) {
@@ -18,23 +19,26 @@ func shell(global ArObject) {
 			}
 		}
 	}()
+	fmt.Print("\x1b[32;5;240mWelcome to the Argon v3!\x1b[0m\n\n")
 	for {
-		indo := false
+		indent := 0
+		previous := 0
 		totranslate := []UNPARSEcode{}
-		code := input("\x1b[38;5;240m>>> \x1b[0m\x1b[1;5;240m")
-		fmt.Print("\x1b[0m")
-		if code == "" {
-			continue
-		}
-		indo = true
-		totranslate = append(totranslate, UNPARSEcode{code, code, 1, "<shell>"})
-		for i := 2; indo; i++ {
-			code := input("\x1b[38;5;240m... \x1b[0m\x1b[1;5;240m")
+		textBefore := ">>>"
+		for i := 1; indent > 0 || (previous != indent && indent >= 0) || i == 1; i++ {
+			indentStr := strings.Repeat("    ", indent)
+			code := indentStr + input("\x1b[38;5;240m"+textBefore+indentStr+" \x1b[0m\x1b[1;5;240m")
 			fmt.Print("\x1b[0m")
 			totranslate = append(totranslate, UNPARSEcode{code, code, i, "<shell>"})
-			if code == "" {
-				indo = false
+			trimmed := strings.TrimSpace(code)
+			split := strings.Split(trimmed, " ")
+			previous = indent
+			if split[len(split)-1] == "do" {
+				indent++
+			} else if trimmed == "" {
+				indent--
 			}
+			textBefore = "..."
 		}
 		translated, translationerr := translate(totranslate)
 		count := len(translated)
@@ -47,7 +51,6 @@ func shell(global ArObject) {
 		if runimeErr.EXISTS {
 			panicErr(runimeErr)
 		} else if count == 1 {
-
 			fmt.Println(anyToArgon(output, true, true, 3, 0, true, 1))
 		}
 	}

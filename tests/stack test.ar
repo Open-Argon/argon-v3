@@ -5,3 +5,13 @@ do
   term.log(x)
 
 term.log(x)
+
+term.log()
+
+let x = 10
+
+do
+  x = 20
+  term.log(x)
+
+term.log(x)

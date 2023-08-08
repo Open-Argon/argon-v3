@@ -71,6 +71,7 @@ func runReturn(code CallReturn, stack stack, stacklevel int) (any, ArErr) {
 		if err.EXISTS {
 			return nil, err
 		}
+		v = openReturn(v)
 		val = v
 	}
 	return Return{
@@ -79,6 +80,19 @@ func runReturn(code CallReturn, stack stack, stacklevel int) (any, ArErr) {
 		code:  code.code,
 		path:  code.path,
 	}, ArErr{}
+}
+
+func translateThrowOnNonLoop(val any) ArErr {
+	switch x := val.(type) {
+	case Break:
+		return ArErr{"Break Error", "break can only be used in loops", x.line, x.path, x.code, true}
+	case Continue:
+		return ArErr{"Continue Error", "continue can only be used in loops", x.line, x.path, x.code, true}
+	case CallReturn:
+		return ArErr{"Return Error", "return can only be used in do wraps", x.line, x.path, x.code, true}
+	default:
+		return ArErr{}
+	}
 }
 
 func openReturn(resp any) any {

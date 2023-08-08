@@ -32,36 +32,26 @@ func parseCall(code UNPARSEcode, index int, codelines []UNPARSEcode) (any, bool,
 	trim := strings.TrimSpace(code.code)
 	trim = trim[:len(trim)-1]
 	splitby := strings.Split(trim, "(")
-
-	var works bool
-	var callable any
-	var arguments []any
 	for i := 1; i < len(splitby); i++ {
 		name := strings.Join(splitby[0:i], "(")
 		argstr := strings.Join(splitby[i:], "(")
 		args, success, argserr := getValuesFromLetter(argstr, ",", index, codelines, false)
-		arguments = args
 		if !success {
 			if i == len(splitby)-1 {
 				return nil, false, argserr, 1
 			}
 			continue
 		}
-		resp, worked, _, _ := translateVal(UNPARSEcode{code: name, realcode: code.realcode, line: index + 1, path: code.path}, index, codelines, 0)
+		resp, worked, err, linecount := translateVal(UNPARSEcode{code: name, realcode: code.realcode, line: index + 1, path: code.path}, index, codelines, 0)
 		if !worked {
 			if i == len(splitby)-1 {
-				return nil, false, ArErr{"Syntax Error", "invalid callable", code.line, code.path, code.realcode, true}, 1
+				return nil, false, err, 1
 			}
 			continue
 		}
-		works = true
-		callable = resp
-		break
+		return call{Callable: resp, Args: args, Line: code.line, Code: code.realcode, Path: code.path}, true, ArErr{}, linecount
 	}
-	if !works {
-		return nil, false, ArErr{"Syntax Error", "invalid call", code.line, code.path, code.realcode, true}, 1
-	}
-	return call{Callable: callable, Args: arguments, Line: code.line, Code: code.realcode, Path: code.path}, true, ArErr{}, 1
+	return nil, false, ArErr{"Syntax Error", "invalid call", code.line, code.path, code.realcode, true}, 1
 }
 
 func runCall(c call, stack stack, stacklevel int) (any, ArErr) {
@@ -129,7 +119,7 @@ func runCall(c call, stack stack, stacklevel int) (any, ArErr) {
 			l[param] = args[i]
 		}
 		resp, err := runVal(x.run, append(x.stack, Map(l)), stacklevel+1)
-		return ThrowOnNonLoop(openReturn(resp), err)
+		return openReturn(resp), err
 	}
 	return nil, ArErr{"Runtime Error", "type '" + typeof(callable) + "' is not callable", c.Line, c.Path, c.Code, true}
 }
@@ -151,7 +141,7 @@ func builtinCall(callable any, args []any) (any, ArErr) {
 			level.obj[param] = args[i]
 		}
 		resp, err := runVal(x.run, append(x.stack, level), 0)
-		return ThrowOnNonLoop(openReturn(resp), err)
+		return openReturn(resp), err
 	}
 	return nil, ArErr{TYPE: "Runtime Error", message: "type '" + typeof(callable) + "' is not callable", EXISTS: true}
 }

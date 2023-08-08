@@ -38,7 +38,7 @@ func parseDoWrap(code UNPARSEcode, index int, codelines []UNPARSEcode) (any, boo
 			return nil, false, ArErr{"Syntax Error", "invalid indent", i, code.path, codelines[i].code, true}, 1
 		}
 
-		val, _, err, step := translateVal(codelines[i], i, codelines, 2)
+		val, _, err, step := translateVal(codelines[i], i, codelines, 3)
 		i += step
 		if err.EXISTS {
 			return nil, false, err, i - index

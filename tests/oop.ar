@@ -1,4 +1,4 @@
-let toyTank(colour , name) = do
+let toyTank(colour, name) = do
     let class = {}
     class.getColour() = do
         term.log("My colour is", colour)

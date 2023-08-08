@@ -114,7 +114,7 @@ func importMod(realpath string, origin string, main bool, global ArObject) (ArOb
 	localvars := Map(anymap{
 		"program": Map(anymap{
 			"args":   ArArray(ArgsArArray),
-			"origin": origin,
+			"origin": ArString(origin),
 			"import": builtinFunc{"import", func(args ...any) (any, ArErr) {
 				if len(args) != 1 {
 					return nil, ArErr{"Import Error", "Invalid number of arguments", 0, realpath, "", true}
@@ -124,16 +124,16 @@ func importMod(realpath string, origin string, main bool, global ArObject) (ArOb
 				}
 				return importMod(args[0].(string), filepath.Dir(filepath.ToSlash(p)), false, global)
 			}},
-			"cwd": ex,
-			"exc": exc,
+			"cwd": ArString(ex),
+			"exc": ArString(exc),
 			"file": Map(anymap{
-				"name": filepath.Base(p),
-				"path": p,
+				"name": ArString(filepath.Base(p)),
+				"path": ArString(p),
 			}),
 			"main": main,
 		}),
 	})
-	_, runimeErr := ThrowOnNonLoop(run(translated, stack{global, localvars, local}))
+	_, runimeErr := run(translated, stack{global, localvars, local})
 	importing[p] = false
 	if runimeErr.EXISTS {
 		return ArObject{}, runimeErr
