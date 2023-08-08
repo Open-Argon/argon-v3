@@ -5,6 +5,8 @@
 <h1>Argon v3</h1>
 </div>
 
+[![Go](https://github.com/Open-Argon/argon-v3/actions/workflows/go.yml/badge.svg)](https://github.com/Open-Argon/argon-v3/actions/workflows/go.yml)
+
 ARGON 3 is a math-driven programming language designed to make code easy to read and write. It's not meant to be fast, as it's interpreted. This specification should be used as a guideline, and is subject to change for later versions. Later updates for Argon 3 should be backwards compatible (where possible) with code designed for older versions of the interpreter.
 
 ## 📚 Features
