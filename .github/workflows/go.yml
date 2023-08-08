@@ -18,8 +18,8 @@ jobs:
 
     - name: Install or Update CA Certificates
       run: |
-        apt update
-        apt install -y --reinstall ca-certificates
+        sudo apt update
+        sudo apt install -y --reinstall ca-certificates
 
     - name: Set up Go
       uses: actions/setup-go@v4
