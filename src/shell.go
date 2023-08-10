@@ -31,9 +31,8 @@ func shell(global ArObject) {
 			fmt.Print("\x1b[0m")
 			totranslate = append(totranslate, UNPARSEcode{code, code, i, "<shell>"})
 			trimmed := strings.TrimSpace(code)
-			split := strings.Split(trimmed, " ")
 			previous = indent
-			if split[len(split)-1] == "do" {
+			if len(trimmed) >= 2 && trimmed[len(trimmed)-2:] == "do" {
 				indent++
 			} else if trimmed == "" {
 				indent--
