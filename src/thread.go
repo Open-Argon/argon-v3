@@ -38,8 +38,8 @@ func ArThread(args ...any) (any, ArErr) {
 				return nil, ArErr{TYPE: "TypeError", message: "Invalid number of arguments, expected 0, got " + fmt.Sprint(len(args)), EXISTS: true}
 			}
 			hasrun = true
+			threadCount++
 			go func() {
-				threadCount++
 				resp, err = runCall(call{Callable: tocall, Args: []any{}}, nil, 0)
 				wg <- true
 				threadCount--
