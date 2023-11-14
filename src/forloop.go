@@ -63,7 +63,7 @@ func parseForLoop(code UNPARSEcode, index int, codelines []UNPARSEcode) (forLoop
 		}
 		innertotalstep += tostep - 1
 		body := strings.Join(tosplit[i:], ")")
-		bodyval, worked, err, bodystep := translateVal(UNPARSEcode{code: body, realcode: code.realcode, line: code.line, path: code.path}, index, codelines, 1)
+		bodyval, worked, err, bodystep := translateVal(UNPARSEcode{code: body, realcode: code.realcode, line: code.line, path: code.path}, index, codelines, 3)
 		if !worked {
 			if i == 0 {
 				return forLoop{}, worked, err, bodystep

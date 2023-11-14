@@ -42,7 +42,7 @@ func parseDoWrap(code UNPARSEcode, index int, codelines []UNPARSEcode) (any, boo
 	for i := 0; i < len(codelines); {
 		indent := len(codelines[i].code) - len(strings.TrimLeft(codelines[i].code, " "))
 		if indent != setindent {
-			return nil, false, ArErr{"Syntax Error", "invalid indent", i, code.path, codelines[i].code, true}, 1
+			return nil, false, ArErr{"Syntax Error", "invalid indent", code.line, code.path, codelines[i].code, true}, 1
 		}
 
 		val, _, err, step := translateVal(codelines[i], i, codelines, 3)
@@ -57,9 +57,9 @@ func parseDoWrap(code UNPARSEcode, index int, codelines []UNPARSEcode) (any, boo
 
 func runDoWrap(d dowrap, Stack stack, stacklevel int) (any, ArErr) {
 	newstack := append(Stack, newscope())
+	newstackCopy := make(stack, len(newstack))
+	copy(newstackCopy, newstack)
 	for _, v := range d.run {
-		newstackCopy := make(stack, len(newstack))
-		copy(newstackCopy, newstack)
 		val, err := runVal(v, newstackCopy, stacklevel+1)
 		if err.EXISTS {
 			return nil, err

@@ -70,7 +70,7 @@ func parseIfStatement(code UNPARSEcode, index int, codeline []UNPARSEcode) (ifst
 				},
 				i,
 				codeline,
-				2,
+				3,
 			)
 			if err.EXISTS || !worked {
 				return ifstatement{}, worked, err, step
@@ -99,7 +99,7 @@ func parseIfStatement(code UNPARSEcode, index int, codeline []UNPARSEcode) (ifst
 			},
 			i,
 			codeline,
-			2,
+			3,
 		)
 		if err.EXISTS {
 			return ifstatement{}, false, err, step

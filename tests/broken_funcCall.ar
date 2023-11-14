@@ -9,4 +9,7 @@ let x = do
         let c = (class.f(path))
         c.nice(callback)
     return class.object()
-x.cool("to", ()=term.log("epic"))
+
+
+forever do
+    x.cool("to", ()="epic")
