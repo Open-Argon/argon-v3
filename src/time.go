@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"time"
 )
 
@@ -195,7 +194,6 @@ var ArTime = Map(anymap{
 	},
 	},
 	"date": builtinFunc{"date", func(a ...any) (any, ArErr) {
-		fmt.Println(a, len(a))
 		if len(a) == 1 {
 			if typeof(a[0]) != "string" {
 				return nil, ArErr{

@@ -2,12 +2,11 @@ let x = do
     let class = {}
     class.f(path) = do
         let wowww = {}
-        wowww.nice(callback) = term.log(callback)
+        wowww.nice(callback) = callback()
         return wowww
 
     class.cool(path, callback) = do
-        term.log(path,callback)
         let c = (class.f(path))
         c.nice(callback)
     return class.object()
-x.cool("to", ()=10)
+x.cool("to", ()=term.log("epic"))

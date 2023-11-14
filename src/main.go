@@ -6,7 +6,7 @@ import (
 )
 
 // args without the program path
-var Args = []string{"/home/william/Documents/code/argon-v3/tests/broken_funcCall.ar"}
+var Args = os.Args[1:]
 
 type stack = []ArObject
 
