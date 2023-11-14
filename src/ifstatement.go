@@ -32,6 +32,7 @@ func parseIfStatement(code UNPARSEcode, index int, codeline []UNPARSEcode) (ifst
 	conditions := []statement{}
 	var ELSE any
 	i := index
+	codeline[i] = code
 	for i < len(codeline) && (elseifstatmentCompile.MatchString(codeline[i].code) || i == index) {
 		trimmed := strings.TrimSpace(codeline[i].code)
 		trimmed = strings.TrimSpace(trimmed[strings.Index(trimmed, "("):])
