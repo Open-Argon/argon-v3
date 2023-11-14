@@ -23,7 +23,7 @@ func isTryCatch(code UNPARSEcode) bool {
 func parseTryCatch(code UNPARSEcode, index int, codelines []UNPARSEcode) (TryCatch, bool, ArErr, int) {
 	trytrimmed := strings.TrimSpace(code.code)
 	totalIndex := 0
-	tryparsed, worked, err, i := translateVal(UNPARSEcode{trytrimmed[4:], code.realcode, code.line, code.path}, index, codelines, 1)
+	tryparsed, worked, err, i := translateVal(UNPARSEcode{trytrimmed[4:], code.realcode, code.line, code.path}, index, codelines, 2)
 	if !worked {
 		return TryCatch{}, false, err, i
 	}
@@ -40,7 +40,7 @@ func parseTryCatch(code UNPARSEcode, index int, codelines []UNPARSEcode) (TryCat
 	catchbracketSplit := strings.SplitN(catchtrimmed, ")", 2)
 	errorName := strings.TrimSpace(strings.TrimSpace(catchbracketSplit[0])[1:])
 	errcode := catchbracketSplit[1]
-	catchparsed, worked, err, i := translateVal(UNPARSEcode{errcode, code.realcode, code.line, code.path}, index+totalIndex, codelines, 1)
+	catchparsed, worked, err, i := translateVal(UNPARSEcode{errcode, code.realcode, code.line, code.path}, index+totalIndex, codelines, 2)
 	if !worked {
 		return TryCatch{}, false, err, i
 	}
