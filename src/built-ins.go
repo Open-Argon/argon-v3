@@ -49,7 +49,12 @@ func makeGlobal() ArObject {
 				}
 				return Map(newmap), ArErr{}
 			}
-			return x, ArErr{}
+
+			newmap := anymap{}
+			for key, val := range x.obj {
+				newmap[key] = val
+			}
+			return Map(newmap), ArErr{}
 		}
 		return nil, ArErr{TYPE: "TypeError", message: "Cannot create map from '" + typeof(a[0]) + "'", EXISTS: true}
 	}}

@@ -124,8 +124,8 @@ func Map(m anymap) ArObject {
 		obj: anymap{
 			"__value__": m,
 			"__name__":  "map",
-			"get": builtinFunc{
-				"get",
+			"get_value": builtinFunc{
+				"get_value",
 				func(args ...any) (any, ArErr) {
 					if len(args) < 1 || len(args) > 2 {
 						return nil, ArErr{
