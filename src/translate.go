@@ -12,6 +12,7 @@ type UNPARSEcode struct {
 }
 
 var knownFailures = map[string]ArErr{}
+var QuickKnownFailures = map[string]bool{}
 
 func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine int) (any, bool, ArErr, int) {
 	if knownErr, ok := knownFailures[code.code]; ok {
@@ -119,29 +120,33 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine i
 
 	if isBoolean(code) {
 		return parseBoolean(code)
-	} else if isBrackets(code) {
+	} else if !QuickKnownFailures["brackets"+code.code] && isBrackets(code) {
 		resp, worked, err, i = parseBrackets(code, index, codelines)
 		if worked {
 			return resp, worked, err, i
 		}
+		QuickKnownFailures["brackets"+code.code] = true
 	}
-	if isAbs(code) {
+	if !QuickKnownFailures["abs"+code.code] && isAbs(code) {
 		resp, worked, err, i = parseAbs(code, index, codelines)
 		if worked {
 			return resp, worked, err, i
 		}
+		QuickKnownFailures["abs"+code.code] = true
 	}
-	if isSetVariable(code) {
+	if !QuickKnownFailures["setvar"+code.code] && isSetVariable(code) {
 		resp, worked, err, i = parseSetVariable(code, index, codelines, isLine)
 		if worked {
 			return resp, worked, err, i
 		}
+		QuickKnownFailures["setvar"+code.code] = true
 	}
-	if isAutoAsignVariable(code) {
+	if !QuickKnownFailures["autoasign"+code.code] && isAutoAsignVariable(code) {
 		resp, worked, err, i = parseAutoAsignVariable(code, index, codelines, isLine)
 		if worked {
 			return resp, worked, err, i
 		}
+		QuickKnownFailures["autoasign"+code.code] = true
 	}
 	if isNumber(code) {
 		resp, worked, err, i = parseNumber(code)
@@ -155,17 +160,19 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine i
 			knownFailures[code.code] = err
 		}
 		return resp, worked, err, i
-	} else if issquareroot(code) {
+	} else if !QuickKnownFailures["squareroot"+code.code] && issquareroot(code) {
 		resp, worked, err, i = parseSquareroot(code, index, codelines)
 		if worked {
 			return resp, worked, err, i
 		}
+		QuickKnownFailures["squareroot"+code.code] = true
 	}
-	if isFactorial(code) {
+	if !QuickKnownFailures["factorial"+code.code] && isFactorial(code) {
 		resp, worked, err, i = parseFactorial(code, index, codelines)
 		if worked {
 			return resp, worked, err, i
 		}
+		QuickKnownFailures["factorial"+code.code] = true
 	}
 	if isVariable(code) {
 		resp, worked, err, i = parseVariable(code)
@@ -174,33 +181,38 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine i
 		}
 		return resp, worked, err, i
 	}
-	if isArray(code) {
+	if !QuickKnownFailures["array"+code.code] && isArray(code) {
 		resp, worked, err, i = parseArray(code, index, codelines)
 		if worked {
 			return resp, worked, err, i
 		}
+		QuickKnownFailures["array"+code.code] = true
 	} else if isMap(code) {
 		resp, worked, err, i = parseMap(code, index, codelines)
 	}
-	if isnot(code) {
+	if !QuickKnownFailures["not"+code.code] && isnot(code) {
 		resp, worked, err, i = parseNot(code, index, codelines, isLine)
 		if worked {
 			return resp, worked, err, i
 		}
+		QuickKnownFailures["not"+code.code] = true
 	}
-	{
+	if !QuickKnownFailures["operations"+code.code] {
 		operation, worked, err, step := parseOperations(code, index, codelines)
 		if worked {
 			return operation, worked, err, step
-		} else if err.EXISTS {
+		}
+		QuickKnownFailures["operations"+code.code] = true
+		if err.EXISTS {
 			return nil, worked, err, step
 		}
 	}
-	if isCall(code) {
+	if !QuickKnownFailures["call"+code.code] && isCall(code) {
 		resp, worked, err, i = parseCall(code, index, codelines)
 		if worked {
 			return resp, worked, err, i
 		}
+		QuickKnownFailures["call"+code.code] = true
 	}
 	if isNegative(code) {
 		resp, worked, err, i = parseNegative(code, index, codelines)
@@ -214,11 +226,12 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine i
 			knownFailures[code.code] = err
 		}
 		return resp, worked, err, i
-	} else if isIndexGet(code) {
+	} else if !QuickKnownFailures["indexget"+code.code] && isIndexGet(code) {
 		resp, worked, err, i = indexGetParse(code, index, codelines)
 		if worked {
 			return resp, worked, err, i
 		}
+		QuickKnownFailures["indexget"+code.code] = true
 	}
 	if !worked {
 		knownFailures[code.code] = err
