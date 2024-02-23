@@ -61,9 +61,14 @@ func main() {
 	if e != nil {
 		panic(e)
 	}
-	_, err := importMod(Args[0], ex, true, global)
+	translated, err := translateImport(Args[0], ex, true)
 	if err.EXISTS {
 		panicErr(err)
+		os.Exit(1)
+	}
+	_, runimeErr := runTranslatedImport(translated, global)
+	if runimeErr.EXISTS {
+		panicErr(runimeErr)
 		os.Exit(1)
 	}
 	if threadCount > 0 {
