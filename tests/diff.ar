@@ -1,5 +1,5 @@
-let zero = 1e-1000
-let diff(f) = (x) = (f(x + zero) - f(x)) / zero
+let h = 1e-1000
+let diff(f) = (x) = (f(x + h) - f(x)) / h
 
 
 let f(x) = x^10+x^9+x^8+x^7+x^6+x^5+x^4+x^3+x^2+x+1

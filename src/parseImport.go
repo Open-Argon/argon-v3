@@ -8,11 +8,13 @@ import (
 var genericImportCompiled = makeRegex(`import( )+(.|\n)+(( )+as( )+([a-zA-Z_]|(\p{L}\p{M}*))([a-zA-Z0-9_]|(\p{L}\p{M}*))*)?( *)`)
 
 type ArImport struct {
-	FilePath any
-	Values   any
-	Code     string
-	Line     int
-	Path     string
+	pretranslated bool
+	translated    translatedImport
+	FilePath      any
+	Values        any
+	Code          string
+	Line          int
+	Path          string
 }
 
 func isGenericImport(code UNPARSEcode) bool {
@@ -67,27 +69,64 @@ func parseGenericImport(code UNPARSEcode, index int, codeline []UNPARSEcode) (Ar
 		}
 	}
 
-	return ArImport{
+	importOBJ := ArImport{
+		false,
+		translatedImport{},
 		toImport,
 		asStr,
 		code.realcode,
 		code.line,
 		code.path,
-	}, true, ArErr{}, i
+	}
+
+	if str, ok := toImport.(string); ok {
+		importOBJ.pretranslated = true
+		var err ArErr
+		importOBJ.translated, err = translateImport(str, filepath.Dir(filepath.ToSlash(code.path)), false)
+		if err.EXISTS {
+			if err.line == 0 {
+				err.line = importOBJ.Line
+			}
+			if err.path == "" {
+				err.path = importOBJ.Path
+			}
+			if err.code == "" {
+				err.code = importOBJ.Code
+			}
+			return importOBJ, false, err, i
+		}
+	}
+
+	return importOBJ, true, ArErr{}, i
 }
 
 func runImport(importOBJ ArImport, stack stack, stacklevel int) (any, ArErr) {
-	val, err := runVal(importOBJ.FilePath, stack, stacklevel+1)
-	val = ArValidToAny(val)
-	if err.EXISTS {
-		return nil, err
+	var translated = importOBJ.translated
+	if !importOBJ.pretranslated {
+		val, err := runVal(importOBJ.FilePath, stack, stacklevel+1)
+		val = ArValidToAny(val)
+		if err.EXISTS {
+			return nil, err
+		}
+		if typeof(val) != "string" {
+			return nil, ArErr{"Type Error", "import requires a string, got type '" + typeof(val) + "'", importOBJ.Line, importOBJ.Path, importOBJ.Code, true}
+		}
+		parent := filepath.Dir(filepath.ToSlash(importOBJ.Path))
+		translated, err = translateImport(val.(string), parent, false)
+		if err.EXISTS {
+			if err.line == 0 {
+				err.line = importOBJ.Line
+			}
+			if err.path == "" {
+				err.path = importOBJ.Path
+			}
+			if err.code == "" {
+				err.code = importOBJ.Code
+			}
+			return nil, err
+		}
 	}
-	if typeof(val) != "string" {
-		return nil, ArErr{"Type Error", "import requires a string, got type '" + typeof(val) + "'", importOBJ.Line, importOBJ.Path, importOBJ.Code, true}
-	}
-	path := val.(string)
-	parent := filepath.Dir(filepath.ToSlash(importOBJ.Path))
-	stackMap, err := importMod(path, parent, false, stack[0])
+	stackMap, err := runTranslatedImport(translated, stack[0])
 	if err.EXISTS {
 		if err.line == 0 {
 			err.line = importOBJ.Line
@@ -116,7 +155,7 @@ func runImport(importOBJ ArImport, stack stack, stacklevel int) (any, ArErr) {
 		for _, v := range x {
 			val, ok := stackMap.obj[v]
 			if !ok {
-				return nil, ArErr{"Import Error", "could not find value " + anyToArgon(v, true, false, 3, 0, false, 0) + " in module " + anyToArgon(path, true, false, 3, 0, false, 0), importOBJ.Line, importOBJ.Path, importOBJ.Code, true}
+				return nil, ArErr{"Import Error", "could not find value " + anyToArgon(v, true, false, 3, 0, false, 0) + " in module " + anyToArgon(translated.path, true, false, 3, 0, false, 0), importOBJ.Line, importOBJ.Path, importOBJ.Code, true}
 			}
 			builtinCall(setindex, []any{v, val})
 		}
