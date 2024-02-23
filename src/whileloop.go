@@ -60,7 +60,7 @@ func parseWhileLoop(code UNPARSEcode, index int, codeline []UNPARSEcode) (whileL
 			},
 			index+outindex-1,
 			codeline,
-			2,
+			3,
 		)
 		if err.EXISTS || !worked {
 			return whileLoop{}, worked, err, step
