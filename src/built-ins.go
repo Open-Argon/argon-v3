@@ -229,7 +229,7 @@ func makeGlobal() ArObject {
 	}}
 	vars["subprocess"] = builtinFunc{"subprocess", ArSubprocess}
 	vars["sequence"] = builtinFunc{"sequence", ArSequence}
-	vars["|"] = builtinFunc{"exit", func(a ...any) (any, ArErr) {
+	vars["exit"] = builtinFunc{"exit", func(a ...any) (any, ArErr) {
 		if len(a) == 0 {
 			os.Exit(0)
 		}
