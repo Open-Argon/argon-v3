@@ -37,7 +37,8 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine i
 			if worked {
 				return resp, worked, err, i
 			}
-		} else if isIfStatement(code) {
+		}
+		if isIfStatement(code) {
 			resp, worked, err, i = parseIfStatement(code, index, codelines)
 			if !worked {
 				knownFailures[code.code] = err
