@@ -61,12 +61,12 @@ func main() {
 	if e != nil {
 		panic(e)
 	}
-	translated, err := translateImport(Args[0], ex, true)
+	translated, err := translateImport(Args[0], ex)
 	if err.EXISTS {
 		panicErr(err)
 		os.Exit(1)
 	}
-	_, runimeErr := runTranslatedImport(translated, global)
+	_, runimeErr := runTranslatedImport(translated, global, true)
 	if runimeErr.EXISTS {
 		panicErr(runimeErr)
 		os.Exit(1)

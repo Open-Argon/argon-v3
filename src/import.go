@@ -51,13 +51,13 @@ type translatedImport struct {
 	origin     string
 }
 
-var runTranslatedImport func(translatedImport, ArObject) (ArObject, ArErr)
+var runTranslatedImport func(translatedImport, ArObject, bool) (ArObject, ArErr)
 
 func init() {
 	runTranslatedImport = __runTranslatedImport
 }
 
-func __runTranslatedImport(translatedImport translatedImport, global ArObject) (ArObject, ArErr) {
+func __runTranslatedImport(translatedImport translatedImport, global ArObject, main bool) (ArObject, ArErr) {
 
 	if _, ok := imported[translatedImport.p]; ok {
 		return imported[translatedImport.p], ArErr{}
@@ -93,7 +93,7 @@ func __runTranslatedImport(translatedImport translatedImport, global ArObject) (
 	return local, ArErr{}
 }
 
-func translateImport(realpath string, origin string, main bool) (translatedImport, ArErr) {
+func translateImport(realpath string, origin string) (translatedImport, ArErr) {
 	extention := filepath.Ext(realpath)
 	path := realpath
 	if extention == "" {
