@@ -1,0 +1,20 @@
+# This is a comment
+
+term.log("Hello World!") # Printing to console/output  
+
+value = "Hello" # Declaring a variable
+
+do # Start of indented block
+  combined = value + " World!"
+  term.log(combined)
+
+loop = true # Using true condition
+
+while (loop) do # While loop syntax
+  term.log("Looping...")
+  loop = false # Using false condition
+
+if (value == "Hello") do # If statement syntax
+  term.log("The value is Hello")
+else do # else block
+  term.log("The value is not Hello")

@@ -79,6 +79,12 @@ func makeGlobal() ArObject {
 		}
 		return ArBuffer([]byte{}), ArErr{}
 	}}
+	vars["byte"] = builtinFunc{"byte", func(a ...any) (any, ArErr) {
+		if len(a) != 0 {
+			return nil, ArErr{TYPE: "TypeError", message: "expected 0 arguments, got " + fmt.Sprint(len(a)), EXISTS: true}
+		}
+		return ArByte(0), ArErr{}
+	}}
 	vars["throwError"] = builtinFunc{"throwError", ArThrowError}
 	vars["array"] = builtinFunc{"array", func(a ...any) (any, ArErr) {
 		if len(a) == 0 {
