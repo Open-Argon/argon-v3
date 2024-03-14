@@ -7,6 +7,18 @@ import (
 
 var PIFloatInaccuracy number = newNumber()
 
+type sinCacheValue struct {
+	INPUT  number
+	OUTPUT number
+}
+
+var sinCache = []sinCacheValue{
+	{newNumber(), newNumber()},
+	{newNumber().Quo(PI, newNumber().SetInt64(2)), newNumber().SetInt64(1)},
+	{PI, newNumber()},
+	{newNumber().Add(PI, newNumber().Quo(PI, newNumber().SetInt64(2))), newNumber().SetInt64(-1)},
+}
+
 func init() {
 	PIFloatInaccuracy.SetFloat64(math.Asin(1) * 2)
 }
@@ -25,6 +37,18 @@ var ArSin = builtinFunc{"sin", func(args ...any) (any, ArErr) {
 		}
 	}
 	num := newNumber().Set(args[0].(number))
+	toTrim := newNumber().Mul(PI, newNumber().SetInt64(2))
+	toTrim.Quo(num, toTrim)
+	toTrim = floor(toTrim)
+	toTrim.Mul(toTrim, newNumber().Mul(PI, newNumber().SetInt64(2)))
+	num.Sub(num, toTrim)
+
+	for i := 0; i < len(sinCache); i++ {
+		if sinCache[i].INPUT.Cmp(num) == 0 {
+			return sinCache[i].OUTPUT, ArErr{}
+		}
+	}
+
 	num.Quo(num, PI)
 	num.Mul(num, PIFloatInaccuracy)
 	n, _ := num.Float64()
@@ -71,12 +95,7 @@ var ArCos = builtinFunc{"cos", func(args ...any) (any, ArErr) {
 			EXISTS:  true,
 		}
 	}
-	num := newNumber().Set(args[0].(number))
-	num.Quo(num, PI)
-	num.Mul(num, PIFloatInaccuracy)
-	n, _ := num.Float64()
-	outputnum := newNumber().SetFloat64(math.Cos(n))
-	return outputnum, ArErr{}
+	return builtinCall(ArSin, []any{newNumber().Add(args[0].(number), newNumber().Quo(PI, newNumber().SetInt64(2)))})
 }}
 var ArArccos = builtinFunc{"arccos", func(args ...any) (any, ArErr) {
 	if len(args) != 1 {

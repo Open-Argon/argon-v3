@@ -1,15 +1,13 @@
 let x = do
     let class = {}
     class.f(path) = do
-        let wowww = {}
-        wowww.nice(callback) = callback()
-        return wowww
+        let nice(callback) = do
+            callback()
+            return class
+        let class = {nice:nice}
+        return class
+    class.cool(path, callback) = class.f(path).nice(callback)
+    return class
 
-    class.cool(path, callback) = do
-        let c = (class.f(path))
-        c.nice(callback)
-    return class.object()
 
-
-forever do
-    x.cool("to", ()="epic")
+term.log(x.cool("to", ()=term.log("epic")).nice(()=term.log("test")))
