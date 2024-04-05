@@ -70,7 +70,7 @@ func ArRead(args ...any) (any, ArErr) {
 			if err != nil {
 				return ArObject{}, ArErr{TYPE: "Runtime Error", message: err.Error(), EXISTS: true}
 			}
-			return jsonparse(text), ArErr{}
+			return jsonparse(text)
 		}},
 		"contentType": builtinFunc{"contentType", func(...any) (any, ArErr) {
 			file.Seek(0, io.SeekStart)

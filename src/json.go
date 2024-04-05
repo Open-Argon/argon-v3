@@ -33,10 +33,11 @@ func convertToArgon(obj any) any {
 	return nil
 }
 
-func jsonparse(str string) any {
+func jsonparse(str string) (any, ArErr) {
 	var jsonMap any
-	json.Unmarshal([]byte(str), &jsonMap)
-	return convertToArgon(jsonMap)
+	var err = json.Unmarshal([]byte(str), &jsonMap)
+	if err != nil {return nil, ArErr{TYPE: "Runtime Error", message: err.Error(), EXISTS: true}}
+	return convertToArgon(jsonMap), ArErr{}
 }
 
 func jsonstringify(obj any, level int) (string, error) {
@@ -90,7 +91,7 @@ var ArJSON = Map(anymap{
 			return nil, ArErr{TYPE: "Runtime Error", message: "parse takes a string not a '" + typeof(args[0]) + "'", EXISTS: true}
 		}
 		args[0] = ArValidToAny(args[0])
-		return jsonparse(args[0].(string)), ArErr{}
+		return jsonparse(args[0].(string))
 	}},
 	"stringify": builtinFunc{"stringify", func(args ...any) (any, ArErr) {
 		if len(args) == 0 {
