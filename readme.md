@@ -7,7 +7,7 @@
 
 [![Go](https://github.com/Open-Argon/argon-v3/actions/workflows/go.yml/badge.svg)](https://github.com/Open-Argon/argon-v3/actions/workflows/go.yml)
 
-ARGON 3 is a math-driven programming language designed to make code easy to read and write. It's not meant to be fast, as it's interpreted. This specification should be used as a guideline, and is subject to change for later versions. Later updates for Argon 3 should be backwards compatible (where possible) with code designed for older versions of the interpreter.
+ARGON 3 is a math-driven programming language designed to make code easy to read and write. It's not meant to be fast, as it's interpreted.
 
 ## 📚 Features
    - Easy to read and write: Argon 3 is designed with clarity of code in mind, making it easier for you and others to read and write code.
@@ -15,7 +15,6 @@ ARGON 3 is a math-driven programming language designed to make code easy to read
    - Math-driven: Designed for mathematical computations, Argon 3 uses techniques and rules set in maths. It's designed to be easy for mathematicians to write and understand algorithms in.
    - Interpreted: Argon 3 is an interpreted language, so you don't need to compile your code before running it.
    - Cross-platform: Argon 3 can be run on any platform that has an interpreter for it.
-   - Lightweight: The Argon 3 interpreter is small and doesn't require a lot of system resources to run.
 
 ## 💻 Installation
 As of now, Argon 3 does not have an installer. Feel free to clone this repo and run the `build` file for your plateform. the build will be found in `bin/argon(.exe)`.
