@@ -11,6 +11,7 @@ func makeGlobal() ArObject {
 	vars["env"] = env
 	vars["term"] = ArTerm
 	vars["ArgonVersion"] = ArString(VERSION)
+	vars["ArgonVersionNumber"] = newNumber().SetInt64(VERSION_NUM)
 	vars["number"] = builtinFunc{"number", ArgonNumber}
 	vars["string"] = builtinFunc{"string", ArgonString}
 	vars["socket"] = Map(anymap{
