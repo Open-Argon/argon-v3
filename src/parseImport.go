@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-var genericImportCompiled = makeRegex(`import( )+(.|\n)+(( )+as( )+([a-zA-Z_]|(\p{L}\p{M}*))([a-zA-Z0-9_]|(\p{L}\p{M}*))*)?( *)`)
+var genericImportCompiled = makeRegex(`( *)import( )+(.|\n)+(( )+as( )+([a-zA-Z_]|(\p{L}\p{M}*))([a-zA-Z0-9_]|(\p{L}\p{M}*))*)?( *)`)
 
 type ArImport struct {
 	pretranslated bool
@@ -80,20 +80,10 @@ func parseGenericImport(code UNPARSEcode, index int, codeline []UNPARSEcode) (Ar
 	}
 
 	if str, ok := toImport.(string); ok {
-		importOBJ.pretranslated = true
-		var err ArErr
-		importOBJ.translated, err = translateImport(str, filepath.Dir(filepath.ToSlash(code.path)))
-		if err.EXISTS {
-			if err.line == 0 {
-				err.line = importOBJ.Line
-			}
-			if err.path == "" {
-				err.path = importOBJ.Path
-			}
-			if err.code == "" {
-				err.code = importOBJ.Code
-			}
-			return importOBJ, false, err, i
+		resp, err := translateImport(str, filepath.Dir(filepath.ToSlash(code.path)))
+		if !err.EXISTS {
+			importOBJ.translated = resp
+			importOBJ.pretranslated = true
 		}
 	}
 

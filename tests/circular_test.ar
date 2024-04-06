@@ -1,1 +1,3 @@
+
+term.log("hello")
 import "circular_import"

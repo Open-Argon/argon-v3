@@ -31,7 +31,7 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine i
 		err    ArErr = ArErr{"Syntax Error", "invalid syntax", code.line, code.path, code.realcode, true}
 		i      int   = 1
 	)
-	if isLine == 3 {
+	if isLine >= 3 {
 		if isComment(code) {
 			resp, worked, err, i = parseComment(code, index, codelines)
 			if worked {
@@ -251,7 +251,7 @@ func translate(codelines []UNPARSEcode) ([]any, ArErr) {
 		if currentindent != 0 {
 			return nil, ArErr{"Syntax Error", "invalid indent", codelines[i].line, codelines[i].path, codelines[i].realcode, true}
 		}
-		val, _, err, step := translateVal(codelines[i], i, codelines, 3)
+		val, _, err, step := translateVal(codelines[i], i, codelines, 4)
 		i += step
 		if err.EXISTS {
 			return nil, err

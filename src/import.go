@@ -85,11 +85,11 @@ func __runTranslatedImport(translatedImport translatedImport, global ArObject, m
 			"main": main,
 		}),
 	})
+	imported[translatedImport.p] = local
 	_, runimeErr := run(translatedImport.translated, stack{global, localvars, local})
 	if runimeErr.EXISTS {
 		return ArObject{}, runimeErr
 	}
-	imported[translatedImport.p] = local
 	return local, ArErr{}
 }
 
