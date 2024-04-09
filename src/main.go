@@ -10,8 +10,8 @@ var Args = os.Args[1:]
 
 type stack = []ArObject
 
-const VERSION = "3.0.4"
-const VERSION_NUM = 0
+const VERSION = "3.0.4-2"
+const VERSION_NUM = 1
 
 // Example struct
 type Person struct {
