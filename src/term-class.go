@@ -115,7 +115,7 @@ var ArTerm = Map(anymap{
 		}
 		timingSync.RLock()
 		if _, ok := timing[id]; !ok {
-			return nil, ArErr{TYPE: "TypeError", message: "Cannot find timer with id '" + fmt.Sprint(id) + "'", EXISTS: true}
+			return nil, ArErr{TYPE: "Type Error", message: "Cannot find timer with id '" + fmt.Sprint(id) + "'", EXISTS: true}
 		}
 		timesince := time.Since(timing[id].(time.Time))
 		timingSync.RUnlock()

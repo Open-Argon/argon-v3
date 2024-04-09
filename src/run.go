@@ -76,7 +76,7 @@ func runVal(line any, stack stack, stacklevel int) (any, ArErr) {
 			return y, ArErr{}
 		}
 		return nil, ArErr{
-			TYPE:    "TypeError",
+			TYPE:    "Type Error",
 			message: "cannot negate a non-number",
 			EXISTS:  true,
 		}

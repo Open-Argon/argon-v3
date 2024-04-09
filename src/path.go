@@ -14,7 +14,7 @@ var ArPath = Map(
 			func(args ...any) (any, ArErr) {
 				if len(args) != 1 {
 					return nil, ArErr{
-						TYPE:    "runtime",
+						TYPE:    "Runtime Error",
 						message: "ReadDir takes exactly 1 argument, got " + fmt.Sprint(len(args)),
 						EXISTS:  true,
 					}
@@ -22,7 +22,7 @@ var ArPath = Map(
 				args[0] = ArValidToAny(args[0])
 				if typeof(args[0]) != "string" {
 					return nil, ArErr{
-						TYPE:    "runtime",
+						TYPE:    "Runtime Error",
 						message: "ReadDir argument must be a string, got " + typeof(args[0]),
 						EXISTS:  true,
 					}
@@ -30,7 +30,7 @@ var ArPath = Map(
 				files, err := os.ReadDir(args[0].(string))
 				if err != nil {
 					return nil, ArErr{
-						TYPE:    "runtime",
+						TYPE:    "Runtime Error",
 						message: err.Error(),
 						EXISTS:  true,
 					}
@@ -46,7 +46,7 @@ var ArPath = Map(
 			func(args ...any) (any, ArErr) {
 				if len(args) != 1 {
 					return nil, ArErr{
-						TYPE:    "runtime",
+						TYPE:    "Runtime Error",
 						message: "exists takes exactly 1 argument, got " + fmt.Sprint(len(args)),
 						EXISTS:  true,
 					}
@@ -54,7 +54,7 @@ var ArPath = Map(
 				args[0] = ArValidToAny(args[0])
 				if typeof(args[0]) != "string" {
 					return nil, ArErr{
-						TYPE:    "runtime",
+						TYPE:    "Runtime Error",
 						message: "exists argument must be a string, got " + typeof(args[0]),
 						EXISTS:  true,
 					}
@@ -65,7 +65,7 @@ var ArPath = Map(
 						return false, ArErr{}
 					}
 					return nil, ArErr{
-						TYPE:    "runtime",
+						TYPE:    "Runtime Error",
 						message: err.Error(),
 						EXISTS:  true,
 					}
@@ -77,7 +77,7 @@ var ArPath = Map(
 			func(args ...any) (any, ArErr) {
 				if len(args) != 1 {
 					return nil, ArErr{
-						TYPE:    "runtime",
+						TYPE:    "Runtime Error",
 						message: "mkAllDir takes exactly 1 argument, got " + fmt.Sprint(len(args)),
 						EXISTS:  true,
 					}
@@ -85,7 +85,7 @@ var ArPath = Map(
 				args[0] = ArValidToAny(args[0])
 				if typeof(args[0]) != "string" {
 					return nil, ArErr{
-						TYPE:    "runtime",
+						TYPE:    "Runtime Error",
 						message: "mkAllDir argument must be a string, got " + typeof(args[0]),
 						EXISTS:  true,
 					}
@@ -93,7 +93,7 @@ var ArPath = Map(
 				err := os.MkdirAll(args[0].(string), os.ModePerm)
 				if err != nil {
 					return nil, ArErr{
-						TYPE:    "runtime",
+						TYPE:    "Runtime Error",
 						message: err.Error(),
 						EXISTS:  true,
 					}
@@ -105,7 +105,7 @@ var ArPath = Map(
 			func(args ...any) (any, ArErr) {
 				if len(args) != 1 {
 					return nil, ArErr{
-						TYPE:    "runtime",
+						TYPE:    "Runtime Error",
 						message: "mkDir takes exactly 1 argument, got " + fmt.Sprint(len(args)),
 						EXISTS:  true,
 					}
@@ -113,7 +113,7 @@ var ArPath = Map(
 				args[0] = ArValidToAny(args[0])
 				if typeof(args[0]) != "string" {
 					return nil, ArErr{
-						TYPE:    "runtime",
+						TYPE:    "Runtime Error",
 						message: "mkDir argument must be a string, got " + typeof(args[0]),
 						EXISTS:  true,
 					}
@@ -121,7 +121,7 @@ var ArPath = Map(
 				err := os.Mkdir(args[0].(string), os.ModePerm)
 				if err != nil {
 					return nil, ArErr{
-						TYPE:    "runtime",
+						TYPE:    "Runtime Error",
 						message: err.Error(),
 						EXISTS:  true,
 					}
@@ -133,7 +133,7 @@ var ArPath = Map(
 			func(args ...any) (any, ArErr) {
 				if len(args) != 1 {
 					return nil, ArErr{
-						TYPE:    "runtime",
+						TYPE:    "Runtime Error",
 						message: "remove takes exactly 1 argument, got " + fmt.Sprint(len(args)),
 						EXISTS:  true,
 					}
@@ -141,7 +141,7 @@ var ArPath = Map(
 				args[0] = ArValidToAny(args[0])
 				if typeof(args[0]) != "string" {
 					return nil, ArErr{
-						TYPE:    "runtime",
+						TYPE:    "Runtime Error",
 						message: "remove argument must be a string, got " + typeof(args[0]),
 						EXISTS:  true,
 					}
@@ -149,7 +149,7 @@ var ArPath = Map(
 				err := os.Remove(args[0].(string))
 				if err != nil {
 					return nil, ArErr{
-						TYPE:    "runtime",
+						TYPE:    "Runtime Error",
 						message: err.Error(),
 						EXISTS:  true,
 					}
@@ -161,7 +161,7 @@ var ArPath = Map(
 			func(args ...any) (any, ArErr) {
 				if len(args) != 1 {
 					return nil, ArErr{
-						TYPE:    "runtime",
+						TYPE:    "Runtime Error",
 						message: "isDir takes exactly 1 argument, got " + fmt.Sprint(len(args)),
 						EXISTS:  true,
 					}
@@ -169,7 +169,7 @@ var ArPath = Map(
 				args[0] = ArValidToAny(args[0])
 				if typeof(args[0]) != "string" {
 					return nil, ArErr{
-						TYPE:    "runtime",
+						TYPE:    "Runtime Error",
 						message: "isDir argument must be a string, got " + typeof(args[0]),
 						EXISTS:  true,
 					}
@@ -180,7 +180,7 @@ var ArPath = Map(
 						return false, ArErr{}
 					}
 					return nil, ArErr{
-						TYPE:    "runtime",
+						TYPE:    "Runtime Error",
 						message: err.Error(),
 						EXISTS:  true,
 					}
@@ -192,7 +192,7 @@ var ArPath = Map(
 			func(args ...any) (any, ArErr) {
 				if len(args) != 1 {
 					return nil, ArErr{
-						TYPE:    "runtime",
+						TYPE:    "Runtime Error",
 						message: "join takes exactly 1 argument, got " + fmt.Sprint(len(args)),
 						EXISTS:  true,
 					}
@@ -205,7 +205,7 @@ var ArPath = Map(
 						x = ArValidToAny(x)
 						if typeof(x) != "string" {
 							return nil, ArErr{
-								TYPE:    "runtime",
+								TYPE:    "Runtime Error",
 								message: "join argument must be an array of strings, got " + typeof(x),
 								EXISTS:  true,
 							}
@@ -215,7 +215,7 @@ var ArPath = Map(
 					return filepath.Join(Path...), ArErr{}
 				}
 				return nil, ArErr{
-					TYPE:    "runtime",
+					TYPE:    "Runtime Error",
 					message: "join argument must be an array, got " + typeof(args[0]),
 					EXISTS:  true,
 				}
@@ -225,7 +225,7 @@ var ArPath = Map(
 			func(args ...any) (any, ArErr) {
 				if len(args) != 1 {
 					return nil, ArErr{
-						TYPE:    "runtime",
+						TYPE:    "Runtime Error",
 						message: "parent takes exactly 1 argument, got " + fmt.Sprint(len(args)),
 						EXISTS:  true,
 					}
@@ -233,7 +233,7 @@ var ArPath = Map(
 				args[0] = ArValidToAny(args[0])
 				if typeof(args[0]) != "string" {
 					return nil, ArErr{
-						TYPE:    "runtime",
+						TYPE:    "Runtime Error",
 						message: "parent argument must be a string, got " + typeof(args[0]),
 						EXISTS:  true,
 					}

@@ -31,21 +31,21 @@ func ArArray(arr []any) ArObject {
 		func(a ...any) (any, ArErr) {
 			if len(a) != 2 {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "expected 2 arguments, got " + fmt.Sprint(len(a)),
 					EXISTS:  true,
 				}
 			}
 			if typeof(a[0]) != "number" {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "dex must be a number",
 					EXISTS:  true,
 				}
 			}
 			if !a[0].(number).IsInt() {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "index must be an integer",
 					EXISTS:  true,
 				}
@@ -53,7 +53,7 @@ func ArArray(arr []any) ArObject {
 			num := int(a[0].(number).Num().Int64())
 			if num < 0 || num >= len(arr) {
 				return nil, ArErr{
-					TYPE:    "IndexError",
+					TYPE:    "Index Error",
 					message: "index out of range",
 					EXISTS:  true,
 				}
@@ -69,7 +69,7 @@ func ArArray(arr []any) ArObject {
 			// a[1] is end
 			// a[2] is step
 			if len(a) > 3 {
-				return nil, ArErr{"TypeError", "expected 1 to 3 arguments, got " + fmt.Sprint(len(a)), 0, "", "", true}
+				return nil, ArErr{"Type Error", "expected 1 to 3 arguments, got " + fmt.Sprint(len(a)), 0, "", "", true}
 			}
 			var (
 				start int = 0
@@ -81,7 +81,7 @@ func ArArray(arr []any) ArObject {
 					start = 0
 				} else if typeof(a[0]) != "number" || !a[0].(number).IsInt() {
 					return "", ArErr{
-						TYPE:    "TypeError",
+						TYPE:    "Type Error",
 						message: "slice index must be an integer",
 						EXISTS:  true,
 					}
@@ -94,7 +94,7 @@ func ArArray(arr []any) ArObject {
 					end = len(arr)
 				} else if typeof(a[1]) != "number" || !a[1].(number).IsInt() {
 					return "", ArErr{
-						TYPE:    "TypeError",
+						TYPE:    "Type Error",
 						message: "slice index must be an integer",
 						EXISTS:  true,
 					}
@@ -107,7 +107,7 @@ func ArArray(arr []any) ArObject {
 					step = 1
 				} else if typeof(a[2]) != "number" || !a[2].(number).IsInt() {
 					return "", ArErr{
-						TYPE:    "TypeError",
+						TYPE:    "Type Error",
 						message: "slice index must be an integer",
 						EXISTS:  true,
 					}
@@ -127,7 +127,7 @@ func ArArray(arr []any) ArObject {
 			}
 			if start >= len(arr) || start < 0 {
 				return "", ArErr{
-					TYPE:    "IndexError",
+					TYPE:    "Index Error",
 					message: "index out of range, trying to access index " + fmt.Sprint(ogStart) + " in array of length " + fmt.Sprint(len(arr)),
 					EXISTS:  true,
 				}
@@ -155,21 +155,21 @@ func ArArray(arr []any) ArObject {
 		func(args ...any) (any, ArErr) {
 			if len(args) != 1 {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "missing argument",
 					EXISTS:  true,
 				}
 			}
 			if typeof(args[0]) != "number" {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "argument must be a number",
 					EXISTS:  true,
 				}
 			}
 			if !args[0].(number).IsInt() {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "argument must be an integer",
 					EXISTS:  true,
 				}
@@ -177,7 +177,7 @@ func ArArray(arr []any) ArObject {
 			num := int(args[0].(number).Num().Int64())
 			if num < 0 || num >= len(arr) {
 				return nil, ArErr{
-					TYPE:    "IndexError",
+					TYPE:    "Index Error",
 					message: "index out of range",
 					EXISTS:  true,
 				}
@@ -192,7 +192,7 @@ func ArArray(arr []any) ArObject {
 		func(args ...any) (any, ArErr) {
 			if len(args) == 0 {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "missing argument",
 					EXISTS:  true,
 				}
@@ -208,21 +208,21 @@ func ArArray(arr []any) ArObject {
 		func(args ...any) (any, ArErr) {
 			if len(args) < 2 {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "missing argument",
 					EXISTS:  true,
 				}
 			}
 			if typeof(args[0]) != "number" {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "argument must be a number",
 					EXISTS:  true,
 				}
 			}
 			if !args[0].(number).IsInt() {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "argument must be an integer",
 					EXISTS:  true,
 				}
@@ -230,7 +230,7 @@ func ArArray(arr []any) ArObject {
 			num := int(args[0].(number).Num().Int64())
 			if num < 0 || num > len(arr) {
 				return nil, ArErr{
-					TYPE:    "IndexError",
+					TYPE:    "Index Error",
 					message: "index out of range",
 					EXISTS:  true,
 				}
@@ -246,7 +246,7 @@ func ArArray(arr []any) ArObject {
 		func(args ...any) (any, ArErr) {
 			if len(args) > 1 {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "too many arguments",
 					EXISTS:  true,
 				}
@@ -254,14 +254,14 @@ func ArArray(arr []any) ArObject {
 			if len(args) == 1 {
 				if typeof(args[0]) != "number" {
 					return nil, ArErr{
-						TYPE:    "TypeError",
+						TYPE:    "Type Error",
 						message: "argument must be a number",
 						EXISTS:  true,
 					}
 				}
 				if !args[0].(number).IsInt() {
 					return nil, ArErr{
-						TYPE:    "TypeError",
+						TYPE:    "Type Error",
 						message: "argument must be an integer",
 						EXISTS:  true,
 					}
@@ -269,7 +269,7 @@ func ArArray(arr []any) ArObject {
 				num := int(args[0].(number).Num().Int64())
 				if num < 0 || num >= len(arr) {
 					return nil, ArErr{
-						TYPE:    "IndexError",
+						TYPE:    "Index Error",
 						message: "index out of range",
 						EXISTS:  true,
 					}
@@ -292,7 +292,7 @@ func ArArray(arr []any) ArObject {
 		func(args ...any) (any, ArErr) {
 			if len(args) != 0 {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "too many arguments",
 					EXISTS:  true,
 				}
@@ -308,14 +308,14 @@ func ArArray(arr []any) ArObject {
 		func(args ...any) (any, ArErr) {
 			if len(args) != 1 {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "missing argument",
 					EXISTS:  true,
 				}
 			}
 			if typeof(args[0]) != "array" {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "argument must be an array",
 					EXISTS:  true,
 				}
@@ -331,7 +331,7 @@ func ArArray(arr []any) ArObject {
 		func(args ...any) (any, ArErr) {
 			if len(args) > 2 {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "too many arguments",
 					EXISTS:  true,
 				}
@@ -340,7 +340,7 @@ func ArArray(arr []any) ArObject {
 			if len(args) >= 1 {
 				if typeof(args[0]) != "boolean" {
 					return nil, ArErr{
-						TYPE:    "TypeError",
+						TYPE:    "Type Error",
 						message: "argument must be a boolean",
 						EXISTS:  true,
 					}
@@ -350,7 +350,7 @@ func ArArray(arr []any) ArObject {
 			if len(args) == 2 {
 				if typeof(args[1]) != "function" {
 					return nil, ArErr{
-						TYPE:    "TypeError",
+						TYPE:    "Type Error",
 						message: "argument must be a function",
 						EXISTS:  true,
 					}
@@ -396,14 +396,14 @@ func ArArray(arr []any) ArObject {
 		func(args ...any) (any, ArErr) {
 			if len(args) != 1 {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "missing argument",
 					EXISTS:  true,
 				}
 			}
 			if typeof(args[0]) != "function" {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "argument must be a function",
 					EXISTS:  true,
 				}
@@ -427,14 +427,14 @@ func ArArray(arr []any) ArObject {
 		func(args ...any) (any, ArErr) {
 			if len(args) != 1 {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "missing argument",
 					EXISTS:  true,
 				}
 			}
 			if typeof(args[0]) != "function" {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "argument must be a function",
 					EXISTS:  true,
 				}
@@ -460,14 +460,14 @@ func ArArray(arr []any) ArObject {
 		func(args ...any) (any, ArErr) {
 			if len(args) != 2 {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "missing argument, expected 2 got " + fmt.Sprint(len(args)),
 					EXISTS:  true,
 				}
 			}
 			if typeof(args[0]) != "function" {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "argument must be a function",
 					EXISTS:  true,
 				}
@@ -498,14 +498,14 @@ func ArArray(arr []any) ArObject {
 		func(args ...any) (any, ArErr) {
 			if len(args) != 1 {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "missing argument",
 					EXISTS:  true,
 				}
 			}
 			if typeof(args[0]) != "string" {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "argument must be a string",
 					EXISTS:  true,
 				}
@@ -514,7 +514,7 @@ func ArArray(arr []any) ArObject {
 			for _, v := range arr {
 				if typeof(v) != "string" {
 					return nil, ArErr{
-						TYPE:    "TypeError",
+						TYPE:    "Type Error",
 						message: "array must be an array of strings",
 						EXISTS:  true,
 					}
@@ -529,14 +529,14 @@ func ArArray(arr []any) ArObject {
 		func(args ...any) (any, ArErr) {
 			if len(args) < 1 {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "missing argument(s)",
 					EXISTS:  true,
 				}
 			}
 			if typeof(args[0]) != "array" {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "argument must be an array",
 					EXISTS:  true,
 				}
@@ -550,7 +550,7 @@ func ArArray(arr []any) ArObject {
 		func(args ...any) (any, ArErr) {
 			if len(args) != 1 {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "missing argument",
 					EXISTS:  true,
 				}
@@ -580,7 +580,7 @@ func ArArray(arr []any) ArObject {
 		func(args ...any) (any, ArErr) {
 			if len(args) != 1 {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "missing argument",
 					EXISTS:  true,
 				}
@@ -605,7 +605,7 @@ func ArArray(arr []any) ArObject {
 		func(args ...any) (any, ArErr) {
 			if len(args) != 1 {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "missing argument",
 					EXISTS:  true,
 				}

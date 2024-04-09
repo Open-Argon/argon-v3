@@ -15,7 +15,7 @@ func ArSubprocess(args ...any) (any, ArErr) {
 		}
 	} else if typeof(args[0]) != "array" {
 		return nil, ArErr{
-			TYPE:    "TypeError",
+			TYPE:    "Type Error",
 			message: fmt.Sprintf("subprocess() argument must be an array, not %s", typeof(args[0])),
 			EXISTS:  true,
 		}
@@ -32,7 +32,7 @@ func ArSubprocess(args ...any) (any, ArErr) {
 	for _, x := range args[0].([]any) {
 		if typeof(x) != "string" {
 			return nil, ArErr{
-				TYPE:    "TypeError",
+				TYPE:    "Type Error",
 				message: fmt.Sprintf("subprocess() argument must be an array of strings, not %s", typeof(x)),
 				EXISTS:  true,
 			}
@@ -70,7 +70,7 @@ func ArSubprocess(args ...any) (any, ArErr) {
 							func(args ...any) (any, ArErr) {
 								if len(args) != 0 {
 									return nil, ArErr{
-										TYPE:    "TypeError",
+										TYPE:    "Type Error",
 										message: fmt.Sprintf("scan() takes exactly 0 arguments (%d given)", len(args)),
 										EXISTS:  true,
 									}
@@ -82,7 +82,7 @@ func ArSubprocess(args ...any) (any, ArErr) {
 							func(args ...any) (any, ArErr) {
 								if len(args) != 0 {
 									return nil, ArErr{
-										TYPE:    "TypeError",
+										TYPE:    "Type Error",
 										message: fmt.Sprintf("text() takes exactly 0 arguments (%d given)", len(args)),
 										EXISTS:  true,
 									}
@@ -94,7 +94,7 @@ func ArSubprocess(args ...any) (any, ArErr) {
 							func(args ...any) (any, ArErr) {
 								if len(args) != 0 {
 									return nil, ArErr{
-										TYPE:    "TypeError",
+										TYPE:    "Type Error",
 										message: fmt.Sprintf("err() takes exactly 0 arguments (%d given)", len(args)),
 										EXISTS:  true,
 									}
@@ -109,7 +109,7 @@ func ArSubprocess(args ...any) (any, ArErr) {
 							func(args ...any) (any, ArErr) {
 								if len(args) != 0 {
 									return nil, ArErr{
-										TYPE:    "TypeError",
+										TYPE:    "Type Error",
 										message: fmt.Sprintf("wait() takes exactly 0 arguments (%d given)", len(args)),
 										EXISTS:  true,
 									}

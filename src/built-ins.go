@@ -33,7 +33,7 @@ func makeGlobal() ArObject {
 					case []any:
 						if len(y) == 2 {
 							if isUnhashable(y[0]) {
-								return nil, ArErr{TYPE: "TypeError", message: "Cannot use unhashable value as key: " + typeof(y[0]), EXISTS: true}
+								return nil, ArErr{TYPE: "Type Error", message: "Cannot use unhashable value as key: " + typeof(y[0]), EXISTS: true}
 							}
 							key := ArValidToAny(y[0])
 							newmap[key] = y[1]
@@ -57,32 +57,32 @@ func makeGlobal() ArObject {
 			}
 			return Map(newmap), ArErr{}
 		}
-		return nil, ArErr{TYPE: "TypeError", message: "Cannot create map from '" + typeof(a[0]) + "'", EXISTS: true}
+		return nil, ArErr{TYPE: "Type Error", message: "Cannot create map from '" + typeof(a[0]) + "'", EXISTS: true}
 	}}
 	vars["hex"] = builtinFunc{"hex", func(a ...any) (any, ArErr) {
 		if len(a) != 1 {
-			return nil, ArErr{TYPE: "TypeError", message: "expected 1 argument, got " + fmt.Sprint(len(a)), EXISTS: true}
+			return nil, ArErr{TYPE: "Type Error", message: "expected 1 argument, got " + fmt.Sprint(len(a)), EXISTS: true}
 		}
 		a[0] = ArValidToAny(a[0])
 		switch x := a[0].(type) {
 		case number:
 			if x.Denom().Cmp(one.Denom()) != 0 {
-				return nil, ArErr{TYPE: "TypeError", message: "Cannot convert non-integer to hex", EXISTS: true}
+				return nil, ArErr{TYPE: "Type Error", message: "Cannot convert non-integer to hex", EXISTS: true}
 			}
 			n := x.Num().Int64()
 			return ArString(fmt.Sprintf("%x", n)), ArErr{}
 		}
-		return nil, ArErr{TYPE: "TypeError", message: "Cannot convert '" + typeof(a[0]) + "' to hex", EXISTS: true}
+		return nil, ArErr{TYPE: "Type Error", message: "Cannot convert '" + typeof(a[0]) + "' to hex", EXISTS: true}
 	}}
 	vars["buffer"] = builtinFunc{"buffer", func(a ...any) (any, ArErr) {
 		if len(a) != 0 {
-			return nil, ArErr{TYPE: "TypeError", message: "expected 0 arguments, got " + fmt.Sprint(len(a)), EXISTS: true}
+			return nil, ArErr{TYPE: "Type Error", message: "expected 0 arguments, got " + fmt.Sprint(len(a)), EXISTS: true}
 		}
 		return ArBuffer([]byte{}), ArErr{}
 	}}
 	vars["byte"] = builtinFunc{"byte", func(a ...any) (any, ArErr) {
 		if len(a) != 0 {
-			return nil, ArErr{TYPE: "TypeError", message: "expected 0 arguments, got " + fmt.Sprint(len(a)), EXISTS: true}
+			return nil, ArErr{TYPE: "Type Error", message: "expected 0 arguments, got " + fmt.Sprint(len(a)), EXISTS: true}
 		}
 		return ArByte(0), ArErr{}
 	}}
@@ -109,7 +109,7 @@ func makeGlobal() ArObject {
 			}
 			return ArArray(newarray), ArErr{}
 		}
-		return nil, ArErr{TYPE: "TypeError", message: "Cannot create array from '" + typeof(a[0]) + "'", EXISTS: true}
+		return nil, ArErr{TYPE: "Type Error", message: "Cannot create array from '" + typeof(a[0]) + "'", EXISTS: true}
 	}}
 	vars["boolean"] = builtinFunc{"boolean", func(a ...any) (any, ArErr) {
 		if len(a) == 0 {
@@ -136,11 +136,11 @@ func makeGlobal() ArObject {
 			switch x := a[1].(type) {
 			case number:
 				if !x.IsInt() {
-					return nil, ArErr{TYPE: "TypeError", message: "Cannot round to '" + typeof(a[1]) + "'", EXISTS: true}
+					return nil, ArErr{TYPE: "Type Error", message: "Cannot round to '" + typeof(a[1]) + "'", EXISTS: true}
 				}
 				precision = x
 			default:
-				return nil, ArErr{TYPE: "TypeError", message: "Cannot round to '" + typeof(a[1]) + "'", EXISTS: true}
+				return nil, ArErr{TYPE: "Type Error", message: "Cannot round to '" + typeof(a[1]) + "'", EXISTS: true}
 			}
 		}
 
@@ -148,7 +148,7 @@ func makeGlobal() ArObject {
 		case number:
 			return round(newNumber().Set(x), int(precision.Num().Int64())), ArErr{}
 		}
-		return nil, ArErr{TYPE: "TypeError", message: "Cannot round '" + typeof(a[0]) + "'", EXISTS: true}
+		return nil, ArErr{TYPE: "Type Error", message: "Cannot round '" + typeof(a[0]) + "'", EXISTS: true}
 	}}
 	vars["floor"] = builtinFunc{"floor", func(a ...any) (any, ArErr) {
 		if len(a) == 0 {
@@ -159,7 +159,7 @@ func makeGlobal() ArObject {
 		case number:
 			return floor(x), ArErr{}
 		}
-		return nil, ArErr{TYPE: "TypeError", message: "Cannot floor '" + typeof(a[0]) + "'", EXISTS: true}
+		return nil, ArErr{TYPE: "Type Error", message: "Cannot floor '" + typeof(a[0]) + "'", EXISTS: true}
 	}}
 	vars["ceil"] = builtinFunc{"ceil", func(a ...any) (any, ArErr) {
 		if len(a) == 0 {
@@ -171,7 +171,7 @@ func makeGlobal() ArObject {
 		case number:
 			return ceil(x), ArErr{}
 		}
-		return nil, ArErr{TYPE: "TypeError", message: "Cannot ceil '" + typeof(a[0]) + "'", EXISTS: true}
+		return nil, ArErr{TYPE: "Type Error", message: "Cannot ceil '" + typeof(a[0]) + "'", EXISTS: true}
 	}}
 	vars["sqrt"] = builtinFunc{"sqrt", ArgonSqrt}
 	vars["file"] = ArFile
@@ -217,7 +217,7 @@ func makeGlobal() ArObject {
 				return resp, ArErr{}
 			}
 		}
-		return nil, ArErr{TYPE: "TypeError", message: "Cannot fraction '" + typeof(a[0]) + "'", EXISTS: true}
+		return nil, ArErr{TYPE: "Type Error", message: "Cannot fraction '" + typeof(a[0]) + "'", EXISTS: true}
 	}}
 	vars["dir"] = builtinFunc{"dir", func(a ...any) (any, ArErr) {
 		if len(a) == 0 {
@@ -255,7 +255,7 @@ func makeGlobal() ArObject {
 		case number:
 			return string([]rune{rune(floor(x).Num().Int64())}), ArErr{}
 		}
-		return nil, ArErr{TYPE: "TypeError", message: "Cannot convert '" + typeof(a[0]) + "' to string", EXISTS: true}
+		return nil, ArErr{TYPE: "Type Error", message: "Cannot convert '" + typeof(a[0]) + "' to string", EXISTS: true}
 	}}
 	vars["ord"] = builtinFunc{"ord", func(a ...any) (any, ArErr) {
 		if len(a) != 1 {
@@ -269,7 +269,7 @@ func makeGlobal() ArObject {
 			}
 			return floor(newNumber().SetInt64(int64([]rune(x)[0]))), ArErr{}
 		}
-		return nil, ArErr{TYPE: "TypeError", message: "Cannot convert '" + typeof(a[0]) + "' to string", EXISTS: true}
+		return nil, ArErr{TYPE: "Type Error", message: "Cannot convert '" + typeof(a[0]) + "' to string", EXISTS: true}
 	}}
 	vars["max"] = builtinFunc{"max", func(a ...any) (any, ArErr) {
 		if len(a) != 1 {
@@ -296,7 +296,7 @@ func makeGlobal() ArObject {
 			}
 			return max, ArErr{}
 		}
-		return nil, ArErr{TYPE: "TypeError", message: "Cannot get max of type '" + typeof(a[0]) + "'", EXISTS: true}
+		return nil, ArErr{TYPE: "Type Error", message: "Cannot get max of type '" + typeof(a[0]) + "'", EXISTS: true}
 	}}
 	vars["min"] = builtinFunc{"min", func(a ...any) (any, ArErr) {
 		if len(a) != 1 {
@@ -323,7 +323,7 @@ func makeGlobal() ArObject {
 			}
 			return max, ArErr{}
 		}
-		return nil, ArErr{TYPE: "TypeError", message: "Cannot get max of type '" + typeof(a[0]) + "'", EXISTS: true}
+		return nil, ArErr{TYPE: "Type Error", message: "Cannot get max of type '" + typeof(a[0]) + "'", EXISTS: true}
 	}}
 	vars["path"] = ArPath
 	vars["typeof"] = builtinFunc{"typeof", func(a ...any) (any, ArErr) {
@@ -341,7 +341,7 @@ func makeGlobal() ArObject {
 		case string:
 			return ArString(sha256Hash(x)), ArErr{}
 		}
-		return nil, ArErr{TYPE: "TypeError", message: "Cannot hash type '" + typeof(a[0]) + "'", EXISTS: true}
+		return nil, ArErr{TYPE: "Type Error", message: "Cannot hash type '" + typeof(a[0]) + "'", EXISTS: true}
 	}}
 	return Map(vars)
 }

@@ -16,19 +16,19 @@ type ArErr struct {
 func ArThrowError(a ...any) (any, ArErr) {
 	if len(a) != 2 {
 		return nil, ArErr{
-			TYPE:    "TypeError",
+			TYPE:    "Type Error",
 			message: "throwError takes 2 arguments, " + fmt.Sprint(len(a)) + " given",
 			EXISTS:  true,
 		}
 	} else if typeof(a[0]) != "string" {
 		return nil, ArErr{
-			TYPE:    "TypeError",
+			TYPE:    "Type Error",
 			message: "throwError type must be a string",
 			EXISTS:  true,
 		}
 	} else if typeof(a[1]) != "string" {
 		return nil, ArErr{
-			TYPE:    "TypeError",
+			TYPE:    "Type Error",
 			message: "throwError message must be a string",
 			EXISTS:  true,
 		}

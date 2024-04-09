@@ -36,7 +36,7 @@ func runCreateMap(m createMap, stack stack, stacklevel int) (any, ArErr) {
 		}
 		if isUnhashable(keyVal) {
 			return nil, ArErr{
-				"TypeError",
+				"Type Error",
 				"unhashable type: '" + typeof(keyVal) + "'",
 				m.line,
 				m.path,
@@ -161,7 +161,7 @@ func Map(m anymap) ArObject {
 				func(args ...any) (any, ArErr) {
 					if len(args) != 1 {
 						return nil, ArErr{
-							TYPE:    "TypeError",
+							TYPE:    "Type Error",
 							message: "expected 1 argument, got " + fmt.Sprint(len(args)),
 							EXISTS:  true,
 						}
@@ -201,7 +201,7 @@ func Map(m anymap) ArObject {
 				func(args ...any) (any, ArErr) {
 					if len(args) != 1 {
 						return nil, ArErr{
-							TYPE:    "TypeError",
+							TYPE:    "Type Error",
 							message: "expected 1 argument, got " + fmt.Sprint(len(args)),
 							EXISTS:  true,
 						}
@@ -241,7 +241,7 @@ func Map(m anymap) ArObject {
 				func(args ...any) (any, ArErr) {
 					if len(args) != 2 {
 						return nil, ArErr{
-							TYPE:    "TypeError",
+							TYPE:    "Type Error",
 							message: "expected 2 arguments, got " + fmt.Sprint(len(args)),
 							EXISTS:  true,
 						}
@@ -279,7 +279,7 @@ func Map(m anymap) ArObject {
 				func(args ...any) (any, ArErr) {
 					if len(args) != 1 {
 						return nil, ArErr{
-							TYPE:    "TypeError",
+							TYPE:    "Type Error",
 							message: "expected 1 argument, got " + fmt.Sprint(len(args)),
 							EXISTS:  true,
 						}
@@ -330,7 +330,7 @@ func Map(m anymap) ArObject {
 			debugPrintln("Equal", args)
 			if len(args) != 1 {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "expected 1 argument, got " + fmt.Sprint(len(args)),
 					EXISTS:  true,
 				}
@@ -372,7 +372,7 @@ func Map(m anymap) ArObject {
 			debugPrintln("copy", args)
 			if len(args) != 0 {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "expected 0 arguments, got " + fmt.Sprint(len(args)),
 					EXISTS:  true,
 				}
@@ -391,7 +391,7 @@ func Map(m anymap) ArObject {
 		func(args ...any) (any, ArErr) {
 			if len(args) != 2 {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "expected 2 arguments, got " + fmt.Sprint(len(args)),
 					EXISTS:  true,
 				}
@@ -406,7 +406,7 @@ func Map(m anymap) ArObject {
 			}
 			if typeof(args[1]) != "function" {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "expected function, got " + typeof(args[1]),
 					EXISTS:  true,
 				}
@@ -425,7 +425,7 @@ func Map(m anymap) ArObject {
 					func(args ...any) (any, ArErr) {
 						if len(args) != 0 {
 							return nil, ArErr{
-								TYPE:    "TypeError",
+								TYPE:    "Type Error",
 								message: "expected 0 arguments, got " + fmt.Sprint(len(args)),
 								EXISTS:  true,
 							}
@@ -444,7 +444,7 @@ func Map(m anymap) ArObject {
 		func(args ...any) (any, ArErr) {
 			if len(args) != 0 {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "expected 0 arguments, got " + fmt.Sprint(len(args)),
 					EXISTS:  true,
 				}
@@ -475,7 +475,7 @@ func Map(m anymap) ArObject {
 		func(args ...any) (any, ArErr) {
 			if len(args) != 0 {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "expected 0 arguments, got " + fmt.Sprint(len(args)),
 					EXISTS:  true,
 				}

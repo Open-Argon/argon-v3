@@ -10,14 +10,8 @@ var Args = os.Args[1:]
 
 type stack = []ArObject
 
-const VERSION = "3.0.4-2"
-const VERSION_NUM = 1
-
-// Example struct
-type Person struct {
-	Name string
-	Age  int
-}
+const VERSION = "3.0.4-3"
+const VERSION_NUM = 2
 
 func newscope() ArObject {
 	return Map(anymap{})

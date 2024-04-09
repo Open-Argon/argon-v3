@@ -51,7 +51,7 @@ func mapGet(r ArMapGet, stack stack, stacklevel int) (any, ArErr) {
 		return nil, err
 	}
 	return nil, ArErr{
-		"TypeError",
+		"Type Error",
 		"cannot read " + anyToArgon(key, true, true, 3, 0, false, 0) + " from type '" + typeof(resp) + "'",
 		r.Line,
 		r.Path,

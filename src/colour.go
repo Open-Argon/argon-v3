@@ -12,7 +12,7 @@ var ArColour = Map(
 		"set": builtinFunc{"set", func(a ...any) (any, ArErr) {
 			if len(a) != 2 {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "set() takes exactly 2 argument (" + fmt.Sprint(len(a)) + " given)",
 					EXISTS:  true,
 				}
@@ -23,7 +23,7 @@ var ArColour = Map(
 				c = color.Set(color.Attribute(x.Num().Int64()))
 			} else {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "set() argument 1 must be an number, not " + typeof(a[0]),
 					EXISTS:  true,
 				}
@@ -32,7 +32,7 @@ var ArColour = Map(
 				s = ArValidToAny(a[1]).(string)
 			} else {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "set() argument 2 must be a string, not " + typeof(a[1]),
 					EXISTS:  true,
 				}

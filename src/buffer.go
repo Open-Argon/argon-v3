@@ -35,7 +35,7 @@ func ArByte(Byte byte) ArObject {
 		func(a ...any) (any, ArErr) {
 			if len(a) == 0 {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "expected at least 1 argument, got 0",
 					EXISTS:  true,
 				}
@@ -45,7 +45,7 @@ func ArByte(Byte byte) ArObject {
 			case number:
 				if x.Denom().Cmp(one.Denom()) != 0 {
 					return nil, ArErr{
-						TYPE:    "TypeError",
+						TYPE:    "Type Error",
 						message: "expected integer, got " + fmt.Sprint(x),
 						EXISTS:  true,
 					}
@@ -70,7 +70,7 @@ func ArByte(Byte byte) ArObject {
 				Byte = byte(x[0])
 			default:
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "expected number or string, got " + typeof(x),
 					EXISTS:  true,
 				}
@@ -106,7 +106,7 @@ func ArBuffer(buf []byte) ArObject {
 		func(a ...any) (any, ArErr) {
 			if len(a) == 0 {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "expected at least 1 argument, got 0",
 					EXISTS:  true,
 				}
@@ -124,7 +124,7 @@ func ArBuffer(buf []byte) ArObject {
 					case number:
 						if y.Denom().Cmp(one.Denom()) != 0 {
 							return nil, ArErr{
-								TYPE:    "TypeError",
+								TYPE:    "Type Error",
 								message: "Cannot convert non-integer to byte",
 								EXISTS:  true,
 							}
@@ -132,7 +132,7 @@ func ArBuffer(buf []byte) ArObject {
 						outputbuf = append(outputbuf, byte(y.Num().Int64()))
 					default:
 						return nil, ArErr{
-							TYPE:    "TypeError",
+							TYPE:    "Type Error",
 							message: "Cannot convert " + typeof(v) + " to byte",
 							EXISTS:  true,
 						}
@@ -141,7 +141,7 @@ func ArBuffer(buf []byte) ArObject {
 				buf = outputbuf
 			default:
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "expected string or buffer, got " + typeof(x),
 					EXISTS:  true,
 				}
@@ -156,7 +156,7 @@ func ArBuffer(buf []byte) ArObject {
 		func(a ...any) (any, ArErr) {
 			if len(a) != 2 {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "expected 1 argument, got " + fmt.Sprint(len(a)),
 					EXISTS:  true,
 				}
@@ -164,7 +164,7 @@ func ArBuffer(buf []byte) ArObject {
 			splitVal := ArValidToAny(a[0])
 			if typeof(splitVal) != "buffer" {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "expected buffer, got " + typeof(splitVal),
 					EXISTS:  true,
 				}
@@ -173,7 +173,7 @@ func ArBuffer(buf []byte) ArObject {
 			nVal := ArValidToAny(a[1])
 			if typeof(nVal) != "number" {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "expected number, got " + typeof(nVal),
 					EXISTS:  true,
 				}
@@ -181,7 +181,7 @@ func ArBuffer(buf []byte) ArObject {
 			nNum := nVal.(number)
 			if nNum.Denom().Cmp(one.Denom()) != 0 {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "expected integer, got " + fmt.Sprint(nNum),
 					EXISTS:  true,
 				}
@@ -216,7 +216,7 @@ func ArBuffer(buf []byte) ArObject {
 		func(a ...any) (any, ArErr) {
 			if len(a) != 1 {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "expected 1 argument, got " + fmt.Sprint(len(a)),
 					EXISTS:  true,
 				}
@@ -224,7 +224,7 @@ func ArBuffer(buf []byte) ArObject {
 			splitVal := ArValidToAny(a[0])
 			if typeof(splitVal) != "buffer" {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "expected buffer, got " + typeof(splitVal),
 					EXISTS:  true,
 				}
@@ -255,7 +255,7 @@ func ArBuffer(buf []byte) ArObject {
 		func(a ...any) (any, ArErr) {
 			if len(a) != 2 {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "expected 2 arguments, got " + fmt.Sprint(len(a)),
 					EXISTS:  true,
 				}
@@ -263,7 +263,7 @@ func ArBuffer(buf []byte) ArObject {
 			startVal := ArValidToAny(a[0])
 			if typeof(startVal) != "number" {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "expected number, got " + typeof(startVal),
 					EXISTS:  true,
 				}
@@ -271,7 +271,7 @@ func ArBuffer(buf []byte) ArObject {
 			start := startVal.(number)
 			if start.Denom().Cmp(one.Denom()) != 0 {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "expected integer, got " + fmt.Sprint(start),
 					EXISTS:  true,
 				}
@@ -279,7 +279,7 @@ func ArBuffer(buf []byte) ArObject {
 			endVal := ArValidToAny(a[1])
 			if typeof(endVal) != "number" {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "expected number, got " + typeof(endVal),
 					EXISTS:  true,
 				}
@@ -287,7 +287,7 @@ func ArBuffer(buf []byte) ArObject {
 			end := endVal.(number)
 			if end.Denom().Cmp(one.Denom()) != 0 {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "expected integer, got " + fmt.Sprint(end),
 					EXISTS:  true,
 				}
@@ -300,14 +300,14 @@ func ArBuffer(buf []byte) ArObject {
 		func(a ...any) (any, ArErr) {
 			if len(a) != 1 {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "expected 1 argument, got " + fmt.Sprint(len(a)),
 					EXISTS:  true,
 				}
 			}
 			if typeof(a[0]) != "string" {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "expected string, got " + typeof(a[0]),
 					EXISTS:  true,
 				}
@@ -330,7 +330,7 @@ func ArBuffer(buf []byte) ArObject {
 				return ArArray(output), ArErr{}
 			default:
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "expected string, bytes or array, got '" + Type + "'",
 					EXISTS:  true,
 				}
@@ -342,7 +342,7 @@ func ArBuffer(buf []byte) ArObject {
 		func(a ...any) (any, ArErr) {
 			if len(a) != 1 {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "expected 1 argument, got " + fmt.Sprint(len(a)),
 					EXISTS:  true,
 				}
@@ -352,7 +352,7 @@ func ArBuffer(buf []byte) ArObject {
 			case number:
 				if x.Denom().Cmp(one.Denom()) != 0 {
 					return nil, ArErr{
-						TYPE:    "TypeError",
+						TYPE:    "Type Error",
 						message: "Cannot convert non-integer to byte",
 						EXISTS:  true,
 					}
@@ -368,7 +368,7 @@ func ArBuffer(buf []byte) ArObject {
 					case number:
 						if y.Denom().Cmp(one.Denom()) != 0 {
 							return nil, ArErr{
-								TYPE:    "TypeError",
+								TYPE:    "Type Error",
 								message: "Cannot convert non-integer to byte",
 								EXISTS:  true,
 							}
@@ -376,7 +376,7 @@ func ArBuffer(buf []byte) ArObject {
 						buf = append(buf, byte(y.Num().Int64()))
 					default:
 						return nil, ArErr{
-							TYPE:    "TypeError",
+							TYPE:    "Type Error",
 							message: "Cannot convert " + typeof(v) + " to byte",
 							EXISTS:  true,
 						}
@@ -384,7 +384,7 @@ func ArBuffer(buf []byte) ArObject {
 				}
 			default:
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "expected string, buffer or array, got " + typeof(x),
 					EXISTS:  true,
 				}
@@ -399,7 +399,7 @@ func ArBuffer(buf []byte) ArObject {
 		func(a ...any) (any, ArErr) {
 			if len(a) != 2 {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "expected 2 arguments, got " + fmt.Sprint(len(a)),
 					EXISTS:  true,
 				}
@@ -408,7 +408,7 @@ func ArBuffer(buf []byte) ArObject {
 			values := ArValidToAny(a[1])
 			if typeof(poss) != "number" {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "expected number, got " + typeof(poss),
 					EXISTS:  true,
 				}
@@ -416,7 +416,7 @@ func ArBuffer(buf []byte) ArObject {
 			pos := poss.(number)
 			if pos.Denom().Cmp(one.Denom()) != 0 {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "position must be an integer",
 					EXISTS:  true,
 				}
@@ -426,7 +426,7 @@ func ArBuffer(buf []byte) ArObject {
 			case number:
 				if x.Denom().Cmp(one.Denom()) != 0 {
 					return nil, ArErr{
-						TYPE:    "TypeError",
+						TYPE:    "Type Error",
 						message: "Cannot convert non-integer to byte",
 						EXISTS:  true,
 					}
@@ -442,7 +442,7 @@ func ArBuffer(buf []byte) ArObject {
 					case number:
 						if y.Denom().Cmp(one.Denom()) != 0 {
 							return nil, ArErr{
-								TYPE:    "TypeError",
+								TYPE:    "Type Error",
 								message: "Cannot convert non-integer to byte",
 								EXISTS:  true,
 							}
@@ -450,7 +450,7 @@ func ArBuffer(buf []byte) ArObject {
 						buf = append(buf[:posNum], append([]byte{byte(y.Num().Int64())}, buf[posNum:]...)...)
 					default:
 						return nil, ArErr{
-							TYPE:    "TypeError",
+							TYPE:    "Type Error",
 							message: "Cannot convert " + typeof(v) + " to byte",
 							EXISTS:  true,
 						}
@@ -458,7 +458,7 @@ func ArBuffer(buf []byte) ArObject {
 				}
 			default:
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "expected string or buffer, got " + typeof(x),
 					EXISTS:  true,
 				}
@@ -473,7 +473,7 @@ func ArBuffer(buf []byte) ArObject {
 		func(a ...any) (any, ArErr) {
 			if len(a) != 1 {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "expected 1 argument, got " + fmt.Sprint(len(a)),
 					EXISTS:  true,
 				}
@@ -481,7 +481,7 @@ func ArBuffer(buf []byte) ArObject {
 			poss := ArValidToAny(a[0])
 			if typeof(poss) != "number" {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "expected number, got " + typeof(poss),
 					EXISTS:  true,
 				}
@@ -489,7 +489,7 @@ func ArBuffer(buf []byte) ArObject {
 			pos := poss.(number)
 			if pos.Denom().Cmp(one.Denom()) != 0 {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "position must be an integer",
 					EXISTS:  true,
 				}

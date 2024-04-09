@@ -10,19 +10,19 @@ import (
 func ArSocketClient(args ...any) (any, ArErr) {
 	if len(args) != 2 {
 		return ArObject{}, ArErr{
-			TYPE:    "SocketError",
+			TYPE:    "Socket Error",
 			message: "Socket takes exactly 2 arguments",
 			EXISTS:  true,
 		}
 	} else if typeof(args[0]) != "string" {
 		return ArObject{}, ArErr{
-			TYPE:    "SocketError",
+			TYPE:    "Socket Error",
 			message: "Socket type must be a string",
 			EXISTS:  true,
 		}
 	} else if typeof(args[1]) != "string" {
 		return ArObject{}, ArErr{
-			TYPE:    "SocketError",
+			TYPE:    "Socket Error",
 			message: "Socket address must be a string",
 			EXISTS:  true,
 		}
@@ -32,7 +32,7 @@ func ArSocketClient(args ...any) (any, ArErr) {
 	conn, err := net.Dial(networktype, address)
 	if err != nil {
 		return ArObject{}, ArErr{
-			TYPE:    "SocketError",
+			TYPE:    "Socket Error",
 			message: fmt.Sprintf("Socket connection failed: %s", err.Error()),
 			EXISTS:  true,
 		}
@@ -44,14 +44,14 @@ func ArSocketClient(args ...any) (any, ArErr) {
 				func(args ...any) (any, ArErr) {
 					if len(args) != 1 {
 						return ArObject{}, ArErr{
-							TYPE:    "SocketError",
+							TYPE:    "Socket Error",
 							message: "Socket.readData() takes exactly 1 argument",
 							EXISTS:  true,
 						}
 					}
 					if conn == nil {
 						return ArObject{}, ArErr{
-							TYPE:    "SocketError",
+							TYPE:    "Socket Error",
 							message: "Connection is closed",
 							EXISTS:  true,
 						}
@@ -60,7 +60,7 @@ func ArSocketClient(args ...any) (any, ArErr) {
 					n, err := conn.Read(buf)
 					if err != nil {
 						return ArObject{}, ArErr{
-							TYPE:    "SocketError",
+							TYPE:    "Socket Error",
 							message: fmt.Sprintf("Socket read failed: %s", err.Error()),
 							EXISTS:  true,
 						}
@@ -72,14 +72,14 @@ func ArSocketClient(args ...any) (any, ArErr) {
 				func(args ...any) (any, ArErr) {
 					if len(args) != 1 {
 						return ArObject{}, ArErr{
-							TYPE:    "SocketError",
+							TYPE:    "Socket Error",
 							message: "Socket.readUntil() takes exactly 1 argument",
 							EXISTS:  true,
 						}
 					}
 					if conn == nil {
 						return ArObject{}, ArErr{
-							TYPE:    "SocketError",
+							TYPE:    "Socket Error",
 							message: "Connection is closed",
 							EXISTS:  true,
 						}
@@ -87,7 +87,7 @@ func ArSocketClient(args ...any) (any, ArErr) {
 					value := ArValidToAny(args[0])
 					if typeof(value) != "buffer" {
 						return ArObject{}, ArErr{
-							TYPE:    "TypeError",
+							TYPE:    "Type Error",
 							message: fmt.Sprintf("Socket.readUntil() argument must be a buffer, not %s", typeof(value)),
 							EXISTS:  true,
 						}
@@ -100,7 +100,7 @@ func ArSocketClient(args ...any) (any, ArErr) {
 						_, err := reader.Read(buf)
 						if err != nil {
 							return ArObject{}, ArErr{
-								TYPE:    "SocketError",
+								TYPE:    "Socket Error",
 								message: fmt.Sprintf("Socket read failed: %s", err.Error()),
 								EXISTS:  true,
 							}
@@ -125,21 +125,21 @@ func ArSocketClient(args ...any) (any, ArErr) {
 				func(args ...any) (any, ArErr) {
 					if len(args) != 1 {
 						return nil, ArErr{
-							TYPE:    "TypeError",
+							TYPE:    "Type Error",
 							message: fmt.Sprintf("write() takes exactly 1 argument (%d given)", len(args)),
 							EXISTS:  true,
 						}
 					}
 					if typeof(args[0]) != "buffer" {
 						return ArObject{}, ArErr{
-							TYPE:    "TypeError",
+							TYPE:    "Type Error",
 							message: fmt.Sprintf("write() argument must be a buffer, not %s", typeof(args[0])),
 							EXISTS:  true,
 						}
 					}
 					if conn == nil {
 						return ArObject{}, ArErr{
-							TYPE:    "SocketError",
+							TYPE:    "Socket Error",
 							message: "Connection is closed",
 							EXISTS:  true,
 						}
@@ -147,7 +147,7 @@ func ArSocketClient(args ...any) (any, ArErr) {
 					args[0] = ArValidToAny(args[0])
 					if typeof(args[0]) != "buffer" {
 						return ArObject{}, ArErr{
-							TYPE:    "TypeError",
+							TYPE:    "Type Error",
 							message: fmt.Sprintf("write() argument must be a buffer, not %s", typeof(args[0])),
 							EXISTS:  true,
 						}
@@ -155,7 +155,7 @@ func ArSocketClient(args ...any) (any, ArErr) {
 					_, err := conn.Write(args[0].([]byte))
 					if err != nil {
 						return ArObject{}, ArErr{
-							TYPE:    "SocketError",
+							TYPE:    "Socket Error",
 							message: err.Error(),
 							EXISTS:  true,
 						}
@@ -167,7 +167,7 @@ func ArSocketClient(args ...any) (any, ArErr) {
 				func(args ...any) (any, ArErr) {
 					if conn == nil {
 						return ArObject{}, ArErr{
-							TYPE:    "SocketError",
+							TYPE:    "Socket Error",
 							message: "Connection is already closed",
 							EXISTS:  true,
 						}
@@ -175,7 +175,7 @@ func ArSocketClient(args ...any) (any, ArErr) {
 					err := conn.Close()
 					if err != nil {
 						return ArObject{}, ArErr{
-							TYPE:    "SocketError",
+							TYPE:    "Socket Error",
 							message: err.Error(),
 							EXISTS:  true,
 						}
@@ -208,19 +208,19 @@ func ArSocketClient(args ...any) (any, ArErr) {
 func ArSocketServer(args ...any) (any, ArErr) {
 	if len(args) != 2 {
 		return ArObject{}, ArErr{
-			TYPE:    "SocketError",
+			TYPE:    "Socket Error",
 			message: "Socket takes exactly 2 arguments",
 			EXISTS:  true,
 		}
 	} else if typeof(args[0]) != "string" {
 		return ArObject{}, ArErr{
-			TYPE:    "SocketError",
+			TYPE:    "Socket Error",
 			message: "Socket type must be a string",
 			EXISTS:  true,
 		}
 	} else if typeof(args[1]) != "number" {
 		return ArObject{}, ArErr{
-			TYPE:    "SocketError",
+			TYPE:    "Socket Error",
 			message: "Socket port must be a number",
 			EXISTS:  true,
 		}
@@ -229,7 +229,7 @@ func ArSocketServer(args ...any) (any, ArErr) {
 	port := args[1].(number)
 	if port.Denom().Int64() != 1 {
 		return ArObject{}, ArErr{
-			TYPE:    "SocketError",
+			TYPE:    "Socket Error",
 			message: "Socket port must be an integer",
 			EXISTS:  true,
 		}
@@ -237,7 +237,7 @@ func ArSocketServer(args ...any) (any, ArErr) {
 	ln, err := net.Listen(networktype, ":"+fmt.Sprint(port.Num().Int64()))
 	if err != nil {
 		return ArObject{}, ArErr{
-			TYPE:    "SocketError",
+			TYPE:    "Socket Error",
 			message: err.Error(),
 			EXISTS:  true,
 		}
@@ -248,7 +248,7 @@ func ArSocketServer(args ...any) (any, ArErr) {
 			func(args ...any) (any, ArErr) {
 				if ln == nil {
 					return ArObject{}, ArErr{
-						TYPE:    "SocketError",
+						TYPE:    "Socket Error",
 						message: "Socket is closed",
 						EXISTS:  true,
 					}
@@ -256,7 +256,7 @@ func ArSocketServer(args ...any) (any, ArErr) {
 				conn, err := ln.Accept()
 				if err != nil {
 					return ArObject{}, ArErr{
-						TYPE:    "SocketError",
+						TYPE:    "Socket Error",
 						message: err.Error(),
 						EXISTS:  true,
 					}
@@ -267,14 +267,14 @@ func ArSocketServer(args ...any) (any, ArErr) {
 						func(args ...any) (any, ArErr) {
 							if len(args) != 1 {
 								return ArObject{}, ArErr{
-									TYPE:    "SocketError",
+									TYPE:    "Socket Error",
 									message: "Socket.readData() takes exactly 1 argument",
 									EXISTS:  true,
 								}
 							}
 							if conn == nil {
 								return ArObject{}, ArErr{
-									TYPE:    "SocketError",
+									TYPE:    "Socket Error",
 									message: "Connection is closed",
 									EXISTS:  true,
 								}
@@ -283,7 +283,7 @@ func ArSocketServer(args ...any) (any, ArErr) {
 							n, err := conn.Read(buf)
 							if err != nil {
 								return ArObject{}, ArErr{
-									TYPE:    "SocketError",
+									TYPE:    "Socket Error",
 									message: err.Error(),
 									EXISTS:  true,
 								}
@@ -296,14 +296,14 @@ func ArSocketServer(args ...any) (any, ArErr) {
 						func(args ...any) (any, ArErr) {
 							if len(args) != 1 {
 								return ArObject{}, ArErr{
-									TYPE:    "SocketError",
+									TYPE:    "Socket Error",
 									message: "Socket.readUntil() takes exactly 1 argument",
 									EXISTS:  true,
 								}
 							}
 							if conn == nil {
 								return ArObject{}, ArErr{
-									TYPE:    "SocketError",
+									TYPE:    "Socket Error",
 									message: "Connection is closed",
 									EXISTS:  true,
 								}
@@ -311,7 +311,7 @@ func ArSocketServer(args ...any) (any, ArErr) {
 							value := ArValidToAny(args[0])
 							if typeof(value) != "buffer" {
 								return ArObject{}, ArErr{
-									TYPE:    "TypeError",
+									TYPE:    "Type Error",
 									message: fmt.Sprintf("Socket.readUntil() argument must be a buffer, not %s", typeof(value)),
 									EXISTS:  true,
 								}
@@ -346,14 +346,14 @@ func ArSocketServer(args ...any) (any, ArErr) {
 						func(args ...any) (any, ArErr) {
 							if len(args) != 0 {
 								return ArObject{}, ArErr{
-									TYPE:    "SocketError",
+									TYPE:    "Socket Error",
 									message: "Socket.clearTimeout() takes exactly 0 arguments",
 									EXISTS:  true,
 								}
 							}
 							if conn == nil {
 								return ArObject{}, ArErr{
-									TYPE:    "SocketError",
+									TYPE:    "Socket Error",
 									message: "Connection is closed",
 									EXISTS:  true,
 								}
@@ -367,21 +367,21 @@ func ArSocketServer(args ...any) (any, ArErr) {
 						func(args ...any) (any, ArErr) {
 							if len(args) != 1 {
 								return ArObject{}, ArErr{
-									TYPE:    "SocketError",
+									TYPE:    "Socket Error",
 									message: "Socket.setTimeout() takes exactly 1 argument",
 									EXISTS:  true,
 								}
 							}
 							if typeof(args[0]) != "number" {
 								return ArObject{}, ArErr{
-									TYPE:    "SocketError",
+									TYPE:    "Socket Error",
 									message: "Socket timeout must be a number",
 									EXISTS:  true,
 								}
 							}
 							if conn == nil {
 								return ArObject{}, ArErr{
-									TYPE:    "SocketError",
+									TYPE:    "Socket Error",
 									message: "Connection is closed",
 									EXISTS:  true,
 								}
@@ -389,7 +389,7 @@ func ArSocketServer(args ...any) (any, ArErr) {
 							timeout := args[0].(number)
 							if timeout.Denom().Int64() != 1 {
 								return ArObject{}, ArErr{
-									TYPE:    "SocketError",
+									TYPE:    "Socket Error",
 									message: "Socket timeout must be an integer",
 									EXISTS:  true,
 								}
@@ -397,7 +397,7 @@ func ArSocketServer(args ...any) (any, ArErr) {
 							err := conn.SetDeadline(time.Now().Add(time.Duration(timeout.Num().Int64()) * time.Millisecond))
 							if err != nil {
 								return ArObject{}, ArErr{
-									TYPE:    "SocketError",
+									TYPE:    "Socket Error",
 									message: err.Error(),
 									EXISTS:  true,
 								}
@@ -410,14 +410,14 @@ func ArSocketServer(args ...any) (any, ArErr) {
 						func(args ...any) (any, ArErr) {
 							if len(args) != 1 {
 								return ArObject{}, ArErr{
-									TYPE:    "SocketError",
+									TYPE:    "Socket Error",
 									message: "Socket.writeData() takes exactly 1 argument",
 									EXISTS:  true,
 								}
 							}
 							if conn == nil {
 								return ArObject{}, ArErr{
-									TYPE:    "SocketError",
+									TYPE:    "Socket Error",
 									message: "Connection is closed",
 									EXISTS:  true,
 								}
@@ -429,7 +429,7 @@ func ArSocketServer(args ...any) (any, ArErr) {
 								for _, v := range x {
 									if typeof(v) != "number" && v.(number).Denom().Int64() != 1 {
 										return ArObject{}, ArErr{
-											TYPE:    "SocketError",
+											TYPE:    "Socket Error",
 											message: "Socket.writeData() argument must be a array of integers",
 											EXISTS:  true,
 										}
@@ -443,7 +443,7 @@ func ArSocketServer(args ...any) (any, ArErr) {
 								return nil, ArErr{}
 							}
 							return nil, ArErr{
-								TYPE:    "SocketError",
+								TYPE:    "Socket Error",
 								message: "Socket.writeData() argument must be a array of numbers",
 							}
 						},
@@ -453,7 +453,7 @@ func ArSocketServer(args ...any) (any, ArErr) {
 						func(args ...any) (any, ArErr) {
 							if conn == nil {
 								return ArObject{}, ArErr{
-									TYPE:    "SocketError",
+									TYPE:    "Socket Error",
 									message: "Connection is already closed",
 									EXISTS:  true,
 								}
@@ -486,7 +486,7 @@ func ArSocketServer(args ...any) (any, ArErr) {
 						func(args ...any) (any, ArErr) {
 							if conn == nil {
 								return ArObject{}, ArErr{
-									TYPE:    "SocketError",
+									TYPE:    "Socket Error",
 									message: "Connection is closed",
 									EXISTS:  true,
 								}
@@ -508,7 +508,7 @@ func ArSocketServer(args ...any) (any, ArErr) {
 			func(args ...any) (any, ArErr) {
 				if ln == nil {
 					return ArObject{}, ArErr{
-						TYPE:    "SocketError",
+						TYPE:    "Socket Error",
 						message: "Socket is already closed",
 						EXISTS:  true,
 					}

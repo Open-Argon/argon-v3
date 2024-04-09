@@ -73,26 +73,26 @@ func ArString(str string) ArObject {
 		"__setindex__",
 		func(a ...any) (any, ArErr) {
 			if len(a) != 2 {
-				return nil, ArErr{"TypeError", "expected 2 arguments, got " + fmt.Sprint(len(a)), 0, "", "", true}
+				return nil, ArErr{"Type Error", "expected 2 arguments, got " + fmt.Sprint(len(a)), 0, "", "", true}
 			}
 			if typeof(a[0]) != "number" {
-				return nil, ArErr{"TypeError", "expected number, got " + typeof(a[0]), 0, "", "", true}
+				return nil, ArErr{"Type Error", "expected number, got " + typeof(a[0]), 0, "", "", true}
 			}
 			if typeof(a[1]) != "string" {
-				return nil, ArErr{"TypeError", "expected string, got " + typeof(a[1]), 0, "", "", true}
+				return nil, ArErr{"Type Error", "expected string, got " + typeof(a[1]), 0, "", "", true}
 			}
 			if len(a[1].(string)) != 1 {
-				return nil, ArErr{"TypeError", "expected string of length 1, got " + fmt.Sprint(len(a[1].(string))), 0, "", "", true}
+				return nil, ArErr{"Type Error", "expected string of length 1, got " + fmt.Sprint(len(a[1].(string))), 0, "", "", true}
 			}
 			if !a[0].(number).IsInt() {
-				return nil, ArErr{"TypeError", "expected integer, got float", 0, "", "", true}
+				return nil, ArErr{"Type Error", "expected integer, got float", 0, "", "", true}
 			}
 			index := a[0].(number).Num().Int64()
 			if index < 0 {
 				index = int64(len(str)) + index
 			}
 			if index < 0 || index >= int64(len(str)) {
-				return nil, ArErr{"IndexError", "index out of range", 0, "", "", true}
+				return nil, ArErr{"Index Error", "index out of range", 0, "", "", true}
 			}
 			str = strings.Join([]string{str[:index], a[1].(string), str[index+1:]}, "")
 			obj.obj["__value__"] = str
@@ -106,7 +106,7 @@ func ArString(str string) ArObject {
 			// a[1] is end
 			// a[2] is step
 			if len(a) > 3 {
-				return nil, ArErr{"TypeError", "expected 1 to 3 arguments, got " + fmt.Sprint(len(a)), 0, "", "", true}
+				return nil, ArErr{"Type Error", "expected 1 to 3 arguments, got " + fmt.Sprint(len(a)), 0, "", "", true}
 			}
 			var (
 				start int = 0
@@ -118,7 +118,7 @@ func ArString(str string) ArObject {
 					start = 0
 				} else if typeof(a[0]) != "number" || !a[0].(number).IsInt() {
 					return "", ArErr{
-						TYPE:    "TypeError",
+						TYPE:    "Type Error",
 						message: "slice index must be an integer",
 						EXISTS:  true,
 					}
@@ -131,7 +131,7 @@ func ArString(str string) ArObject {
 					end = len(str)
 				} else if typeof(a[1]) != "number" || !a[1].(number).IsInt() {
 					return "", ArErr{
-						TYPE:    "TypeError",
+						TYPE:    "Type Error",
 						message: "slice index must be an integer",
 						EXISTS:  true,
 					}
@@ -144,7 +144,7 @@ func ArString(str string) ArObject {
 					step = 1
 				} else if typeof(a[2]) != "number" || !a[2].(number).IsInt() {
 					return "", ArErr{
-						TYPE:    "TypeError",
+						TYPE:    "Type Error",
 						message: "slice index must be an integer",
 						EXISTS:  true,
 					}
@@ -184,13 +184,13 @@ func ArString(str string) ArObject {
 		"append",
 		func(a ...any) (any, ArErr) {
 			if len(a) == 0 {
-				return nil, ArErr{"TypeError", "expected 1 or more argument, got 0", 0, "", "", true}
+				return nil, ArErr{"Type Error", "expected 1 or more argument, got 0", 0, "", "", true}
 			}
 			output := []string{str}
 			for _, v := range a {
 				v = ArValidToAny(v)
 				if typeof(v) != "string" {
-					return nil, ArErr{"TypeError", "expected string, got " + typeof(v), 0, "", "", true}
+					return nil, ArErr{"Type Error", "expected string, got " + typeof(v), 0, "", "", true}
 				}
 				output = append(output, v.(string))
 			}
@@ -203,15 +203,15 @@ func ArString(str string) ArObject {
 		"extend",
 		func(a ...any) (any, ArErr) {
 			if len(a) != 1 {
-				return nil, ArErr{"TypeError", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
+				return nil, ArErr{"Type Error", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
 			}
 			if typeof(a[0]) != "array" {
-				return nil, ArErr{"TypeError", "expected array, got " + typeof(a[0]), 0, "", "", true}
+				return nil, ArErr{"Type Error", "expected array, got " + typeof(a[0]), 0, "", "", true}
 			}
 			output := []string{str}
 			for _, v := range a[0].([]any) {
 				if typeof(v) != "string" {
-					return nil, ArErr{"TypeError", "expected string, got " + typeof(v), 0, "", "", true}
+					return nil, ArErr{"Type Error", "expected string, got " + typeof(v), 0, "", "", true}
 				}
 				output = append(output, v.(string))
 			}
@@ -225,13 +225,13 @@ func ArString(str string) ArObject {
 		"insert",
 		func(a ...any) (any, ArErr) {
 			if len(a) != 2 {
-				return nil, ArErr{"TypeError", "expected 2 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
+				return nil, ArErr{"Type Error", "expected 2 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
 			}
 			if typeof(a[0]) != "number" || !a[0].(number).IsInt() {
-				return nil, ArErr{"TypeError", "expected integer, got " + typeof(a[0]), 0, "", "", true}
+				return nil, ArErr{"Type Error", "expected integer, got " + typeof(a[0]), 0, "", "", true}
 			}
 			if typeof(a[1]) != "string" {
-				return nil, ArErr{"TypeError", "expected string, got " + typeof(a[1]), 0, "", "", true}
+				return nil, ArErr{"Type Error", "expected string, got " + typeof(a[1]), 0, "", "", true}
 			}
 			index := int(a[0].(number).Num().Int64())
 			if index < 0 {
@@ -249,12 +249,12 @@ func ArString(str string) ArObject {
 		"concat",
 		func(a ...any) (any, ArErr) {
 			if len(a) == 0 {
-				return nil, ArErr{"TypeError", "expected 1 or more argument, got 0", 0, "", "", true}
+				return nil, ArErr{"Type Error", "expected 1 or more argument, got 0", 0, "", "", true}
 			}
 			output := []string{str}
 			for _, v := range a {
 				if typeof(v) != "string" {
-					return nil, ArErr{"TypeError", "expected string, got " + typeof(v), 0, "", "", true}
+					return nil, ArErr{"Type Error", "expected string, got " + typeof(v), 0, "", "", true}
 				}
 				output = append(output, v.(string))
 			}
@@ -264,10 +264,10 @@ func ArString(str string) ArObject {
 		"split",
 		func(a ...any) (any, ArErr) {
 			if len(a) != 1 {
-				return nil, ArErr{"TypeError", "expected 1 or more argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
+				return nil, ArErr{"Type Error", "expected 1 or more argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
 			}
 			if typeof(a[0]) != "string" {
-				return nil, ArErr{"TypeError", "expected string, got " + typeof(a[0]), 0, "", "", true}
+				return nil, ArErr{"Type Error", "expected string, got " + typeof(a[0]), 0, "", "", true}
 			}
 			splitby := ArValidToAny(a[0]).(string)
 			output := []any{}
@@ -281,13 +281,13 @@ func ArString(str string) ArObject {
 		"splitN",
 		func(a ...any) (any, ArErr) {
 			if len(a) != 2 {
-				return nil, ArErr{"TypeError", "expected 2 or more argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
+				return nil, ArErr{"Type Error", "expected 2 or more argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
 			}
 			if typeof(a[0]) != "string" {
-				return nil, ArErr{"TypeError", "expected string, got " + typeof(a[0]), 0, "", "", true}
+				return nil, ArErr{"Type Error", "expected string, got " + typeof(a[0]), 0, "", "", true}
 			}
 			if typeof(a[1]) != "number" || !a[1].(number).IsInt() {
-				return nil, ArErr{"TypeError", "expected integer, got " + typeof(a[1]), 0, "", "", true}
+				return nil, ArErr{"Type Error", "expected integer, got " + typeof(a[1]), 0, "", "", true}
 			}
 			splitby := ArValidToAny(a[0]).(string)
 			n := int(a[1].(number).Num().Int64())
@@ -302,7 +302,7 @@ func ArString(str string) ArObject {
 		"capitalise",
 		func(a ...any) (any, ArErr) {
 			if len(a) != 0 {
-				return nil, ArErr{"TypeError", "expected 0 arguments, got " + fmt.Sprint(len(a)), 0, "", "", true}
+				return nil, ArErr{"Type Error", "expected 0 arguments, got " + fmt.Sprint(len(a)), 0, "", "", true}
 			}
 			return cases.Title(language.English).String(str), ArErr{}
 		}}
@@ -310,7 +310,7 @@ func ArString(str string) ArObject {
 		"lower",
 		func(a ...any) (any, ArErr) {
 			if len(a) != 0 {
-				return nil, ArErr{"TypeError", "expected 0 arguments, got " + fmt.Sprint(len(a)), 0, "", "", true}
+				return nil, ArErr{"Type Error", "expected 0 arguments, got " + fmt.Sprint(len(a)), 0, "", "", true}
 			}
 			return strings.ToLower(str), ArErr{}
 		}}
@@ -318,7 +318,7 @@ func ArString(str string) ArObject {
 		"upper",
 		func(a ...any) (any, ArErr) {
 			if len(a) != 0 {
-				return nil, ArErr{"TypeError", "expected 0 arguments, got " + fmt.Sprint(len(a)), 0, "", "", true}
+				return nil, ArErr{"Type Error", "expected 0 arguments, got " + fmt.Sprint(len(a)), 0, "", "", true}
 			}
 			return strings.ToUpper(str), ArErr{}
 		}}
@@ -326,13 +326,13 @@ func ArString(str string) ArObject {
 		"replace",
 		func(a ...any) (any, ArErr) {
 			if len(a) != 2 {
-				return nil, ArErr{"TypeError", "expected 2 arguments, got " + fmt.Sprint(len(a)), 0, "", "", true}
+				return nil, ArErr{"Type Error", "expected 2 arguments, got " + fmt.Sprint(len(a)), 0, "", "", true}
 			}
 			if typeof(a[0]) != "string" {
-				return nil, ArErr{"TypeError", "expected string, got " + typeof(a[0]), 0, "", "", true}
+				return nil, ArErr{"Type Error", "expected string, got " + typeof(a[0]), 0, "", "", true}
 			}
 			if typeof(a[1]) != "string" {
-				return nil, ArErr{"TypeError", "expected string, got " + typeof(a[1]), 0, "", "", true}
+				return nil, ArErr{"Type Error", "expected string, got " + typeof(a[1]), 0, "", "", true}
 			}
 			a[0] = ArValidToAny(a[0])
 			a[1] = ArValidToAny(a[1])
@@ -342,10 +342,10 @@ func ArString(str string) ArObject {
 		"contains",
 		func(a ...any) (any, ArErr) {
 			if len(a) != 1 {
-				return nil, ArErr{"TypeError", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
+				return nil, ArErr{"Type Error", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
 			}
 			if typeof(a[0]) != "string" {
-				return nil, ArErr{"TypeError", "expected string, got " + typeof(a[0]), 0, "", "", true}
+				return nil, ArErr{"Type Error", "expected string, got " + typeof(a[0]), 0, "", "", true}
 			}
 			return strings.Contains(str, a[0].(ArObject).obj["__value__"].(string)), ArErr{}
 		}}
@@ -353,10 +353,10 @@ func ArString(str string) ArObject {
 		"startswith",
 		func(a ...any) (any, ArErr) {
 			if len(a) != 1 {
-				return nil, ArErr{"TypeError", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
+				return nil, ArErr{"Type Error", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
 			}
 			if typeof(a[0]) != "string" {
-				return nil, ArErr{"TypeError", "expected string, got " + typeof(a[0]), 0, "", "", true}
+				return nil, ArErr{"Type Error", "expected string, got " + typeof(a[0]), 0, "", "", true}
 			}
 			return strings.HasPrefix(str, a[0].(ArObject).obj["__value__"].(string)), ArErr{}
 		}}
@@ -364,10 +364,10 @@ func ArString(str string) ArObject {
 		"endswith",
 		func(a ...any) (any, ArErr) {
 			if len(a) != 1 {
-				return nil, ArErr{"TypeError", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
+				return nil, ArErr{"Type Error", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
 			}
 			if typeof(a[0]) != "string" {
-				return nil, ArErr{"TypeError", "expected string, got " + typeof(a[0]), 0, "", "", true}
+				return nil, ArErr{"Type Error", "expected string, got " + typeof(a[0]), 0, "", "", true}
 			}
 			return strings.HasSuffix(str, a[0].(ArObject).obj["__value__"].(string)), ArErr{}
 		}}
@@ -375,10 +375,10 @@ func ArString(str string) ArObject {
 		"index",
 		func(a ...any) (any, ArErr) {
 			if len(a) != 1 {
-				return nil, ArErr{"TypeError", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
+				return nil, ArErr{"Type Error", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
 			}
 			if typeof(a[0]) != "string" {
-				return nil, ArErr{"TypeError", "expected string, got " + typeof(a[0]), 0, "", "", true}
+				return nil, ArErr{"Type Error", "expected string, got " + typeof(a[0]), 0, "", "", true}
 			}
 			return strings.Index(str, a[0].(ArObject).obj["__value__"].(string)), ArErr{}
 		}}
@@ -386,10 +386,10 @@ func ArString(str string) ArObject {
 		"rindex",
 		func(a ...any) (any, ArErr) {
 			if len(a) != 1 {
-				return nil, ArErr{"TypeError", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
+				return nil, ArErr{"Type Error", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
 			}
 			if typeof(a[0]) != "string" {
-				return nil, ArErr{"TypeError", "expected string, got " + typeof(a[0]), 0, "", "", true}
+				return nil, ArErr{"Type Error", "expected string, got " + typeof(a[0]), 0, "", "", true}
 			}
 			return strings.LastIndex(str, a[0].(ArObject).obj["__value__"].(string)), ArErr{}
 		}}
@@ -398,10 +398,10 @@ func ArString(str string) ArObject {
 		func(a ...any) (any, ArErr) {
 			if len(a) != 1 {
 
-				return nil, ArErr{"TypeError", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
+				return nil, ArErr{"Type Error", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
 			}
 			if typeof(a[0]) != "string" {
-				return nil, ArErr{"TypeError", "expected string, got " + typeof(a[0]), 0, "", "", true}
+				return nil, ArErr{"Type Error", "expected string, got " + typeof(a[0]), 0, "", "", true}
 			}
 			return strings.Count(str, a[0].(ArObject).obj["__value__"].(string)), ArErr{}
 		}}
@@ -411,7 +411,7 @@ func ArString(str string) ArObject {
 		func(args ...any) (any, ArErr) {
 			if len(args) > 2 {
 				return nil, ArErr{
-					TYPE:    "TypeError",
+					TYPE:    "Type Error",
 					message: "too many arguments",
 					EXISTS:  true,
 				}
@@ -420,7 +420,7 @@ func ArString(str string) ArObject {
 			if len(args) >= 1 {
 				if typeof(args[0]) != "boolean" {
 					return nil, ArErr{
-						TYPE:    "TypeError",
+						TYPE:    "Type Error",
 						message: "argument must be a boolean",
 						EXISTS:  true,
 					}
@@ -435,7 +435,7 @@ func ArString(str string) ArObject {
 			if len(args) == 2 {
 				if typeof(args[1]) != "function" {
 					return nil, ArErr{
-						TYPE:    "TypeError",
+						TYPE:    "Type Error",
 						message: "argument must be a function",
 						EXISTS:  true,
 					}
@@ -483,12 +483,12 @@ func ArString(str string) ArObject {
 		"strip",
 		func(a ...any) (any, ArErr) {
 			if len(a) > 1 {
-				return nil, ArErr{"TypeError", "expected 0 or 1 arguments, got " + fmt.Sprint(len(a)), 0, "", "", true}
+				return nil, ArErr{"Type Error", "expected 0 or 1 arguments, got " + fmt.Sprint(len(a)), 0, "", "", true}
 			}
 			cutset := " "
 			if len(a) == 1 {
 				if typeof(a[0]) != "string" {
-					return nil, ArErr{"TypeError", "expected string, got " + typeof(a[0]), 0, "", "", true}
+					return nil, ArErr{"Type Error", "expected string, got " + typeof(a[0]), 0, "", "", true}
 				}
 				cutset = a[0].(ArObject).obj["__value__"].(string)
 			}
@@ -498,12 +498,12 @@ func ArString(str string) ArObject {
 		"leftstrip",
 		func(a ...any) (any, ArErr) {
 			if len(a) > 1 {
-				return nil, ArErr{"TypeError", "expected 0 or 1 arguments, got " + fmt.Sprint(len(a)), 0, "", "", true}
+				return nil, ArErr{"Type Error", "expected 0 or 1 arguments, got " + fmt.Sprint(len(a)), 0, "", "", true}
 			}
 			cutset := " "
 			if len(a) == 1 {
 				if typeof(a[0]) != "string" {
-					return nil, ArErr{"TypeError", "expected string, got " + typeof(a[0]), 0, "", "", true}
+					return nil, ArErr{"Type Error", "expected string, got " + typeof(a[0]), 0, "", "", true}
 				}
 				cutset = a[0].(ArObject).obj["__value__"].(string)
 			}
@@ -513,12 +513,12 @@ func ArString(str string) ArObject {
 		"rightstrip",
 		func(a ...any) (any, ArErr) {
 			if len(a) > 1 {
-				return nil, ArErr{"TypeError", "expected 0 or 1 arguments, got " + fmt.Sprint(len(a)), 0, "", "", true}
+				return nil, ArErr{"Type Error", "expected 0 or 1 arguments, got " + fmt.Sprint(len(a)), 0, "", "", true}
 			}
 			cutset := " "
 			if len(a) == 1 {
 				if typeof(a[0]) != "string" {
-					return nil, ArErr{"TypeError", "expected string, got " + typeof(a[0]), 0, "", "", true}
+					return nil, ArErr{"Type Error", "expected string, got " + typeof(a[0]), 0, "", "", true}
 				}
 				cutset = a[0].(ArObject).obj["__value__"].(string)
 			}
@@ -528,10 +528,10 @@ func ArString(str string) ArObject {
 		"__LessThanOrEqual__",
 		func(a ...any) (any, ArErr) {
 			if len(a) != 1 {
-				return nil, ArErr{"TypeError", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
+				return nil, ArErr{"Type Error", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
 			}
 			if typeof(a[0]) != "string" {
-				return nil, ArErr{"TypeError", "cannot get less than or equal to of type " + typeof(a[0]) + " from string", 0, "", "", true}
+				return nil, ArErr{"Type Error", "cannot get less than or equal to of type " + typeof(a[0]) + " from string", 0, "", "", true}
 			}
 			a[0] = ArValidToAny(a[0])
 			return str <= a[0].(string), ArErr{}
@@ -540,10 +540,10 @@ func ArString(str string) ArObject {
 		"__LessThan__",
 		func(a ...any) (any, ArErr) {
 			if len(a) != 1 {
-				return nil, ArErr{"TypeError", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
+				return nil, ArErr{"Type Error", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
 			}
 			if typeof(a[0]) != "string" {
-				return nil, ArErr{"TypeError", "cannot get less than of type " + typeof(a[0]) + " from string", 0, "", "", true}
+				return nil, ArErr{"Type Error", "cannot get less than of type " + typeof(a[0]) + " from string", 0, "", "", true}
 			}
 			a[0] = ArValidToAny(a[0])
 			return str < a[0].(string), ArErr{}
@@ -552,10 +552,10 @@ func ArString(str string) ArObject {
 		"__GreaterThan__",
 		func(a ...any) (any, ArErr) {
 			if len(a) != 1 {
-				return nil, ArErr{"TypeError", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
+				return nil, ArErr{"Type Error", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
 			}
 			if typeof(a[0]) != "string" {
-				return nil, ArErr{"TypeError", "cannot get greater than of type " + typeof(a[0]) + " from string", 0, "", "", true}
+				return nil, ArErr{"Type Error", "cannot get greater than of type " + typeof(a[0]) + " from string", 0, "", "", true}
 			}
 			a[0] = ArValidToAny(a[0])
 			return str > a[0].(string), ArErr{}
@@ -565,10 +565,10 @@ func ArString(str string) ArObject {
 		"__GreaterThanEqual__",
 		func(a ...any) (any, ArErr) {
 			if len(a) != 1 {
-				return nil, ArErr{"TypeError", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
+				return nil, ArErr{"Type Error", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
 			}
 			if typeof(a[0]) != "string" {
-				return nil, ArErr{"TypeError", "cannot get greater than or equal to of type " + typeof(a[0]) + " from string", 0, "", "", true}
+				return nil, ArErr{"Type Error", "cannot get greater than or equal to of type " + typeof(a[0]) + " from string", 0, "", "", true}
 			}
 			a[0] = ArValidToAny(a[0])
 			return str >= a[0].(string), ArErr{}
@@ -577,7 +577,7 @@ func ArString(str string) ArObject {
 		"__Equal__",
 		func(a ...any) (any, ArErr) {
 			if len(a) != 1 {
-				return nil, ArErr{"TypeError", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
+				return nil, ArErr{"Type Error", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
 			}
 			a[0] = ArValidToAny(a[0])
 			return str == a[0], ArErr{}
@@ -586,7 +586,7 @@ func ArString(str string) ArObject {
 		"__NotEqual__",
 		func(a ...any) (any, ArErr) {
 			if len(a) != 1 {
-				return nil, ArErr{"TypeError", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
+				return nil, ArErr{"Type Error", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
 			}
 			a[0] = ArValidToAny(a[0])
 			return str != a[0], ArErr{}
@@ -595,7 +595,7 @@ func ArString(str string) ArObject {
 		"__Add__",
 		func(a ...any) (any, ArErr) {
 			if len(a) != 1 {
-				return nil, ArErr{"TypeError", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
+				return nil, ArErr{"Type Error", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
 			}
 			a[0] = ArValidToAny(a[0])
 			if typeof(a[0]) != "string" {
@@ -607,7 +607,7 @@ func ArString(str string) ArObject {
 		"__PostAdd__",
 		func(a ...any) (any, ArErr) {
 			if len(a) != 1 {
-				return nil, ArErr{"TypeError", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
+				return nil, ArErr{"Type Error", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
 			}
 			a[0] = ArValidToAny(a[0])
 			if typeof(a[0]) != "string" {
@@ -619,10 +619,10 @@ func ArString(str string) ArObject {
 		"__Multiply__",
 		func(a ...any) (any, ArErr) {
 			if len(a) != 1 {
-				return nil, ArErr{"TypeError", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
+				return nil, ArErr{"Type Error", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
 			}
 			if typeof(a[0]) != "number" {
-				return nil, ArErr{"TypeError", "cannot multiply string by " + typeof(a[0]), 0, "", "", true}
+				return nil, ArErr{"Type Error", "cannot multiply string by " + typeof(a[0]), 0, "", "", true}
 			}
 			n := a[0].(number)
 			if !n.IsInt() {
@@ -637,10 +637,10 @@ func ArString(str string) ArObject {
 		"__NotContains__",
 		func(a ...any) (any, ArErr) {
 			if len(a) != 1 {
-				return nil, ArErr{"TypeError", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
+				return nil, ArErr{"Type Error", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
 			}
 			if typeof(a[0]) != "string" {
-				return nil, ArErr{"TypeError", "cannot check if string contains " + typeof(a[0]), 0, "", "", true}
+				return nil, ArErr{"Type Error", "cannot check if string contains " + typeof(a[0]), 0, "", "", true}
 			}
 			a[0] = ArValidToAny(a[0])
 			return !strings.Contains(str, a[0].(string)), ArErr{}
@@ -649,10 +649,10 @@ func ArString(str string) ArObject {
 		"__Contains__",
 		func(a ...any) (any, ArErr) {
 			if len(a) != 1 {
-				return nil, ArErr{"TypeError", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
+				return nil, ArErr{"Type Error", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
 			}
 			if typeof(a[0]) != "string" {
-				return nil, ArErr{"TypeError", "cannot check if string contains " + typeof(a[0]), 0, "", "", true}
+				return nil, ArErr{"Type Error", "cannot check if string contains " + typeof(a[0]), 0, "", "", true}
 			}
 			a[0] = ArValidToAny(a[0])
 			return strings.Contains(str, a[0].(string)), ArErr{}
@@ -661,10 +661,10 @@ func ArString(str string) ArObject {
 		"__Subtract__",
 		func(a ...any) (any, ArErr) {
 			if len(a) != 1 {
-				return nil, ArErr{"TypeError", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
+				return nil, ArErr{"Type Error", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
 			}
 			if typeof(a[0]) != "string" {
-				return nil, ArErr{"TypeError", "cannot subtract " + typeof(a[0]) + " from string", 0, "", "", true}
+				return nil, ArErr{"Type Error", "cannot subtract " + typeof(a[0]) + " from string", 0, "", "", true}
 			}
 			a[0] = ArValidToAny(a[0])
 			return strings.Replace(str, a[0].(string), "", -1), ArErr{}
@@ -673,10 +673,10 @@ func ArString(str string) ArObject {
 		"__Divide__",
 		func(a ...any) (any, ArErr) {
 			if len(a) != 1 {
-				return nil, ArErr{"TypeError", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
+				return nil, ArErr{"Type Error", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
 			}
 			if typeof(a[0]) != "string" {
-				return nil, ArErr{"TypeError", "cannot divide string by " + typeof(a[0]), 0, "", "", true}
+				return nil, ArErr{"Type Error", "cannot divide string by " + typeof(a[0]), 0, "", "", true}
 			}
 			a[0] = ArValidToAny(a[0])
 			splitby := a[0].(string)
