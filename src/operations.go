@@ -82,7 +82,7 @@ func parseOperations(code UNPARSEcode, index int, codelines []UNPARSEcode) (oper
 				operation: i,
 				values:    values,
 				line:      code.line,
-				code:      code.code,
+				code:      code.realcode,
 				path:      code.path,
 			}, true, ArErr{}, totalStep
 		}
@@ -680,7 +680,7 @@ func equals(a any, b any, o operationType, stack stack, stacklevel int) (bool, A
 		}
 	}
 	if x, ok := b.(ArObject); ok {
-		if y, ok := x.obj["__GreaterThanEqual__"]; ok {
+		if y, ok := x.obj["__Equal__"]; ok {
 			val, err := runCall(
 				call{
 					y,
