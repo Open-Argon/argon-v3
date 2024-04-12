@@ -46,15 +46,19 @@ type translatedImport struct {
 	translated []any
 	p          string
 	path       string
-	ex         string
-	exc        string
 	origin     string
 }
 
 var runTranslatedImport func(translatedImport, ArObject, bool) (ArObject, ArErr)
+var ex string
+var exc string
+var exc_dir string
 
 func init() {
 	runTranslatedImport = __runTranslatedImport
+	ex, _ = os.Getwd()
+	exc, _ = os.Executable()
+	exc_dir = filepath.Dir(exc)
 }
 
 func __runTranslatedImport(translatedImport translatedImport, global ArObject, main bool) (ArObject, ArErr) {
@@ -76,8 +80,8 @@ func __runTranslatedImport(translatedImport translatedImport, global ArObject, m
 		"program": Map(anymap{
 			"args":   ArArray(ArgsArArray),
 			"origin": ArString(translatedImport.origin),
-			"cwd":    ArString(translatedImport.ex),
-			"exc":    ArString(translatedImport.exc),
+			"cwd":    ArString(ex),
+			"exc":    ArString(exc),
 			"file": Map(anymap{
 				"name": ArString(filepath.Base(translatedImport.p)),
 				"path": ArString(translatedImport.p),
@@ -99,15 +103,6 @@ func translateImport(realpath string, origin string) (translatedImport, ArErr) {
 	if extention == "" {
 		path += ".ar"
 	}
-	ex, err := os.Getwd()
-	if err != nil {
-		return translatedImport{}, ArErr{TYPE: "Import Error", message: "Could not get working directory", EXISTS: true}
-	}
-	exc, err := os.Executable()
-	if err != nil {
-		return translatedImport{}, ArErr{TYPE: "Import Error", message: "Could not get executable", EXISTS: true}
-	}
-	executable := filepath.Dir(exc)
 	isABS := filepath.IsAbs(path)
 	var pathsToTest []string
 	if isABS {
@@ -117,15 +112,21 @@ func translateImport(realpath string, origin string) (translatedImport, ArErr) {
 		}
 	} else {
 		pathsToTest = []string{
-			filepath.Join(origin, path),
-			filepath.Join(origin, realpath, "init.ar"),
-			filepath.Join(origin, modules_folder, path),
-			filepath.Join(origin, modules_folder, realpath, "init.ar"),
-			filepath.Join(ex, path),
-			filepath.Join(ex, modules_folder, path),
-			filepath.Join(ex, modules_folder, realpath, "init.ar"),
-			filepath.Join(executable, modules_folder, path),
-			filepath.Join(executable, modules_folder, realpath, "init.ar"),
+			filepath.Join(exc_dir, path),
+			filepath.Join(exc_dir, realpath, "init.ar"),
+			filepath.Join(exc_dir, modules_folder, path),
+			filepath.Join(exc_dir, modules_folder, realpath, "init.ar"),
+		}
+		var currentPath string = origin
+		var oldPath string = ""
+		for currentPath != oldPath {
+			pathsToTest = append(pathsToTest,
+				filepath.Join(currentPath, path),
+				filepath.Join(currentPath, realpath, "init.ar"),
+				filepath.Join(currentPath, modules_folder, path),
+				filepath.Join(currentPath, modules_folder, realpath, "init.ar"))
+			oldPath = currentPath
+			currentPath = filepath.Dir(currentPath)
 		}
 	}
 	var p string
@@ -158,6 +159,6 @@ func translateImport(realpath string, origin string) (translatedImport, ArErr) {
 		return translatedImport{}, translationerr
 	}
 
-	translatedImports[p] = translatedImport{translated, p, path, ex, exc, origin}
+	translatedImports[p] = translatedImport{translated, p, path, origin}
 	return translatedImports[p], ArErr{}
 }
