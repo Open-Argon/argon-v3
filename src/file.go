@@ -12,7 +12,72 @@ import (
 var ArFile = Map(anymap{
 	"read":  builtinFunc{"read", ArRead},
 	"write": builtinFunc{"write", ArWrite},
+	"move":  builtinFunc{"move", ARmoveFile},
+	"copy":  builtinFunc{"copy", ARcopyFile},
 })
+
+func ARmoveFile(args ...any) (any, ArErr) {
+	if len(args) != 2 {
+		return ArObject{}, ArErr{TYPE: "Runtime Error", message: "move takes 2 arguments, got " + fmt.Sprint(len(args)), EXISTS: true}
+	}
+	if typeof(args[0]) != "string" {
+		return ArObject{}, ArErr{TYPE: "Runtime Error", message: "move takes a string not type '" + typeof(args[0]) + "'", EXISTS: true}
+	}
+	if typeof(args[1]) != "string" {
+		return ArObject{}, ArErr{TYPE: "Runtime Error", message: "move takes a string not type '" + typeof(args[1]) + "'", EXISTS: true}
+	}
+	args[0] = ArValidToAny(args[0])
+	args[1] = ArValidToAny(args[1])
+	err := os.Rename(args[0].(string), args[1].(string))
+	if err != nil {
+		return ArObject{}, ArErr{TYPE: "Runtime Error", message: err.Error(), EXISTS: true}
+	}
+	return nil, ArErr{}
+}
+
+func copyFile(src, dst string) (int64, error) {
+	sourceFileStat, err := os.Stat(src)
+	if err != nil {
+		return 0, err
+	}
+
+	if !sourceFileStat.Mode().IsRegular() {
+		return 0, fmt.Errorf("%s is not a regular file", src)
+	}
+
+	source, err := os.Open(src)
+	if err != nil {
+		return 0, err
+	}
+	defer source.Close()
+
+	destination, err := os.Create(dst)
+	if err != nil {
+		return 0, err
+	}
+	defer destination.Close()
+	nBytes, err := io.Copy(destination, source)
+	return nBytes, err
+}
+
+func ARcopyFile(args ...any) (any, ArErr) {
+	if len(args) != 2 {
+		return ArObject{}, ArErr{TYPE: "Runtime Error", message: "copy takes 2 arguments, got " + fmt.Sprint(len(args)), EXISTS: true}
+	}
+	if typeof(args[0]) != "string" {
+		return ArObject{}, ArErr{TYPE: "Runtime Error", message: "copy takes a string not type '" + typeof(args[0]) + "'", EXISTS: true}
+	}
+	if typeof(args[1]) != "string" {
+		return ArObject{}, ArErr{TYPE: "Runtime Error", message: "copy takes a string not type '" + typeof(args[1]) + "'", EXISTS: true}
+	}
+	args[0] = ArValidToAny(args[0])
+	args[1] = ArValidToAny(args[1])
+	_, err := copyFile(args[0].(string), args[1].(string))
+	if err != nil {
+		return ArObject{}, ArErr{TYPE: "Runtime Error", message: err.Error(), EXISTS: true}
+	}
+	return nil, ArErr{}
+}
 
 func readtext(file *os.File) (string, error) {
 	var buf bytes.Buffer
