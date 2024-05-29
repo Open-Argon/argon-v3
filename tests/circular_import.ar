@@ -1,1 +1,2 @@
 import "circular_test"
+term.log("epic wow")

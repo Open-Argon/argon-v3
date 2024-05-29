@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"fmt"
 	"os"
 	"path/filepath"
 )
@@ -97,7 +98,7 @@ func __runTranslatedImport(translatedImport translatedImport, global ArObject, m
 	return local, ArErr{}
 }
 
-func translateImport(realpath string, origin string) (translatedImport, ArErr) {
+func translateImport(realpath string, origin string, topLevelOnly bool) (translatedImport, ArErr) {
 	extention := filepath.Ext(realpath)
 	path := realpath
 	if extention == "" {
@@ -125,9 +126,13 @@ func translateImport(realpath string, origin string) (translatedImport, ArErr) {
 				filepath.Join(currentPath, realpath, "init.ar"),
 				filepath.Join(currentPath, modules_folder, path),
 				filepath.Join(currentPath, modules_folder, realpath, "init.ar"))
+			if topLevelOnly {
+				break
+			}
 			oldPath = currentPath
 			currentPath = filepath.Dir(currentPath)
 		}
+		fmt.Println(pathsToTest)
 	}
 	var p string
 	var found bool

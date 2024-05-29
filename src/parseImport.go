@@ -80,7 +80,7 @@ func parseGenericImport(code UNPARSEcode, index int, codeline []UNPARSEcode) (Ar
 	}
 
 	if str, ok := toImport.(string); ok {
-		resp, err := translateImport(str, filepath.Dir(filepath.ToSlash(code.path)))
+		resp, err := translateImport(str, filepath.Dir(filepath.ToSlash(code.path)), false)
 		if !err.EXISTS {
 			importOBJ.translated = resp
 			importOBJ.pretranslated = true
@@ -102,7 +102,7 @@ func runImport(importOBJ ArImport, stack stack, stacklevel int) (any, ArErr) {
 			return nil, ArErr{"Type Error", "import requires a string, got type '" + typeof(val) + "'", importOBJ.Line, importOBJ.Path, importOBJ.Code, true}
 		}
 		parent := filepath.Dir(filepath.ToSlash(importOBJ.Path))
-		translated, err = translateImport(val.(string), parent)
+		translated, err = translateImport(val.(string), parent, false)
 		if err.EXISTS {
 			if err.line == 0 {
 				err.line = importOBJ.Line
