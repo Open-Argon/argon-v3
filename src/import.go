@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"fmt"
 	"os"
 	"path/filepath"
 )
@@ -132,7 +131,6 @@ func translateImport(realpath string, origin string, topLevelOnly bool) (transla
 			oldPath = currentPath
 			currentPath = filepath.Dir(currentPath)
 		}
-		fmt.Println(pathsToTest)
 	}
 	var p string
 	var found bool
