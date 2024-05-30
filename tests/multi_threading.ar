@@ -11,4 +11,6 @@ term.time("start")
 for (i from 0 to 100) do
     threads.append(thread(()=mythread(i)))
     threads[i].start()
+for (i from 0 to 100) do
+    threads[i].join()
 term.timeEnd("start")
