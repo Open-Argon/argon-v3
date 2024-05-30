@@ -10,7 +10,7 @@ var Args = os.Args[1:]
 
 type stack = []ArObject
 
-const VERSION = "3.0.8a"
+const VERSION = "3.0.8"
 const VERSION_NUM = 6
 
 func newscope() ArObject {
