@@ -80,14 +80,6 @@ func runVal(line any, stack stack, stacklevel int) (any, ArErr) {
 			message: "cannot negate a non-number",
 			EXISTS:  true,
 		}
-	case brackets:
-		if stackoverflow {
-			linenum = x.line
-			path = x.path
-			code = x.code
-			break
-		}
-		return runVal(x.VAL, stack, stacklevel+1)
 	case operationType:
 		if stackoverflow {
 			linenum = x.line
