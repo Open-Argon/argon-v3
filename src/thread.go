@@ -2,10 +2,10 @@ package main
 
 import (
 	"fmt"
+	"sync"
 )
 
-var threadCount = 0
-var threadChan = make(chan bool)
+var threadChan = sync.WaitGroup{}
 
 func ArThread(args ...any) (any, ArErr) {
 	if len(args) != 1 {
@@ -28,7 +28,7 @@ func ArThread(args ...any) (any, ArErr) {
 
 	hasrun := false
 	joined := false
-	var wg = make(chan bool)
+	var wg = sync.WaitGroup{}
 	threadMap := Map(anymap{
 		"start": builtinFunc{"start", func(args ...any) (any, ArErr) {
 			if hasrun {
@@ -38,14 +38,12 @@ func ArThread(args ...any) (any, ArErr) {
 				return nil, ArErr{TYPE: "Type Error", message: "Invalid number of arguments, expected 0, got " + fmt.Sprint(len(args)), EXISTS: true}
 			}
 			hasrun = true
-			threadCount++
+			wg.Add(1)
+			threadChan.Add(1)
 			go func() {
 				resp, err = runCall(call{Callable: tocall, Args: []any{}}, nil, 0)
-				wg <- true
-				threadCount--
-				if threadCount == 0 {
-					threadChan <- true
-				}
+				wg.Done()
+				threadChan.Done()
 			}()
 			return nil, ArErr{}
 		}},
@@ -59,7 +57,7 @@ func ArThread(args ...any) (any, ArErr) {
 				return nil, ArErr{TYPE: "Type Error", message: "Invalid number of arguments, expected 0, got " + fmt.Sprint(len(args)), EXISTS: true}
 			}
 			joined = true
-			<-wg
+			wg.Wait()
 			return resp, err
 		}},
 	})

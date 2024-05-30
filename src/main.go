@@ -10,8 +10,8 @@ var Args = os.Args[1:]
 
 type stack = []ArObject
 
-const VERSION = "3.0.6"
-const VERSION_NUM = 4
+const VERSION = "3.0.7"
+const VERSION_NUM = 5
 
 func newscope() ArObject {
 	return Map(anymap{})
@@ -66,7 +66,5 @@ func main() {
 		panicErr(runimeErr)
 		os.Exit(1)
 	}
-	if threadCount > 0 {
-		<-threadChan
-	}
+	threadChan.Wait()
 }
