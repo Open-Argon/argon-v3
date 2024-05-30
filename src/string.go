@@ -65,7 +65,6 @@ func ArString(str string) ArObject {
 		anymap{
 			"__value__": str,
 			"__name__":  "string",
-			"length":    newNumber().SetUint64(uint64(len(str))),
 		},
 	}
 
@@ -96,7 +95,6 @@ func ArString(str string) ArObject {
 			}
 			str = strings.Join([]string{str[:index], a[1].(string), str[index+1:]}, "")
 			obj.obj["__value__"] = str
-			obj.obj["length"] = newNumber().SetUint64(uint64(len(str)))
 			return nil, ArErr{}
 		}}
 	obj.obj["__getindex__"] = builtinFunc{
@@ -105,8 +103,18 @@ func ArString(str string) ArObject {
 			// a[0] is start
 			// a[1] is end
 			// a[2] is step
-			if len(a) > 3 {
+			if len(a) > 3 || len(a) == 0 {
 				return nil, ArErr{"Type Error", "expected 1 to 3 arguments, got " + fmt.Sprint(len(a)), 0, "", "", true}
+			}
+			{
+				if len(a) == 1 {
+					if typeof(a[0]) == "string" {
+						var name = ArValidToAny(a[0]).(string)
+						if name == "length" {
+							return newNumber().SetInt64(int64(len(str))), ArErr{}
+						}
+					}
+				}
 			}
 			var (
 				start int = 0
@@ -196,7 +204,6 @@ func ArString(str string) ArObject {
 			}
 			str = strings.Join(output, "")
 			obj.obj["__value__"] = str
-			obj.obj["length"] = newNumber().SetUint64(uint64(len(str)))
 			return nil, ArErr{}
 		}}
 	obj.obj["extend"] = builtinFunc{
@@ -217,7 +224,6 @@ func ArString(str string) ArObject {
 			}
 			str = strings.Join(output, "")
 			obj.obj["__value__"] = str
-			obj.obj["length"] = newNumber().SetUint64(uint64(len(str)))
 			return nil, ArErr{}
 		},
 	}
@@ -242,7 +248,6 @@ func ArString(str string) ArObject {
 			}
 			str = str[:index] + a[1].(string) + str[index:]
 			obj.obj["__value__"] = str
-			obj.obj["length"] = newNumber().SetUint64(uint64(len(str)))
 			return nil, ArErr{}
 		}}
 	obj.obj["concat"] = builtinFunc{
@@ -454,7 +459,6 @@ func ArString(str string) ArObject {
 					bytes[i] = b.(byte)
 				}
 				str = string(bytes)
-				obj.obj["length"] = newNumber().SetUint64(uint64(len(str)))
 				obj.obj["__value__"] = str
 				return nil, ArErr{}
 			}
@@ -474,7 +478,6 @@ func ArString(str string) ArObject {
 				bytes[i] = b.(byte)
 			}
 			str = string(bytes)
-			obj.obj["length"] = newNumber().SetUint64(uint64(len(str)))
 			obj.obj["__value__"] = str
 			return nil, ArErr{}
 		},

@@ -10,8 +10,8 @@ var Args = os.Args[1:]
 
 type stack = []ArObject
 
-const VERSION = "3.0.7"
-const VERSION_NUM = 5
+const VERSION = "3.0.8a"
+const VERSION_NUM = 6
 
 func newscope() ArObject {
 	return Map(anymap{})

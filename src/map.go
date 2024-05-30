@@ -273,6 +273,54 @@ func Map(m anymap) ArObject {
 					return nil, ArErr{}
 				},
 			},
+			"__deleteindex__": builtinFunc{
+				"__deleteindex__",
+				func(args ...any) (any, ArErr) {
+					if len(args) != 1 {
+						return nil, ArErr{
+							TYPE:    "Type Error",
+							message: "expected 1 argument, got " + fmt.Sprint(len(args)),
+							EXISTS:  true,
+						}
+					}
+					if isUnhashable(args[0]) {
+						return nil, ArErr{
+							TYPE:    "Runtime Error",
+							message: "unhashable type: " + typeof(args[0]),
+							EXISTS:  true,
+						}
+					}
+					key := ArValidToAny(args[0])
+					mutex.RLock()
+					if _, ok := m[key]; !ok {
+						mutex.RUnlock()
+						return nil, ArErr{
+							TYPE:    "KeyError",
+							message: "key " + fmt.Sprint(key) + " not found",
+							EXISTS:  true,
+						}
+					}
+					mutex.RUnlock()
+					listenersMutex.RLock()
+					if _, ok := listeners[key]; ok {
+						for _, v := range listeners[key] {
+							runCall(
+								call{
+									Callable: v,
+									Args:     []any{},
+								},
+								stack{},
+								0,
+							)
+						}
+					}
+					listenersMutex.RUnlock()
+					mutex.Lock()
+					delete(m, key)
+					mutex.Unlock()
+					return nil, ArErr{}
+				},
+			},
 			"__getindex__": builtinFunc{
 				"__getindex__",
 				func(args ...any) (any, ArErr) {
@@ -457,6 +505,7 @@ func Map(m anymap) ArObject {
 			return ArArray(keys), ArErr{}
 		},
 	}
+
 	obj.obj["__Boolean__"] = builtinFunc{
 		"__Boolean__",
 		func(args ...any) (any, ArErr) {

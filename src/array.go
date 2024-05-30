@@ -23,7 +23,6 @@ func ArArray(arr []any) ArObject {
 		anymap{
 			"__name__":  "array",
 			"__value__": arr,
-			"length":    newNumber().SetUint64(uint64(len(arr))),
 		},
 	}
 	val.obj["__setindex__"] = builtinFunc{
@@ -68,8 +67,18 @@ func ArArray(arr []any) ArObject {
 			// a[0] is start
 			// a[1] is end
 			// a[2] is step
-			if len(a) > 3 {
+			if len(a) > 3 || len(a) == 0 {
 				return nil, ArErr{"Type Error", "expected 1 to 3 arguments, got " + fmt.Sprint(len(a)), 0, "", "", true}
+			}
+			{
+				if len(a) == 1 {
+					if typeof(a[0]) == "string" {
+						var name = ArValidToAny(a[0]).(string)
+						if name == "length" {
+							return newNumber().SetInt64(int64(len(arr))), ArErr{}
+						}
+					}
+				}
 			}
 			var (
 				start int = 0
@@ -183,7 +192,6 @@ func ArArray(arr []any) ArObject {
 				}
 			}
 			arr = append(arr[:num], arr[num+1:]...)
-			val.obj["length"] = newNumber().SetUint64(uint64(len(arr)))
 			val.obj["__value__"] = arr
 			return nil, ArErr{}
 		}}
@@ -198,7 +206,6 @@ func ArArray(arr []any) ArObject {
 				}
 			}
 			arr = append(arr, args...)
-			val.obj["length"] = newNumber().SetUint64(uint64(len(arr)))
 			val.obj["__value__"] = arr
 			return nil, ArErr{}
 		},
@@ -236,7 +243,6 @@ func ArArray(arr []any) ArObject {
 				}
 			}
 			arr = append(arr[:num], append(args[1:], arr[num:]...)...)
-			val.obj["length"] = newNumber().SetUint64(uint64(len(arr)))
 			val.obj["__value__"] = arr
 			return nil, ArErr{}
 		},
@@ -276,13 +282,11 @@ func ArArray(arr []any) ArObject {
 				}
 				v := arr[num]
 				arr = append(arr[:num], arr[num+1:]...)
-				val.obj["length"] = newNumber().SetUint64(uint64(len(arr)))
 				val.obj["__value__"] = arr
 				return v, ArErr{}
 			}
 			v := arr[len(arr)-1]
 			arr = arr[:len(arr)-1]
-			val.obj["length"] = newNumber().SetUint64(uint64(len(arr)))
 			val.obj["__value__"] = arr
 			return v, ArErr{}
 		},
@@ -298,7 +302,6 @@ func ArArray(arr []any) ArObject {
 				}
 			}
 			arr = []any{}
-			val.obj["length"] = newNumber().SetUint64(uint64(len(arr)))
 			val.obj["__value__"] = arr
 			return nil, ArErr{}
 		},
@@ -321,7 +324,6 @@ func ArArray(arr []any) ArObject {
 				}
 			}
 			arr = append(arr, args[0].(ArObject).obj["__value__"].([]any)...)
-			val.obj["length"] = newNumber().SetUint64(uint64(len(arr)))
 			val.obj["__value__"] = arr
 			return nil, ArErr{}
 		},
@@ -370,7 +372,6 @@ func ArArray(arr []any) ArObject {
 					}
 				}
 				arr = output
-				val.obj["length"] = newNumber().SetUint64(uint64(len(arr)))
 				val.obj["__value__"] = arr
 				return nil, ArErr{}
 			}
@@ -386,7 +387,6 @@ func ArArray(arr []any) ArObject {
 				}
 			}
 			arr = output
-			val.obj["length"] = newNumber().SetUint64(uint64(len(arr)))
 			val.obj["__value__"] = arr
 			return nil, ArErr{}
 		},

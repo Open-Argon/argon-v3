@@ -86,7 +86,6 @@ func ArBuffer(buf []byte) ArObject {
 		obj: anymap{
 			"__name__":  "buffer",
 			"__value__": buf,
-			"length":    newNumber().SetInt64(int64(len(buf))),
 		},
 	}
 	obj.obj["__string__"] = builtinFunc{
@@ -147,7 +146,6 @@ func ArBuffer(buf []byte) ArObject {
 				}
 			}
 			obj.obj["__value__"] = buf
-			obj.obj["length"] = newNumber().SetInt64(int64(len(buf)))
 			return obj, ArErr{}
 		},
 	}
@@ -390,7 +388,6 @@ func ArBuffer(buf []byte) ArObject {
 				}
 			}
 			obj.obj["__value__"] = buf
-			obj.obj["length"] = newNumber().SetInt64(int64(len(buf)))
 			return obj, ArErr{}
 		},
 	}
@@ -464,8 +461,54 @@ func ArBuffer(buf []byte) ArObject {
 				}
 			}
 			obj.obj["__value__"] = buf
-			obj.obj["length"] = newNumber().SetInt64(int64(len(buf)))
 			return obj, ArErr{}
+		},
+	}
+	obj.obj["__getindex__"] = builtinFunc{
+		"__getindex__",
+		func(a ...any) (any, ArErr) {
+			if len(a) != 1 {
+				return nil, ArErr{
+					TYPE:    "Type Error",
+					message: "expected 1 argument, got " + fmt.Sprint(len(a)),
+					EXISTS:  true,
+				}
+			}
+			{
+				if len(a) == 1 {
+					if typeof(a[0]) == "string" {
+						var name = ArValidToAny(a[0]).(string)
+						if name == "length" {
+							return newNumber().SetInt64(int64(len(buf))), ArErr{}
+						}
+					}
+				}
+			}
+			poss := ArValidToAny(a[0])
+			if typeof(poss) != "number" {
+				return nil, ArErr{
+					TYPE:    "Type Error",
+					message: "expected number, got " + typeof(poss),
+					EXISTS:  true,
+				}
+			}
+			pos := poss.(number)
+			if pos.Denom().Cmp(one.Denom()) != 0 {
+				return nil, ArErr{
+					TYPE:    "Type Error",
+					message: "position must be an integer",
+					EXISTS:  true,
+				}
+			}
+			posNum := pos.Num().Int64()
+			if posNum < 0 || posNum >= int64(len(buf)) {
+				return nil, ArErr{
+					TYPE:    "Index Error",
+					message: "index out of range",
+					EXISTS:  true,
+				}
+			}
+			return ArByte(buf[posNum]), ArErr{}
 		},
 	}
 	obj.obj["remove"] = builtinFunc{
@@ -497,7 +540,6 @@ func ArBuffer(buf []byte) ArObject {
 			posNum := pos.Num().Int64()
 			buf = append(buf[:posNum], buf[posNum+1:]...)
 			obj.obj["__value__"] = buf
-			obj.obj["length"] = newNumber().SetInt64(int64(len(buf)))
 			return obj, ArErr{}
 		},
 	}
