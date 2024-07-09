@@ -5,6 +5,8 @@ import (
 	"fmt"
 )
 
+var one = newNumber().SetInt64(1)
+
 func ArByte(Byte byte) ArObject {
 	obj := ArObject{
 		obj: anymap{

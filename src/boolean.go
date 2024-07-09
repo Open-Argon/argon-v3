@@ -8,8 +8,6 @@ func anyToBool(x any) bool {
 	switch x := x.(type) {
 	case string:
 		return x != ""
-	case number:
-		return x.Cmp(newNumber()) != 0
 	case bool:
 		return x
 	case nil:

@@ -56,30 +56,30 @@ func runVal(line any, stack stack, stacklevel int) (any, ArErr) {
 			break
 		}
 		return setVariableValue(x, stack, stacklevel+1)
-	case negative:
-		if stackoverflow {
-			linenum = x.line
-			path = x.path
-			code = x.code
-			break
-		}
-		resp, err := runVal(x.VAL, stack, stacklevel+1)
-		resp = AnyToArValid(resp)
-		if err.EXISTS {
-			return nil, err
-		}
-		switch y := resp.(type) {
-		case number:
-			if !x.sign {
-				return newNumber().Neg(y), ArErr{}
-			}
-			return y, ArErr{}
-		}
-		return nil, ArErr{
-			TYPE:    "Type Error",
-			message: "cannot negate a non-number",
-			EXISTS:  true,
-		}
+	// case negative:
+	// 	if stackoverflow {
+	// 		linenum = x.line
+	// 		path = x.path
+	// 		code = x.code
+	// 		break
+	// 	}
+	// 	resp, err := runVal(x.VAL, stack, stacklevel+1)
+	// 	resp = AnyToArValid(resp)
+	// 	if err.EXISTS {
+	// 		return nil, err
+	// 	}
+	// 	switch y := resp.(type) {
+	// 	case compiledNumber:
+	// 		if !x.sign {
+	// 			return Number(compiledNumber{new(big.Rat).Neg(y)}), ArErr{}
+	// 		}
+	// 		return y, ArErr{}
+	// 	}
+	// 	return nil, ArErr{
+	// 		TYPE:    "Type Error",
+	// 		message: "cannot negate a non-number",
+	// 		EXISTS:  true,
+	// 	}
 	case operationType:
 		if stackoverflow {
 			linenum = x.line
@@ -208,7 +208,9 @@ func runVal(line any, stack stack, stacklevel int) (any, ArErr) {
 			break
 		}
 		return runTryCatch(x, stack, stacklevel+1)
-	case bool, ArObject, number, nil, Callable, builtinFunc, anymap:
+	case compiledNumber:
+		return Number(x), ArErr{}
+	case bool, ArObject, nil, Callable, builtinFunc, anymap:
 		return x, ArErr{}
 	}
 	if stackoverflow {

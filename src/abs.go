@@ -40,38 +40,28 @@ func parseAbs(code UNPARSEcode, index int, codelines []UNPARSEcode) (any, bool, 
 }
 
 func runAbs(x ABS, stack stack, stacklevel int) (any, ArErr) {
-	resp, err := runVal(x.body, stack, stacklevel+1)
+	value, err := runVal(x, stack, stacklevel+1)
 	if err.EXISTS {
 		return nil, err
 	}
-	if typeof(resp) != "number" {
-		return nil, ArErr{TYPE: "Runtime Error",
-			message: fmt.Sprintf("abs expected number, got %s", typeof(resp)),
-			EXISTS:  true,
+	switch value := value.(type) {
+	case ArObject:
+		if Callable, ok := value.obj["__abs__"]; ok {
+			return runCall(call{
+				Callable: Callable,
+				Args:     []any{},
+				Code:     x.code,
+				Line:     x.line,
+				Path:     x.path,
+			}, stack, stacklevel)
 		}
 	}
-	return abs(resp.(number)), ArErr{}
+	return nil, ArErr{
+		"TypeError",
+		fmt.Sprint("abs() not supported on ", typeof(value)),
+		x.line,
+		x.path,
+		x.code,
+		true,
+	}
 }
-
-func abs(x number) number {
-	if x.Sign() < 0 {
-		return x.Neg(x)
-	}
-	return x
-}
-
-var ArAbs = builtinFunc{"abs", func(args ...any) (any, ArErr) {
-	if len(args) != 1 {
-		return nil, ArErr{TYPE: "Runtime Error",
-			message: fmt.Sprintf("abs expected 1 argument, got %d", len(args)),
-			EXISTS:  true,
-		}
-	}
-	if typeof(args[0]) != "number" {
-		return nil, ArErr{TYPE: "Runtime Error",
-			message: fmt.Sprintf("abs expected number, got %s", typeof(args[0])),
-			EXISTS:  true,
-		}
-	}
-	return abs(args[0].(number)), ArErr{}
-}}

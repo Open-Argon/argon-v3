@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"math"
 	"sort"
 	"strconv"
 	"strings"
@@ -40,23 +39,6 @@ func anyToArgon(x any, quote bool, simplify bool, depth int, indent int, colored
 		} else {
 			output = append(output, quoted)
 		}
-	case number:
-		if colored {
-			output = append(output, "\x1b[34;5;240m")
-		}
-		num, _ := x.Float64()
-		if math.IsNaN(num) {
-			output = append(output, "NaN")
-		} else if math.IsInf(num, 1) {
-			output = append(output, "infinity")
-		} else if math.IsInf(num, -1) {
-			output = append(output, "-infinity")
-		} else {
-			output = append(output, numberToString(x, simplify))
-		}
-		if colored {
-			output = append(output, "\x1b[0m")
-		}
 	case bool:
 		if colored {
 			output = append(output, "\x1b[35;5;240m")
@@ -91,7 +73,7 @@ func anyToArgon(x any, quote bool, simplify bool, depth int, indent int, colored
 			val, err := runCall(
 				call{
 					Callable: callable,
-					Args:     []any{},
+					Args:     []any{colored},
 				},
 				stack{},
 				0,

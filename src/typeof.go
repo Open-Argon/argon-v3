@@ -2,8 +2,6 @@ package main
 
 func typeof(val any) string {
 	switch x := val.(type) {
-	case number:
-		return "number"
 	case nil:
 		return "null"
 	case bool:

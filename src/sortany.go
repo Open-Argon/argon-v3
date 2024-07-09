@@ -58,9 +58,7 @@ func getkeyCache(getKey func(any) (any, ArErr), key any) (any, ArErr) {
 }
 
 func compare(a, b any) (bool, error) {
-	if isAnyNumber(a) && isAnyNumber(b) {
-		return a.(number).Cmp(b.(number)) < 0, nil
-	} else if x, ok := a.(ArObject); ok {
+	if x, ok := a.(ArObject); ok {
 		if y, ok := x.obj["__LessThan__"]; ok {
 			resp, err := runCall(
 				call{

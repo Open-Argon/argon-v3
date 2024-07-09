@@ -35,7 +35,8 @@ func debugInit() {
 }
 
 func debugPrintln(a ...any) {
-	if debug {
+	switch debug {
+	case true:
 		__debugPrintsLock.Lock()
 		__debugPrints = append(__debugPrints, a)
 		__debugPrintsLock.Unlock()

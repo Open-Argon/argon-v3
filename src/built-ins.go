@@ -193,7 +193,6 @@ func makeGlobal() ArObject {
 	vars["todeg"] = ArToDeg
 	vars["colour"] = ArColour
 	vars["torad"] = ArToRad
-	vars["abs"] = ArAbs
 	vars["fraction"] = builtinFunc{"fraction", func(a ...any) (any, ArErr) {
 		if len(a) == 0 {
 			return nil, ArErr{TYPE: "fraction", message: "fraction takes 1 argument",
