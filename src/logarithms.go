@@ -15,9 +15,6 @@ func Ln(x number) number {
 	n1, _ := x.Float64()
 	n2, _ := output.Float64()
 	output = newNumber().SetFloat64(math.Pow(n1, n2))
-	if output == nil {
-		output = infinity
-	}
 	output.Sub(output, newNumber().SetInt64(1))
 	output.Mul(output, N)
 	return output

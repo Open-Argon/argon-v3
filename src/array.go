@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math/big"
 	"strings"
 )
 
@@ -25,6 +26,48 @@ func ArArray(arr []any) ArObject {
 			"__value__": arr,
 		},
 	}
+	val.obj["__json__"] = builtinFunc{
+		"__json__",
+		func(args ...any) (any, ArErr) {
+			if len(args) != 1 {
+				return "", ArErr{
+					TYPE:    "Type Error",
+					message: "expected 1 argument, got " + fmt.Sprint(len(args)),
+					EXISTS:  true,
+				}
+			}
+			if typeof(args[0]) != "number" {
+				return "", ArErr{
+					TYPE:    "Type Error",
+					message: "expected number, got " + typeof(args[0]),
+					EXISTS:  true,
+				}
+			}
+
+			output := []string{}
+
+			level, err := numberToInt64(args[0].(ArObject))
+			if err != nil {
+				return "", ArErr{
+					TYPE:    "Runtime Error",
+					message: err.Error(),
+					EXISTS:  true,
+				}
+			}
+			for _, value := range arr {
+				str, err := jsonstringify(value, level+1)
+				if err != nil {
+					return "", ArErr{
+						TYPE:    "Runtime Error",
+						message: err.Error(),
+						EXISTS:  true,
+					}
+				}
+				output = append(output, str)
+			}
+			return "[" + strings.Join(output, ", ") + "]", ArErr{}
+		},
+	}
 	val.obj["__setindex__"] = builtinFunc{
 		"__setindex__",
 		func(a ...any) (any, ArErr) {
@@ -42,14 +85,22 @@ func ArArray(arr []any) ArObject {
 					EXISTS:  true,
 				}
 			}
-			if !a[0].(number).IsInt() {
+			if !isNumberInt(a[0].(ArObject)) {
 				return nil, ArErr{
 					TYPE:    "Type Error",
 					message: "index must be an integer",
 					EXISTS:  true,
 				}
 			}
-			num := int(a[0].(number).Num().Int64())
+			num64, err := numberToInt64(a[0].(ArObject))
+			if err != nil {
+				return nil, ArErr{
+					TYPE:    "Runtime Error",
+					message: err.Error(),
+					EXISTS:  true,
+				}
+			}
+			num := int(num64)
 			if num < 0 || num >= len(arr) {
 				return nil, ArErr{
 					TYPE:    "Index Error",
@@ -75,7 +126,7 @@ func ArArray(arr []any) ArObject {
 					if typeof(a[0]) == "string" {
 						var name = ArValidToAny(a[0]).(string)
 						if name == "length" {
-							return newNumber().SetInt64(int64(len(arr))), ArErr{}
+							return Number(compiledNumber{big.NewInt(int64(len(arr)))}), ArErr{}
 						}
 					}
 				}
@@ -88,40 +139,64 @@ func ArArray(arr []any) ArObject {
 			{
 				if a[0] == nil {
 					start = 0
-				} else if typeof(a[0]) != "number" || !a[0].(number).IsInt() {
+				} else if typeof(a[0]) != "number" || !isNumberInt(a[0].(ArObject)) {
 					return "", ArErr{
 						TYPE:    "Type Error",
 						message: "slice index must be an integer",
 						EXISTS:  true,
 					}
 				} else {
-					start = int(a[0].(number).Num().Int64())
+					start64, err := numberToInt64(a[0].(ArObject))
+					if err != nil {
+						return "", ArErr{
+							TYPE:    "Runtime Error",
+							message: err.Error(),
+							EXISTS:  true,
+						}
+					}
+					start = int(start64)
 				}
 			}
 			if len(a) > 1 {
 				if a[1] == nil {
 					end = len(arr)
-				} else if typeof(a[1]) != "number" || !a[1].(number).IsInt() {
+				} else if typeof(a[1]) != "number" || !isNumberInt(a[1].(ArObject)) {
 					return "", ArErr{
 						TYPE:    "Type Error",
 						message: "slice index must be an integer",
 						EXISTS:  true,
 					}
 				} else {
-					end = int(a[1].(number).Num().Int64())
+					end64, err := numberToInt64(a[1].(ArObject))
+					if err != nil {
+						return "", ArErr{
+							TYPE:    "Runtime Error",
+							message: err.Error(),
+							EXISTS:  true,
+						}
+					}
+					end = int(end64)
 				}
 			}
 			if len(a) > 2 {
 				if a[2] == nil {
 					step = 1
-				} else if typeof(a[2]) != "number" || !a[2].(number).IsInt() {
+				} else if typeof(a[2]) != "number" || !isNumberInt(a[2].(ArObject)) {
 					return "", ArErr{
 						TYPE:    "Type Error",
 						message: "slice index must be an integer",
 						EXISTS:  true,
 					}
 				} else {
-					step = int(a[2].(number).Num().Int64())
+					step64, err := numberToInt64(a[2].(ArObject))
+					if err != nil {
+						return "", ArErr{
+							TYPE:    "Runtime Error",
+							message: err.Error(),
+							EXISTS:  true,
+						}
+					}
+					step = int(step64)
 				}
 			}
 			var ogStart = start
@@ -176,14 +251,22 @@ func ArArray(arr []any) ArObject {
 					EXISTS:  true,
 				}
 			}
-			if !args[0].(number).IsInt() {
+			if !isNumberInt(args[0].(ArObject)) {
 				return nil, ArErr{
 					TYPE:    "Type Error",
 					message: "argument must be an integer",
 					EXISTS:  true,
 				}
 			}
-			num := int(args[0].(number).Num().Int64())
+			num64, err := (numberToInt64(args[0].(ArObject)))
+			if err != nil {
+				return nil, ArErr{
+					TYPE:    "Runtime Error",
+					message: err.Error(),
+					EXISTS:  true,
+				}
+			}
+			num := int(num64)
 			if num < 0 || num >= len(arr) {
 				return nil, ArErr{
 					TYPE:    "Index Error",
@@ -227,14 +310,22 @@ func ArArray(arr []any) ArObject {
 					EXISTS:  true,
 				}
 			}
-			if !args[0].(number).IsInt() {
+			if !isNumberInt(args[0].(ArObject)) {
 				return nil, ArErr{
 					TYPE:    "Type Error",
 					message: "argument must be an integer",
 					EXISTS:  true,
 				}
 			}
-			num := int(args[0].(number).Num().Int64())
+			num64, err := numberToInt64(args[0].(ArObject))
+			if err != nil {
+				return nil, ArErr{
+					TYPE:    "Runtime Error",
+					message: err.Error(),
+					EXISTS:  true,
+				}
+			}
+			num := int(num64)
 			if num < 0 || num > len(arr) {
 				return nil, ArErr{
 					TYPE:    "Index Error",
@@ -265,14 +356,22 @@ func ArArray(arr []any) ArObject {
 						EXISTS:  true,
 					}
 				}
-				if !args[0].(number).IsInt() {
+				if !isNumberInt(args[0].(ArObject)) {
 					return nil, ArErr{
 						TYPE:    "Type Error",
 						message: "argument must be an integer",
 						EXISTS:  true,
 					}
 				}
-				num := int(args[0].(number).Num().Int64())
+				num64, err := (numberToInt64(args[0].(ArObject)))
+				if err != nil {
+					return nil, ArErr{
+						TYPE:    "Runtime Error",
+						message: err.Error(),
+						EXISTS:  true,
+					}
+				}
+				num := int(num64)
 				if num < 0 || num >= len(arr) {
 					return nil, ArErr{
 						TYPE:    "Index Error",

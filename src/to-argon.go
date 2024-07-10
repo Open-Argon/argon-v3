@@ -10,7 +10,7 @@ import (
 	"github.com/jwalton/go-supportscolor"
 )
 
-func anyToArgon(x any, quote bool, simplify bool, depth int, indent int, colored bool, plain int) string {
+func anyToArgon(x any, representive bool, simplify bool, depth int, indent int, colored bool, plain int) string {
 	output := []string{}
 	maybenewline := ""
 	if plain == 1 {
@@ -28,17 +28,6 @@ func anyToArgon(x any, quote bool, simplify bool, depth int, indent int, colored
 		return strings.Join(output, "")
 	}
 	switch x := x.(type) {
-	case string:
-		if !quote {
-			output = append(output, x)
-			break
-		}
-		quoted := strconv.Quote(x)
-		if colored {
-			output = append(output, color.New(33).Sprint(quoted))
-		} else {
-			output = append(output, quoted)
-		}
 	case bool:
 		if colored {
 			output = append(output, "\x1b[35;5;240m")
@@ -56,7 +45,7 @@ func anyToArgon(x any, quote bool, simplify bool, depth int, indent int, colored
 			output = append(output, "\x1b[0m")
 		}
 	case ArObject:
-		if callable, ok := x.obj["__string__"]; ok && !quote {
+		if callable, ok := x.obj["__string__"]; ok && !representive {
 			val, err := runCall(
 				call{
 					Callable: callable,
@@ -66,7 +55,7 @@ func anyToArgon(x any, quote bool, simplify bool, depth int, indent int, colored
 				0,
 			)
 			if !err.EXISTS {
-				output = append(output, anyToArgon(val, false, simplify, depth, indent, colored, plain))
+				output = append(output, fmt.Sprint(ArValidToAny(val)))
 				break
 			}
 		} else if callable, ok := x.obj["__repr__"]; ok {
@@ -79,11 +68,11 @@ func anyToArgon(x any, quote bool, simplify bool, depth int, indent int, colored
 				0,
 			)
 			if !err.EXISTS {
-				output = append(output, anyToArgon(val, false, simplify, depth, indent, colored, plain))
+				output = append(output, fmt.Sprint(ArValidToAny(val)))
 				break
 			}
 		} else if val, ok := x.obj["__value__"]; ok {
-			output = append(output, anyToArgon(val, quote, simplify, depth, indent, colored, plain))
+			output = append(output, anyToArgon(val, representive, simplify, depth, indent, colored, plain))
 			break
 		}
 		output = append(output, "<object>")

@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/fatih/color"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
@@ -65,6 +66,32 @@ func ArString(str string) ArObject {
 		anymap{
 			"__value__": str,
 			"__name__":  "string",
+		},
+	}
+
+	obj.obj["__string__"] = builtinFunc{
+		"__string__",
+		func(a ...any) (any, ArErr) {
+			return str, ArErr{}
+		}}
+	obj.obj["__repr__"] = builtinFunc{
+		"__repr__",
+		func(a ...any) (any, ArErr) {
+			colored := false
+			if len(a) == 1 {
+				if typeof(a[0]) != "boolean" {
+					return nil, ArErr{"Type Error", "expected boolean, got " + typeof(a[0]), 0, "", "", true}
+				}
+				colored = a[0].(bool)
+			}
+			output := []string{}
+			quoted := strconv.Quote(str)
+			if colored {
+				output = append(output, color.New(33).Sprint(quoted))
+			} else {
+				output = append(output, quoted)
+			}
+			return ArString(strings.Join(output, "")), ArErr{}
 		},
 	}
 

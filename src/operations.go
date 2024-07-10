@@ -431,6 +431,22 @@ func calcMul(o operationType, stack stack, stacklevel int) (any, ArErr) {
 				}
 			}
 		}
+		if x, ok := resp.(ArObject); ok {
+			if y, ok := x.obj["__PostMultiply__"]; ok {
+				val, err := runCall(
+					call{
+						y,
+						[]any{output},
+						o.code,
+						o.line,
+						o.path,
+					}, stack, stacklevel+1)
+				if !err.EXISTS {
+					output = val
+					continue
+				}
+			}
+		}
 		return nil, ArErr{
 			"Runtime Error",
 			"Cannot multiply type '" + typeof(resp) + "'",

@@ -23,7 +23,7 @@ func main() {
 	if !debug {
 		defer func() {
 			if r := recover(); r != nil {
-				fmt.Println("There was a fundamental error in argon v3 that caused it to crash.")
+				fmt.Println("There was a fundamental error in argon v" + VERSION + " that caused it to crash.")
 				fmt.Println()
 				fmt.Println("website:", website)
 				fmt.Println("docs:", docs)

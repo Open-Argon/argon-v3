@@ -76,12 +76,13 @@ func parseVariable(code UNPARSEcode) (accessVariable, bool, ArErr, int) {
 }
 
 func readVariable(v accessVariable, stack stack) (any, ArErr) {
+	name := ArString(v.Name)
 	for i := len(stack) - 1; i >= 0; i-- {
 		callable, ok := stack[i].obj["__Contains__"]
 		if !ok {
 			continue
 		}
-		contains, err := builtinCall(callable, []any{v.Name})
+		contains, err := builtinCall(callable, []any{name})
 		if err.EXISTS {
 			return nil, err
 		}
@@ -90,7 +91,7 @@ func readVariable(v accessVariable, stack stack) (any, ArErr) {
 			if !ok {
 				continue
 			}
-			return builtinCall(callable, []any{v.Name})
+			return builtinCall(callable, []any{name})
 		}
 	}
 	return nil, ArErr{"Name Error", "variable \"" + v.Name + "\" does not exist", v.Line, v.Path, v.Code, true}
@@ -159,7 +160,7 @@ func parseSetVariable(code UNPARSEcode, index int, lines []UNPARSEcode, isLine i
 		params = x.params
 		toset = x.toset
 		if toset == nil {
-			return setVariable{}, false, ArErr{"Type Error", "can't set for non variable, did you mean to put 'let' before?", code.line, code.path, code.realcode, true}, 1
+			return setVariable{}, false, ArErr{"Type Error", "can't set for non variable, did you mean '=='?", code.line, code.path, code.realcode, true}, 1
 		}
 	default:
 		return setVariable{}, false, ArErr{"Type Error", "can't set for non variable, did you mean '=='?", code.line, code.path, code.realcode, true}, 1
@@ -223,7 +224,7 @@ func parseAutoAsignVariable(code UNPARSEcode, index int, lines []UNPARSEcode, is
 			toset = x.toset
 		default:
 			if i == len(equalsplit)-1 {
-				return setVariable{}, false, ArErr{"Type Error", "can't set for non variable, did you mean to put 'let' before?", code.line, code.path, code.realcode, true}, 1
+				return setVariable{}, false, ArErr{"Type Error", "can't set for non variable, did you mean '=='?", code.line, code.path, code.realcode, true}, 1
 			}
 			continue
 		}

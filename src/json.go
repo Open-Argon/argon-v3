@@ -3,9 +3,8 @@ package main
 import (
 	"encoding/json"
 	"errors"
-	"math"
+	"fmt"
 	"strconv"
-	"strings"
 )
 
 func convertToArgon(obj any) any {
@@ -24,7 +23,7 @@ func convertToArgon(obj any) any {
 	case string:
 		return ArString(x)
 	case float64:
-		return newNumber().SetFloat64(x)
+		return Number(compiledNumber{value: newNumber().SetFloat64(x)})
 	case bool:
 		return x
 	case nil:
@@ -36,48 +35,43 @@ func convertToArgon(obj any) any {
 func jsonparse(str string) (any, ArErr) {
 	var jsonMap any
 	var err = json.Unmarshal([]byte(str), &jsonMap)
-	if err != nil {return nil, ArErr{TYPE: "Runtime Error", message: err.Error(), EXISTS: true}}
+	if err != nil {
+		return nil, ArErr{TYPE: "Runtime Error", message: err.Error(), EXISTS: true}
+	}
 	return convertToArgon(jsonMap), ArErr{}
 }
 
-func jsonstringify(obj any, level int) (string, error) {
+func jsonstringify(obj any, level int64) (string, error) {
 	if level > 100 {
 		return "", errors.New("json stringify error: too many levels")
 	}
-	output := []string{}
-	obj = ArValidToAny(obj)
 	switch x := obj.(type) {
-	case anymap:
-		for key, value := range x {
-			str, err := jsonstringify(value, level+1)
-			if err != nil {
-				return "", err
+	case ArObject:
+		if callable, ok := x.obj["__json__"]; ok {
+			val, err := runCall(
+				call{
+					Callable: callable,
+					Args:     []any{Int64ToNumber(level)},
+				},
+				stack{},
+				0,
+			)
+			if err.EXISTS {
+				return "", errors.New(err.message)
 			}
-			output = append(output, ""+strconv.Quote(anyToArgon(key, false, true, 3, 0, false, 0))+": "+str)
-		}
-		return "{" + strings.Join(output, ", ") + "}", nil
-	case []any:
-		for _, value := range x {
-			str, err := jsonstringify(value, level+1)
-			if err != nil {
-				return "", err
+			val = ArValidToAny(val)
+			if x, ok := val.(string); ok {
+				return x, nil
+			} else {
+				return "", errors.New("json stringify error: __json__ must return a string")
 			}
-			output = append(output, str)
 		}
-		return "[" + strings.Join(output, ", ") + "]", nil
-	case string:
-		return strconv.Quote(x), nil
-	case number:
-		num, _ := x.Float64()
-		if math.IsNaN(num) || math.IsInf(num, 0) {
-			return "null", nil
-		}
-		return numberToString(x, false), nil
 	case bool:
 		return strconv.FormatBool(x), nil
 	case nil:
 		return "null", nil
 	}
+	fmt.Println(level)
 	err := errors.New("Cannot stringify '" + typeof(obj) + "'")
 	return "", err
 }
@@ -94,10 +88,21 @@ var ArJSON = Map(anymap{
 		return jsonparse(args[0].(string))
 	}},
 	"stringify": builtinFunc{"stringify", func(args ...any) (any, ArErr) {
-		if len(args) == 0 {
-			return nil, ArErr{TYPE: "Runtime Error", message: "stringify takes 1 argument", EXISTS: true}
+		if len(args) != 1 && len(args) != 2 {
+			return nil, ArErr{TYPE: "Runtime Error", message: "stringify takes 1 or 2 arguments", EXISTS: true}
 		}
-		str, err := jsonstringify(args[0], 0)
+		var level int64 = 0
+		if len(args) == 2 {
+			if typeof(args[1]) != "number" {
+				return nil, ArErr{TYPE: "Runtime Error", message: "stringify takes a number not a '" + typeof(args[1]) + "'", EXISTS: true}
+			}
+			var err error
+			level, err = numberToInt64(args[1].(ArObject))
+			if err != nil {
+				return nil, ArErr{TYPE: "Runtime Error", message: err.Error(), EXISTS: true}
+			}
+		}
+		str, err := jsonstringify(args[0], level)
 		if err != nil {
 			return nil, ArErr{TYPE: "Runtime Error", message: err.Error(), EXISTS: true}
 		}

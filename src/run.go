@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math/big"
 	"reflect"
 )
 
@@ -210,6 +211,8 @@ func runVal(line any, stack stack, stacklevel int) (any, ArErr) {
 		return runTryCatch(x, stack, stacklevel+1)
 	case compiledNumber:
 		return Number(x), ArErr{}
+	case *big.Rat, *big.Int:
+		return Number(compiledNumber{x}), ArErr{}
 	case bool, ArObject, nil, Callable, builtinFunc, anymap:
 		return x, ArErr{}
 	}
@@ -224,6 +227,7 @@ func runVal(line any, stack stack, stacklevel int) (any, ArErr) {
 		}
 	}
 	fmt.Println("unreachable", reflect.TypeOf(line))
+	fmt.Println(line)
 	panic("unreachable")
 }
 

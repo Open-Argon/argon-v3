@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"strings"
 )
 
@@ -51,7 +52,7 @@ func parseForLoop(code UNPARSEcode, index int, codelines []UNPARSEcode) (forLoop
 			innertotalstep += stepstep - 1
 			stepval = stepval_
 		} else {
-			stepval = newNumber().SetInt64(1)
+			stepval = _one_Number
 		}
 		to := strings.TrimSpace(valsplit[0])
 		toval, worked, err, tostep := translateVal(UNPARSEcode{code: to, realcode: code.realcode, line: code.line, path: code.path}, index, codelines, 0)
@@ -83,7 +84,7 @@ func runForLoop(loop forLoop, stack stack, stacklevel int) (any, ArErr) {
 	if typeof(fromval) != "number" {
 		return nil, ArErr{"Type Error", "for loop from value must be a number", loop.line, loop.path, loop.code, true}
 	}
-	from := fromval.(number)
+	from := fromval.(ArObject)
 	toval, err := runVal(loop.to, stack, stacklevel+1)
 	if err.EXISTS {
 		return nil, err
@@ -91,7 +92,7 @@ func runForLoop(loop forLoop, stack stack, stacklevel int) (any, ArErr) {
 	if typeof(toval) != "number" {
 		return nil, ArErr{"Type Error", "for loop to value must be a number", loop.line, loop.path, loop.code, true}
 	}
-	to := toval.(number)
+	to := toval.(ArObject)
 	stepval, err := runVal(loop.step, stack, stacklevel+1)
 	if err.EXISTS {
 		return nil, err
@@ -99,10 +100,28 @@ func runForLoop(loop forLoop, stack stack, stacklevel int) (any, ArErr) {
 	if typeof(stepval) != "number" {
 		return nil, ArErr{"Type Error", "for loop step value must be a number", loop.line, loop.path, loop.code, true}
 	}
-	step := stepval.(number)
-	for i := newNumber().Set(from); i.Cmp(to) == -1; i = i.Add(i, step) {
+	i := from
+	step := stepval.(ArObject)
+	direction_obj, err := CompareObjects(step, _zero_Number)
+	if err.EXISTS {
+		return nil, err
+	}
+	currentDirection_obj, err := CompareObjects(to, i)
+	if err.EXISTS {
+		return nil, err
+	}
+	currentDirection, error := numberToInt64(currentDirection_obj)
+	if error != nil {
+		return nil, ArErr{"Type Error", error.Error(), loop.line, loop.path, loop.code, true}
+	}
+	direction, error := numberToInt64(direction_obj)
+	if error != nil {
+		return nil, ArErr{"Type Error", error.Error(), loop.line, loop.path, loop.code, true}
+	}
+	fmt.Println(currentDirection, direction)
+	for currentDirection == direction {
 		resp, err := runVal(loop.body, append(stack, Map(anymap{
-			loop.variable: newNumber().Set(i),
+			loop.variable: i,
 		})), stacklevel+1)
 		if err.EXISTS {
 			return nil, err
@@ -113,7 +132,22 @@ func runForLoop(loop forLoop, stack stack, stacklevel int) (any, ArErr) {
 		case Break:
 			return nil, ArErr{}
 		case Continue:
-			continue
+		}
+		i, err = AddObjects(i, step)
+		if err.EXISTS {
+			return nil, err
+		}
+		currentDirection_obj, err = CompareObjects(to, i)
+		if err.EXISTS {
+			return nil, err
+		}
+		currentDirection, error = numberToInt64(currentDirection_obj)
+		if error != nil {
+			return nil, ArErr{"Type Error", error.Error(), loop.line, loop.path, loop.code, true}
+		}
+		direction, error = numberToInt64(direction_obj)
+		if error != nil {
+			return nil, ArErr{"Type Error", error.Error(), loop.line, loop.path, loop.code, true}
 		}
 	}
 	return nil, ArErr{}

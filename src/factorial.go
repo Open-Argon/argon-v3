@@ -28,36 +28,26 @@ func isFactorial(code UNPARSEcode) bool {
 	return factorialCompiled.MatchString(code.code)
 }
 
-func fact(n number) number {
-	if n.Cmp(newNumber().SetInt64(1000)) >= 0 {
-		return infinity
-	} else if n.Cmp(newNumber().SetInt64(0)) == -1 {
-		return newNumber().SetInt64(0)
-	} else if n.Cmp(newNumber().SetInt64(0)) == 0 {
-		return newNumber().SetInt64(1)
-	}
-	result := newNumber().SetInt64(1)
-	for i := newNumber().SetInt64(2); i.Cmp(n) <= 0; i.Add(i, newNumber().SetInt64(1)) {
-		result.Mul(result, i)
-	}
-	return result
-}
-
 func runFactorial(f factorial, stack stack, stacklevel int) (any, ArErr) {
 	val, err := runVal(f.value, stack, stacklevel+1)
 	if err.EXISTS {
 		return nil, err
 	}
-	switch x := val.(type) {
-	case number:
-		if !x.IsInt() {
-			return nil, ArErr{"Runtime Error", "cannot use factorial on non-integer", f.line, f.path, f.code, true}
+	switch val := val.(type) {
+	case ArObject:
+		if callable, ok := val.obj["__factorial__"]; ok {
+			return runCall(call{
+				Callable: callable,
+				Args:     []any{},
+				Code:     f.code,
+				Line:     f.line,
+				Path:     f.path,
+			}, stack, stacklevel)
 		}
-		if x.Cmp(newNumber().SetInt64(0)) == -1 {
-			return nil, ArErr{"Runtime Error", "cannot use factorial on negative number", f.line, f.path, f.code, true}
-		}
-		return fact(x), ArErr{}
-	default:
-		return nil, ArErr{"Runtime Error", "cannot use factorial on non-number of type '" + typeof(val) + "'", f.line, f.path, f.code, true}
+	}
+	return nil, ArErr{
+		TYPE:    "TypeError",
+		message: "factorial not defined for type",
+		EXISTS:  true,
 	}
 }

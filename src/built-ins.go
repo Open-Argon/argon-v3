@@ -18,7 +18,6 @@ func makeGlobal() ArObject {
 		"server": builtinFunc{"server", ArSocketServer},
 		"client": builtinFunc{"client", ArSocketClient},
 	})
-	vars["infinity"] = infinity
 	vars["eval"] = builtinFunc{"eval", AReval}
 	vars["map"] = builtinFunc{"map", func(a ...any) (any, ArErr) {
 		if len(a) == 0 {
