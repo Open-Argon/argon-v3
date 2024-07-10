@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -100,8 +99,31 @@ func runForLoop(loop forLoop, stack stack, stacklevel int) (any, ArErr) {
 	if typeof(stepval) != "number" {
 		return nil, ArErr{"Type Error", "for loop step value must be a number", loop.line, loop.path, loop.code, true}
 	}
-	i := from
 	step := stepval.(ArObject)
+	if isNumberInt64(from) && isNumberInt64(to) && isNumberInt64(step) {
+		i, _ := numberToInt64(from)
+		to_, _ := numberToInt64(to)
+		step_, _ := numberToInt64(step)
+		layer := anymap{}
+		stacks := append(stack, Map(layer))
+		for i <= to_ {
+			layer[loop.variable] = Number(i)
+			resp, err := runVal(loop.body, stacks, stacklevel+1)
+			if err.EXISTS {
+				return nil, err
+			}
+			switch x := resp.(type) {
+			case Return:
+				return x, ArErr{}
+			case Break:
+				return nil, ArErr{}
+			case Continue:
+			}
+			i += step_
+		}
+		return nil, ArErr{}
+	}
+	i := from
 	direction_obj, err := CompareObjects(step, _zero_Number)
 	if err.EXISTS {
 		return nil, err
@@ -118,11 +140,11 @@ func runForLoop(loop forLoop, stack stack, stacklevel int) (any, ArErr) {
 	if error != nil {
 		return nil, ArErr{"Type Error", error.Error(), loop.line, loop.path, loop.code, true}
 	}
-	fmt.Println(currentDirection, direction)
+	layer := anymap{}
+	stacks := append(stack, Map(layer))
 	for currentDirection == direction {
-		resp, err := runVal(loop.body, append(stack, Map(anymap{
-			loop.variable: i,
-		})), stacklevel+1)
+		layer[loop.variable] = i
+		resp, err := runVal(loop.body, stacks, stacklevel+1)
 		if err.EXISTS {
 			return nil, err
 		}

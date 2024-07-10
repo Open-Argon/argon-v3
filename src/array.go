@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"math/big"
 	"strings"
 )
 
@@ -126,7 +125,7 @@ func ArArray(arr []any) ArObject {
 					if typeof(a[0]) == "string" {
 						var name = ArValidToAny(a[0]).(string)
 						if name == "length" {
-							return Number(compiledNumber{big.NewInt(int64(len(arr)))}), ArErr{}
+							return Number(len(arr)), ArErr{}
 						}
 					}
 				}

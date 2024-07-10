@@ -23,7 +23,7 @@ func convertToArgon(obj any) any {
 	case string:
 		return ArString(x)
 	case float64:
-		return Number(compiledNumber{value: newNumber().SetFloat64(x)})
+		return Number(x)
 	case bool:
 		return x
 	case nil:
