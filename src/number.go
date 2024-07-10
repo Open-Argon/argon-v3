@@ -380,7 +380,6 @@ func Number(number compiledNumber) ArObject {
 				return nil, ArErr{"Type Error", "expected number, got " + typeof(a[0]), 0, "", "", true}
 			},
 		}
-		val.obj
 
 	case *big.Rat:
 		val.obj["__string__"] = builtinFunc{
