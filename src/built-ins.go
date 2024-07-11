@@ -66,7 +66,7 @@ func makeGlobal() ArObject {
 		a[0] = ArValidToAny(a[0])
 		switch x := a[0].(type) {
 		case number:
-			if x.Denom().Cmp(one.Denom()) != 0 {
+			if x.Denom().Cmp(_one_Rat.Denom()) != 0 {
 				return nil, ArErr{TYPE: "Type Error", message: "Cannot convert non-integer to hex", EXISTS: true}
 			}
 			n := x.Num().Int64()

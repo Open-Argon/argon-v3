@@ -6,8 +6,6 @@ import (
 	"fmt"
 )
 
-var one = newNumber().SetInt64(1)
-
 func ArByte(Byte byte) ArObject {
 	obj := ArObject{
 		obj: anymap{
@@ -30,7 +28,7 @@ func ArByte(Byte byte) ArObject {
 	obj.obj["number"] = builtinFunc{
 		"number",
 		func(a ...any) (any, ArErr) {
-			return newNumber().SetInt64(int64(Byte)), ArErr{}
+			return Number(int64(Byte)), ArErr{}
 		},
 	}
 	obj.obj["from"] = builtinFunc{
@@ -114,16 +112,17 @@ func ArBuffer(buf []byte) ArObject {
 			case []any:
 				outputbuf := []byte{}
 				for _, v := range x {
-					switch y := v.(type) {
-					case number:
-						if y.Denom().Cmp(one.Denom()) != 0 {
+					V := ArValidToAny(v)
+					switch y := V.(type) {
+					case int64:
+						if y > 255 || y < 0 {
 							return nil, ArErr{
-								TYPE:    "Type Error",
-								message: "Cannot convert non-integer to byte",
+								TYPE:    "ValueError",
+								message: "expected number between 0 and 255, got " + fmt.Sprint(y),
 								EXISTS:  true,
 							}
 						}
-						outputbuf = append(outputbuf, byte(y.Num().Int64()))
+						outputbuf = append(outputbuf, byte(y))
 					default:
 						return nil, ArErr{
 							TYPE:    "Type Error",
@@ -171,15 +170,14 @@ func ArBuffer(buf []byte) ArObject {
 					EXISTS:  true,
 				}
 			}
-			nNum := nVal.(number)
-			if nNum.Denom().Cmp(one.Denom()) != 0 {
+			n, err := numberToInt64(nVal.(ArObject))
+			if err != nil {
 				return nil, ArErr{
 					TYPE:    "Type Error",
-					message: "expected integer, got " + fmt.Sprint(nNum),
+					message: err.Error(),
 					EXISTS:  true,
 				}
 			}
-			n := nNum.Num().Int64()
 			var result [][]byte
 			start := 0
 			var i int64
@@ -253,39 +251,37 @@ func ArBuffer(buf []byte) ArObject {
 					EXISTS:  true,
 				}
 			}
-			startVal := ArValidToAny(a[0])
-			if typeof(startVal) != "number" {
+			if typeof(a[0]) != "number" || typeof(a[1]) != "number" {
 				return nil, ArErr{
 					TYPE:    "Type Error",
-					message: "expected number, got " + typeof(startVal),
+					message: "expected number, got " + typeof(a[0]) + " and " + typeof(a[1]),
 					EXISTS:  true,
 				}
 			}
-			start := startVal.(number)
-			if start.Denom().Cmp(one.Denom()) != 0 {
+			start, err := numberToInt64(ArValidToAny(a[0]).(ArObject))
+			if err != nil {
 				return nil, ArErr{
 					TYPE:    "Type Error",
-					message: "expected integer, got " + fmt.Sprint(start),
+					message: err.Error(),
 					EXISTS:  true,
 				}
 			}
-			endVal := ArValidToAny(a[1])
-			if typeof(endVal) != "number" {
+			end, err := numberToInt64(ArValidToAny(a[1]).(ArObject))
+			if err != nil {
 				return nil, ArErr{
 					TYPE:    "Type Error",
-					message: "expected number, got " + typeof(endVal),
+					message: err.Error(),
 					EXISTS:  true,
 				}
 			}
-			end := endVal.(number)
-			if end.Denom().Cmp(one.Denom()) != 0 {
+			if start < 0 || end < 0 || start > int64(len(buf)) || end > int64(len(buf)) {
 				return nil, ArErr{
-					TYPE:    "Type Error",
-					message: "expected integer, got " + fmt.Sprint(end),
+					TYPE:    "Index Error",
+					message: "index out of range",
 					EXISTS:  true,
 				}
 			}
-			return ArBuffer(buf[floor(start).Num().Int64():floor(end).Num().Int64()]), ArErr{}
+			return ArBuffer(buf[start:end]), ArErr{}
 		},
 	}
 	obj.obj["to"] = builtinFunc{
@@ -342,15 +338,15 @@ func ArBuffer(buf []byte) ArObject {
 			}
 			a[0] = ArValidToAny(a[0])
 			switch x := a[0].(type) {
-			case number:
-				if x.Denom().Cmp(one.Denom()) != 0 {
+			case int64:
+				if x > 255 || x < 0 {
 					return nil, ArErr{
-						TYPE:    "Type Error",
-						message: "Cannot convert non-integer to byte",
+						TYPE:    "ValueError",
+						message: "expected number between 0 and 255, got " + fmt.Sprint(x),
 						EXISTS:  true,
 					}
 				}
-				buf = append(buf, byte(x.Num().Int64()))
+				buf = append(buf, byte(x))
 			case string:
 				buf = append(buf, []byte(x)...)
 			case []byte:
@@ -358,15 +354,15 @@ func ArBuffer(buf []byte) ArObject {
 			case []any:
 				for _, v := range x {
 					switch y := v.(type) {
-					case number:
-						if y.Denom().Cmp(one.Denom()) != 0 {
+					case int64:
+						if y > 255 || y < 0 {
 							return nil, ArErr{
-								TYPE:    "Type Error",
-								message: "Cannot convert non-integer to byte",
+								TYPE:    "ValueError",
+								message: "expected number between 0 and 255, got " + fmt.Sprint(y),
 								EXISTS:  true,
 							}
 						}
-						buf = append(buf, byte(y.Num().Int64()))
+						buf = append(buf, byte(y))
 					default:
 						return nil, ArErr{
 							TYPE:    "Type Error",
@@ -405,25 +401,24 @@ func ArBuffer(buf []byte) ArObject {
 					EXISTS:  true,
 				}
 			}
-			pos := poss.(number)
-			if pos.Denom().Cmp(one.Denom()) != 0 {
+			posNum, err := numberToInt64(poss.(ArObject))
+			if err != nil {
 				return nil, ArErr{
 					TYPE:    "Type Error",
-					message: "position must be an integer",
+					message: err.Error(),
 					EXISTS:  true,
 				}
 			}
-			posNum := pos.Num().Int64()
 			switch x := values.(type) {
-			case number:
-				if x.Denom().Cmp(one.Denom()) != 0 {
+			case int64:
+				if x > 255 || x < 0 {
 					return nil, ArErr{
-						TYPE:    "Type Error",
-						message: "Cannot convert non-integer to byte",
+						TYPE:    "ValueError",
+						message: "expected number between 0 and 255, got " + fmt.Sprint(x),
 						EXISTS:  true,
 					}
 				}
-				buf = append(buf[:posNum], append([]byte{byte(x.Num().Int64())}, buf[posNum:]...)...)
+				buf = append(buf[:posNum], append([]byte{byte(x)}, buf[posNum:]...)...)
 			case string:
 				buf = append(buf[:posNum], append([]byte(x), buf[posNum:]...)...)
 			case []byte:
@@ -431,15 +426,15 @@ func ArBuffer(buf []byte) ArObject {
 			case []any:
 				for _, v := range x {
 					switch y := v.(type) {
-					case number:
-						if y.Denom().Cmp(one.Denom()) != 0 {
+					case int64:
+						if y > 255 || y < 0 {
 							return nil, ArErr{
-								TYPE:    "Type Error",
-								message: "Cannot convert non-integer to byte",
+								TYPE:    "ValueError",
+								message: "expected number between 0 and 255, got " + fmt.Sprint(y),
 								EXISTS:  true,
 							}
 						}
-						buf = append(buf[:posNum], append([]byte{byte(y.Num().Int64())}, buf[posNum:]...)...)
+						buf = append(buf[:posNum], append([]byte{byte(y)}, buf[posNum:]...)...)
 					default:
 						return nil, ArErr{
 							TYPE:    "Type Error",
@@ -474,7 +469,7 @@ func ArBuffer(buf []byte) ArObject {
 					if typeof(a[0]) == "string" {
 						var name = ArValidToAny(a[0]).(string)
 						if name == "length" {
-							return newNumber().SetInt64(int64(len(buf))), ArErr{}
+							return Number(len(buf)), ArErr{}
 						}
 					}
 				}
@@ -523,15 +518,21 @@ func ArBuffer(buf []byte) ArObject {
 					EXISTS:  true,
 				}
 			}
-			pos := poss.(number)
-			if pos.Denom().Cmp(one.Denom()) != 0 {
+			posNum, err := numberToInt64(poss.(ArObject))
+			if err != nil {
 				return nil, ArErr{
 					TYPE:    "Type Error",
-					message: "position must be an integer",
+					message: err.Error(),
 					EXISTS:  true,
 				}
 			}
-			posNum := pos.Num().Int64()
+			if posNum < 0 || posNum >= int64(len(buf)) {
+				return nil, ArErr{
+					TYPE:    "Index Error",
+					message: "index out of range",
+					EXISTS:  true,
+				}
+			}
 			buf = append(buf[:posNum], buf[posNum+1:]...)
 			obj.obj["__value__"] = buf
 			return obj, ArErr{}

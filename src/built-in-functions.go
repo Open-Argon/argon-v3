@@ -19,7 +19,7 @@ func ArgonString(args ...any) (any, ArErr) {
 
 func ArgonNumber(args ...any) (any, ArErr) {
 	if len(args) == 0 {
-		return newNumber(), ArErr{}
+		return _zero_Number, ArErr{}
 	}
 	args[0] = ArValidToAny(args[0])
 	switch x := args[0].(type) {
@@ -27,17 +27,17 @@ func ArgonNumber(args ...any) (any, ArErr) {
 		if !isNumber(UNPARSEcode{code: x}) {
 			return nil, ArErr{TYPE: "Conversion Error", message: "Cannot convert " + anyToArgon(x, true, true, 3, 0, false, 0) + " to a number", EXISTS: true}
 		}
-		N, _ := newNumber().SetString(x)
+		N := Number(x)
 		return N, ArErr{}
-	case number:
-		return x, ArErr{}
+	case int64, *big.Int, *big.Rat:
+		return Number(x), ArErr{}
 	case bool:
 		if x {
-			return newNumber().SetInt64(1), ArErr{}
+			return _one_Number, ArErr{}
 		}
-		return newNumber(), ArErr{}
+		return _zero_Number, ArErr{}
 	case nil:
-		return newNumber(), ArErr{}
+		return _zero_Number, ArErr{}
 	}
 
 	return nil, ArErr{TYPE: "Number Error", message: "Cannot convert " + typeof(args[0]) + " to a number", EXISTS: true}

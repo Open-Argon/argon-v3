@@ -226,15 +226,16 @@ func ArSocketServer(args ...any) (any, ArErr) {
 		}
 	}
 	networktype := ArValidToAny(args[0]).(string)
-	port := args[1].(number)
-	if port.Denom().Int64() != 1 {
+	port_num := args[1].(ArObject)
+	port, err := numberToInt64(port_num)
+	if err != nil {
 		return ArObject{}, ArErr{
 			TYPE:    "Socket Error",
-			message: "Socket port must be an integer",
+			message: err.Error(),
 			EXISTS:  true,
 		}
 	}
-	ln, err := net.Listen(networktype, ":"+fmt.Sprint(port.Num().Int64()))
+	ln, err := net.Listen(networktype, ":"+fmt.Sprint(port))
 	if err != nil {
 		return ArObject{}, ArErr{
 			TYPE:    "Socket Error",

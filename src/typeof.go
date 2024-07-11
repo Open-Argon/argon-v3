@@ -8,8 +8,6 @@ func typeof(val any) string {
 		return "boolean"
 	case string:
 		return "string"
-	case number:
-		return "number"
 	case []any:
 		return "array"
 	case anymap:

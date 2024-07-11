@@ -577,7 +577,7 @@ func _BigInt_logic(val ArObject, CurrentNumber *big.Int) {
 				if ReceivingNumber.Cmp(_zero_Rat) == 0 {
 					return nil, ArErr{"Runtime Error", "division by zero", 0, "", "", true}
 				}
-				x := newNumber().Set(ReceivingNumber)
+				x := new(big.Rat).Set(ReceivingNumber)
 				output := new(big.Rat).SetInt(CurrentNumber)
 				x.Quo(output, x)
 				x = floor(x)
@@ -613,8 +613,8 @@ func _BigInt_logic(val ArObject, CurrentNumber *big.Int) {
 				if CurrentNumber.Cmp(_zero) == 0 {
 					return nil, ArErr{"Runtime Error", "division by zero", 0, "", "", true}
 				}
-				currentNumber_RAT := newNumber().SetInt(CurrentNumber)
-				x := newNumber().Set(currentNumber_RAT)
+				currentNumber_RAT := new(big.Rat).SetInt(CurrentNumber)
+				x := new(big.Rat).Set(currentNumber_RAT)
 				output := new(big.Rat).Set(ReceivingNumber)
 				x.Quo(output, x)
 				x = floor(x)
@@ -650,7 +650,7 @@ func _BigInt_logic(val ArObject, CurrentNumber *big.Int) {
 				if ReceivingNumber.Cmp(_zero_Rat) == 0 {
 					return nil, ArErr{"Runtime Error", "division by zero", 0, "", "", true}
 				}
-				x := newNumber().Set(ReceivingNumber)
+				x := new(big.Rat).Set(ReceivingNumber)
 				output := new(big.Rat).SetInt(CurrentNumber)
 				x.Quo(output, x)
 				x = floor(x)
@@ -685,8 +685,8 @@ func _BigInt_logic(val ArObject, CurrentNumber *big.Int) {
 				if CurrentNumber.Cmp(_zero) == 0 {
 					return nil, ArErr{"Runtime Error", "division by zero", 0, "", "", true}
 				}
-				currentNumber_RAT := newNumber().SetInt(CurrentNumber)
-				x := newNumber().Set(currentNumber_RAT)
+				currentNumber_RAT := new(big.Rat).SetInt(CurrentNumber)
+				x := new(big.Rat).Set(currentNumber_RAT)
 				output := new(big.Rat).Set(ReceivingNumber)
 				x.Quo(output, x)
 				x = floor(x)
@@ -1046,7 +1046,7 @@ func _BigRat_logic(val ArObject, CurrentNumber *big.Rat) {
 					return nil, ArErr{"Runtime Error", "division by zero", 0, "", "", true}
 				}
 				ReceivingNumber_RAT := new(big.Rat).SetInt(ReceivingNumber)
-				x := newNumber().Set(ReceivingNumber_RAT)
+				x := new(big.Rat).Set(ReceivingNumber_RAT)
 				output := new(big.Rat).Set(CurrentNumber)
 				x.Quo(output, x)
 				x = floor(x)
@@ -1058,7 +1058,7 @@ func _BigRat_logic(val ArObject, CurrentNumber *big.Rat) {
 					return nil, ArErr{"Runtime Error", "division by zero", 0, "", "", true}
 				}
 				ReceivingNumber_RAT := new(big.Rat).SetInt64(ReceivingNumber)
-				x := newNumber().Set(ReceivingNumber_RAT)
+				x := new(big.Rat).Set(ReceivingNumber_RAT)
 				output := new(big.Rat).Set(CurrentNumber)
 				x.Quo(output, x)
 				x = floor(x)
@@ -1069,7 +1069,7 @@ func _BigRat_logic(val ArObject, CurrentNumber *big.Rat) {
 				if ReceivingNumber.Cmp(_zero_Rat) == 0 {
 					return nil, ArErr{"Runtime Error", "division by zero", 0, "", "", true}
 				}
-				x := newNumber().Set(ReceivingNumber)
+				x := new(big.Rat).Set(ReceivingNumber)
 				output := new(big.Rat).Set(CurrentNumber)
 				x.Quo(output, x)
 				x = floor(x)
@@ -1096,7 +1096,7 @@ func _BigRat_logic(val ArObject, CurrentNumber *big.Rat) {
 					return nil, ArErr{"Runtime Error", "division by zero", 0, "", "", true}
 				}
 				ReceivingNumber_RAT := new(big.Rat).SetInt(ReceivingNumber)
-				x := newNumber().Set(ReceivingNumber_RAT)
+				x := new(big.Rat).Set(ReceivingNumber_RAT)
 				output := new(big.Rat).Set(CurrentNumber)
 				x.Quo(output, x)
 				x = floor(x)
@@ -1108,7 +1108,7 @@ func _BigRat_logic(val ArObject, CurrentNumber *big.Rat) {
 					return nil, ArErr{"Runtime Error", "division by zero", 0, "", "", true}
 				}
 				ReceivingNumber_RAT := new(big.Rat).SetInt64(ReceivingNumber)
-				x := newNumber().Set(ReceivingNumber_RAT)
+				x := new(big.Rat).Set(ReceivingNumber_RAT)
 				output := new(big.Rat).Set(CurrentNumber)
 				x.Quo(output, x)
 				x = floor(x)
@@ -1119,7 +1119,7 @@ func _BigRat_logic(val ArObject, CurrentNumber *big.Rat) {
 				if CurrentNumber.Cmp(_zero_Rat) == 0 {
 					return nil, ArErr{"Runtime Error", "division by zero", 0, "", "", true}
 				}
-				x := newNumber().Set(ReceivingNumber)
+				x := new(big.Rat).Set(ReceivingNumber)
 				output := new(big.Rat).Set(CurrentNumber)
 				x.Quo(output, x)
 				x = floor(x)
@@ -1596,7 +1596,7 @@ func _int64_logic(val ArObject, CurrentNumber int64) {
 					return nil, ArErr{"Runtime Error", "division by zero", 0, "", "", true}
 				}
 				CurrentNumber_Rat := new(big.Rat).SetInt64(CurrentNumber)
-				x := newNumber().Set(ReceivingNumber)
+				x := new(big.Rat).Set(ReceivingNumber)
 				output := new(big.Rat).Set(CurrentNumber_Rat)
 				x.Quo(output, x)
 				x = floor(x)
@@ -1632,7 +1632,7 @@ func _int64_logic(val ArObject, CurrentNumber int64) {
 				if CurrentNumber == 0 {
 					return nil, ArErr{"Runtime Error", "division by zero", 0, "", "", true}
 				}
-				x := newNumber().Set(ReceivingNumber)
+				x := new(big.Rat).Set(ReceivingNumber)
 				output := new(big.Rat).SetInt64(CurrentNumber)
 				x.Quo(output, x)
 				x = floor(x)
