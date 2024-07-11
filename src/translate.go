@@ -103,13 +103,6 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine i
 		}
 		QuickKnownFailures["squareroot"+code.code] = true
 	}
-	if !QuickKnownFailures["factorial"+code.code] && isFactorial(code) {
-		resp, worked, err, i = parseFactorial(code, index, codelines)
-		if worked {
-			return resp, worked, err, i
-		}
-		QuickKnownFailures["factorial"+code.code] = true
-	}
 	if isVariable(code) {
 		return parseVariable(code)
 	}
@@ -138,6 +131,13 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine i
 		if err.EXISTS {
 			return nil, worked, err, step
 		}
+	}
+	if !QuickKnownFailures["factorial"+code.code] && isFactorial(code) {
+		resp, worked, err, i = parseFactorial(code, index, codelines)
+		if worked {
+			return resp, worked, err, i
+		}
+		QuickKnownFailures["factorial"+code.code] = true
 	}
 	if !QuickKnownFailures["call"+code.code] && isCall(code) {
 		resp, worked, err, i = parseCall(code, index, codelines)

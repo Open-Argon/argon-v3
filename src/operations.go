@@ -71,7 +71,7 @@ func parseOperations(code UNPARSEcode, index int, codelines []UNPARSEcode) (oper
 					path:     code.path,
 				}, index, codelines, 0)
 			if !success || err.EXISTS {
-				return operationType{}, success, err, 0
+				continue
 			}
 			values = append(values, resp)
 			totalStep += respindex - 1
@@ -298,7 +298,7 @@ func calcDivide(o operationType, stack stack, stacklevel int) (any, ArErr) {
 			stack,
 			stacklevel+1,
 		)
-		resp = ArValidToAny(resp)
+
 		if err.EXISTS {
 			return nil, err
 		}
@@ -468,7 +468,7 @@ func calcAnd(o operationType, stack stack, stacklevel int) (any, ArErr) {
 			stack,
 			stacklevel+1,
 		)
-		resp = ArValidToAny(resp)
+
 		if err.EXISTS {
 			return nil, err
 		}
@@ -488,7 +488,7 @@ func calcOr(o operationType, stack stack, stacklevel int) (any, ArErr) {
 			stack,
 			stacklevel+1,
 		)
-		resp = ArValidToAny(resp)
+
 		if err.EXISTS {
 			return nil, err
 		}
@@ -524,7 +524,7 @@ func calcNotIn(o operationType, stack stack, stacklevel int) (any, ArErr) {
 		stack,
 		stacklevel+1,
 	)
-	resp = ArValidToAny(resp)
+
 	if err.EXISTS {
 		return false, err
 	}
@@ -695,7 +695,6 @@ func calcMod(o operationType, stack stack, stacklevel int) (any, ArErr) {
 			stack,
 			stacklevel+1,
 		)
-		resp = ArValidToAny(resp)
 		if err.EXISTS {
 			return nil, err
 		}
@@ -744,7 +743,7 @@ func calcIntDiv(o operationType, stack stack, stacklevel int) (any, ArErr) {
 			stack,
 			stacklevel+1,
 		)
-		resp = ArValidToAny(resp)
+
 		if err.EXISTS {
 			return nil, err
 		}
@@ -767,7 +766,7 @@ func calcIntDiv(o operationType, stack stack, stacklevel int) (any, ArErr) {
 		}
 		return nil, ArErr{
 			"Runtime Error",
-			"Cannot divide type '" + typeof(resp) + "'",
+			"Cannot int divide type '" + typeof(resp) + "'",
 			o.line,
 			o.path,
 			o.code,
@@ -783,7 +782,7 @@ func calcIntDiv(o operationType, stack stack, stacklevel int) (any, ArErr) {
 // 		stack,
 // 		stacklevel+1,
 // 	)
-// 	resp = ArValidToAny(resp)
+//
 // 	if err.EXISTS {
 // 		return nil, err
 // 	}
@@ -804,7 +803,7 @@ func calcIntDiv(o operationType, stack stack, stacklevel int) (any, ArErr) {
 // 			stack,
 // 			stacklevel+1,
 // 		)
-// 		resp = ArValidToAny(resp)
+//
 // 		if err.EXISTS {
 // 			return nil, err
 // 		}

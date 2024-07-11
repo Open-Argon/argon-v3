@@ -227,7 +227,7 @@ func makeGlobal() ArObject {
 		case ArObject:
 			newarray := []any{}
 			for key := range x.obj {
-				newarray = append(newarray, key)
+				newarray = append(newarray, AnyToArValid(key))
 			}
 			return ArArray(newarray), ArErr{}
 		}
@@ -250,9 +250,10 @@ func makeGlobal() ArObject {
 		if len(a) != 1 {
 			return nil, ArErr{TYPE: "chr", message: "chr takes 1 argument, got " + fmt.Sprint(len(a)), EXISTS: true}
 		}
+		a[0] = ArValidToAny(a[0])
 		switch x := a[0].(type) {
-		case number:
-			return string([]rune{rune(floor(x).Num().Int64())}), ArErr{}
+		case int64:
+			return string([]rune{rune(x)}), ArErr{}
 		}
 		return nil, ArErr{TYPE: "Type Error", message: "Cannot convert '" + typeof(a[0]) + "' to string", EXISTS: true}
 	}}

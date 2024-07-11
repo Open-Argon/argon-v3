@@ -10,8 +10,8 @@ var Args = os.Args[1:]
 
 type stack = []ArObject
 
-const VERSION = "3.0.8"
-const VERSION_NUM = 6
+const VERSION = "3.1.0 oop numbers beta 1"
+const VERSION_NUM = 7
 
 func newscope() ArObject {
 	return Map(anymap{})
@@ -45,7 +45,6 @@ func main() {
 			}
 		}()
 	}
-	initRandom()
 	garbageCollect()
 	global := makeGlobal()
 	if len(Args) == 0 {

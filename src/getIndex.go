@@ -22,39 +22,6 @@ type ArMapGet struct {
 	Path               string
 }
 
-func isObject(val any) bool {
-	if _, ok := val.(ArObject); ok {
-		return true
-	}
-	return false
-}
-
-func hashableObject(obj ArObject) (string, ArErr) {
-	if callable, ok := obj.obj["__hash__"]; ok {
-		resp, err := runCall(call{
-			Callable: callable,
-			Args:     []any{},
-		}, stack{}, 0)
-		if err.EXISTS {
-			return "", err
-		}
-		resp = ArValidToAny(resp)
-		if str, ok := resp.(string); ok {
-			return str, ArErr{}
-		}
-		return "", ArErr{
-			TYPE:    "TypeError",
-			EXISTS:  true,
-			message: "expected string from __hash__ method, got " + typeof(resp),
-		}
-	}
-	return "", ArErr{
-		TYPE:    "TypeError",
-		EXISTS:  true,
-		message: "cannot hash object",
-	}
-}
-
 func mapGet(r ArMapGet, stack stack, stacklevel int) (any, ArErr) {
 	resp, err := runVal(r.VAL, stack, stacklevel+1)
 	if err.EXISTS {
@@ -156,19 +123,10 @@ func indexGetParse(code UNPARSEcode, index int, codelines []UNPARSEcode) (ArMapG
 	}, 1
 }
 
-var hashabletypes = []string{
-	"number",
-	"string",
-	"bool",
-	"null",
-}
-
 func isUnhashable(val any) bool {
-	keytype := typeof(val)
-	for _, v := range hashabletypes {
-		if v == keytype {
-			return false
-		}
+	switch val.(type) {
+	case int64, float64, string, bool, nil:
+		return false
 	}
 	return true
 }

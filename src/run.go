@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math/big"
 	"reflect"
 )
 
@@ -210,6 +211,8 @@ func runVal(line any, stack stack, stacklevel int) (any, ArErr) {
 		return runTryCatch(x, stack, stacklevel+1)
 	case compiledNumber:
 		return Number(x.value), ArErr{}
+	case int64, int, float64, float32, *big.Rat, *big.Int:
+		return Number(x), ArErr{}
 	case bool, ArObject, nil, Callable, builtinFunc, anymap:
 		return x, ArErr{}
 	}

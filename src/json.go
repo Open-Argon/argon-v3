@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"strconv"
 )
 
@@ -71,7 +70,6 @@ func jsonstringify(obj any, level int64) (string, error) {
 	case nil:
 		return "null", nil
 	}
-	fmt.Println(level)
 	err := errors.New("Cannot stringify '" + typeof(obj) + "'")
 	return "", err
 }

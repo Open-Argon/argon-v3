@@ -30,7 +30,7 @@ func anyToArgon(x any, representive bool, simplify bool, depth int, indent int, 
 	switch x := x.(type) {
 	case bool:
 		if colored {
-			output = append(output, "\x1b[35;5;240m")
+			output = append(output, "\x1b[35;5;25m")
 		}
 		output = append(output, strconv.FormatBool(x))
 		if colored {
@@ -38,7 +38,7 @@ func anyToArgon(x any, representive bool, simplify bool, depth int, indent int, 
 		}
 	case nil:
 		if colored {
-			output = append(output, "\x1b[31;5;240m")
+			output = append(output, "\x1b[31;5;25m")
 		}
 		output = append(output, "null")
 		if colored {
@@ -99,7 +99,7 @@ func anyToArgon(x any, representive bool, simplify bool, depth int, indent int, 
 			} else {
 				outputkeyval := []string{}
 				if colored {
-					outputkeyval = append(outputkeyval, "\x1b[36;5;240m")
+					outputkeyval = append(outputkeyval, "\x1b[36;5;25m")
 				}
 				outputkeyval = append(outputkeyval, key.(string))
 				if colored {
@@ -119,7 +119,7 @@ func anyToArgon(x any, representive bool, simplify bool, depth int, indent int, 
 				output = append(output, anyToArgon(item, true, true, depth-1, indent+1, colored, plain))
 			}
 			if colored {
-				output = append(output, "\x1b[38;5;240m(...)\x1b[0m")
+				output = append(output, "\x1b[38;5;25m(...)\x1b[0m")
 			} else {
 				output = append(output, "(...)")
 			}
@@ -144,7 +144,7 @@ func anyToArgon(x any, representive bool, simplify bool, depth int, indent int, 
 		return "[" + maybenewline + (strings.Repeat("    ", (indent+1)*plain)) + strings.Join(output, ","+maybenewline+(strings.Repeat("    ", (indent+1)*plain))) + maybenewline + (strings.Repeat("    ", indent*plain)) + "]"
 	case builtinFunc:
 		if colored {
-			output = append(output, "\x1b[38;5;240m")
+			output = append(output, "\x1b[38;5;25m")
 		}
 		output = append(output, "<builtin function "+x.name+">")
 		if colored {
@@ -152,7 +152,7 @@ func anyToArgon(x any, representive bool, simplify bool, depth int, indent int, 
 		}
 	case Callable:
 		if colored {
-			output = append(output, "\x1b[38;5;240m")
+			output = append(output, "\x1b[38;5;25m")
 		}
 		output = append(output, "<function "+x.name+">")
 		if colored {

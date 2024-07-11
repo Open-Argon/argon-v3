@@ -151,14 +151,12 @@ func ArString(str string) ArObject {
 			{
 				if a[0] == nil {
 					start = 0
-				} else if typeof(a[0]) != "number" || !a[0].(number).IsInt() {
-					return "", ArErr{
-						TYPE:    "Type Error",
-						message: "slice index must be an integer",
-						EXISTS:  true,
+				} else if x, ok := a[0].(ArObject); ok {
+					start64, err := numberToInt64(x)
+					if err != nil {
+						return nil, ArErr{"Type Error", err.Error(), 0, "", "", true}
 					}
-				} else {
-					start = int(a[0].(number).Num().Int64())
+					start = int(start64)
 				}
 			}
 			if len(a) > 1 {

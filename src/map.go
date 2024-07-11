@@ -245,6 +245,7 @@ func Map(m anymap) ArObject {
 							EXISTS:  true,
 						}
 					}
+					args[0] = ArValidToAny(args[0])
 					if isUnhashable(args[0]) {
 						return nil, ArErr{
 							TYPE:    "Runtime Error",

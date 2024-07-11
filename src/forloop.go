@@ -106,7 +106,7 @@ func runForLoop(loop forLoop, stack stack, stacklevel int) (any, ArErr) {
 		step_, _ := numberToInt64(step)
 		layer := anymap{}
 		stacks := append(stack, Map(layer))
-		for i <= to_ {
+		for i < to_ {
 			layer[loop.variable] = Number(i)
 			resp, err := runVal(loop.body, stacks, stacklevel+1)
 			if err.EXISTS {

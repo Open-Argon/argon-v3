@@ -6,10 +6,10 @@ import (
 	"time"
 )
 
-func random() number {
-	return newNumber().SetFloat64(
-		rand.Float64(),
-	)
+var rand_source = rand.New(rand.NewSource(time.Now().UnixMicro()))
+
+func random() ArObject {
+	return Number(rand_source.Float64())
 }
 
 func randomRange(args ...any) (any, ArErr) {
@@ -33,23 +33,88 @@ func randomRange(args ...any) (any, ArErr) {
 			EXISTS:  true,
 		}
 	}
-	min := args[0].(number)
-	max := args[1].(number)
-	if min.Cmp(max) > 0 {
+	min := args[0].(ArObject)
+	max := args[1].(ArObject)
+
+	compare_num, err := CompareObjects(min, max)
+	if err.EXISTS {
+		return nil, err
+	}
+
+	compare, Err := numberToInt64(compare_num)
+	if Err != nil {
 		return nil, ArErr{
 			TYPE:    "Runtime Error",
-			message: "takes a min less than max",
+			message: Err.Error(),
 			EXISTS:  true,
 		}
 	}
-	difference := newNumber().Sub(max, min)
+
+	if compare == 1 {
+		return nil, ArErr{
+			TYPE:    "Runtime Error",
+			message: "range() num 1 must be less than or equal to num 2",
+			EXISTS:  true,
+		}
+	}
+
+	num_range, err := runOperation(
+		operationType{
+			operation: 11,
+			values:    []any{max, min},
+		},
+		stack{},
+		0,
+	)
+
+	if err.EXISTS {
+		return nil, err
+	}
+
+	if _, ok := num_range.(ArObject); !ok {
+		return nil, ArErr{
+			TYPE:    "Runtime Error",
+			message: "could not subtract the two numbers to calculate the range",
+			EXISTS:  true,
+		}
+	}
+
+	num_range_obj := num_range.(ArObject)
+
 	rand := random()
-	rand.Mul(rand, difference)
-	rand.Add(rand, min)
-	return rand, ArErr{}
+
+	multiplier, err := runOperation(
+		operationType{
+			operation: 12,
+			values:    []any{rand, num_range_obj},
+		},
+		stack{},
+		0,
+	)
+
+	if err.EXISTS {
+		return nil, err
+	}
+
+	if _, ok := multiplier.(ArObject); !ok {
+		return nil, ArErr{
+			TYPE:    "Runtime Error",
+			message: "could not multiply the random number by the range",
+			EXISTS:  true,
+		}
+	}
+
+	return runOperation(
+		operationType{
+			operation: 10,
+			values:    []any{multiplier, min},
+		},
+		stack{},
+		0,
+	)
 }
 
-var ArRandom = Map(anymap{
+var ArRandom = ArObject{anymap{
 	"__call__": builtinFunc{"random", func(args ...any) (any, ArErr) {
 		if len(args) != 0 {
 			return nil, ArErr{
@@ -83,22 +148,15 @@ var ArRandom = Map(anymap{
 				EXISTS:  true,
 			}
 		}
-		if !a[0].(number).IsInt() {
+		new_seed, err := numberToInt64(a[0].(ArObject))
+		if err != nil {
 			return nil, ArErr{
 				TYPE:    "Runtime Error",
-				message: "takes an integer not a float",
+				message: err.Error(),
 				EXISTS:  true,
 			}
 		}
-		rand.Seed(
-			a[0].(number).Num().Int64(),
-		)
+		rand_source.Seed(new_seed)
 		return nil, ArErr{}
 	}},
-})
-
-func initRandom() {
-	rand.Seed(
-		time.Now().UnixMicro(),
-	)
-}
+}}

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"math/big"
 	"strings"
 )
@@ -23,6 +24,19 @@ func isNumber(code UNPARSEcode) bool {
 	return numberCompile.MatchString(code.code) || binaryCompile.MatchString(code.code) || hexCompile.MatchString(code.code) || octalCompile.MatchString(code.code)
 }
 
+func exponentBySquaring(base *big.Rat, exp *big.Int) *big.Rat {
+	if exp.Cmp(_zero) == 0 {
+		return _one_Rat
+	}
+	if exp.Cmp(_one) == 0 {
+		return base
+	}
+	if exp.Bit(0) == 0 {
+		return exponentBySquaring(new(big.Rat).Mul(base, base), new(big.Int).Div(exp, _two))
+	}
+	return new(big.Rat).Mul(base, exponentBySquaring(new(big.Rat).Mul(base, base), new(big.Int).Div(new(big.Int).Sub(exp, _one), _two)))
+}
+
 // converts a number type to a string
 func numberToString(num *big.Rat, simplify bool) string {
 	if simplify {
@@ -40,9 +54,9 @@ func numberToString(num *big.Rat, simplify bool) string {
 		}
 	}
 
-	x, _ := num.Float64()
+	float := new(big.Float).SetRat(num)
 
-	return fmt.Sprint(x)
+	return float.String()
 }
 
 var int64_max = new(big.Int).SetInt64(9223372036854775807)
@@ -92,7 +106,10 @@ func numberToInt64(num ArObject) (int64, error) {
 	value := num.obj["__value__"]
 	switch x := value.(type) {
 	case *big.Rat:
-		return floor(x).Num().Int64(), nil
+		if x.IsInt() {
+			return x.Num().Int64(), nil
+		}
+		return 0, fmt.Errorf("ration number cannot be converted to int64")
 	case *big.Int:
 		return x.Int64(), nil
 	case int64:
@@ -154,6 +171,7 @@ func AddObjects(A ArObject, B ArObject) (ArObject, ArErr) {
 	return ArObject{}, ArErr{"Type Error", "cannot add " + typeof(A) + " and " + typeof(B), 0, "", "", true}
 }
 
+var _two = big.NewInt(2)
 var _one = big.NewInt(1)
 var _one_Rat = big.NewRat(1, 1)
 var _one_Number ArObject
@@ -176,8 +194,14 @@ func Number(value any) ArObject {
 	case *big.Rat:
 		if x.IsInt() {
 			value = x.Num()
+			if value.(*big.Int).Cmp(int64_max) <= 0 && value.(*big.Int).Cmp(int64_min) >= 0 {
+				value = value.(*big.Int).Int64()
+			}
 		}
 	case *big.Int:
+		if x.Cmp(int64_max) <= 0 && x.Cmp(int64_min) >= 0 {
+			value = x.Int64()
+		}
 	case int:
 		value = int64(x)
 	case int64:
@@ -196,12 +220,67 @@ func Number(value any) ArObject {
 
 	val.obj["__value__"] = value
 
+	val.obj["__LessThan__"] = builtinFunc{
+		"__LessThan__",
+		func(a ...any) (any, ArErr) {
+			resp, err := val.obj["__Compare__"].(builtinFunc).FUNC(a...)
+			if err.EXISTS {
+				return nil, err
+			}
+			resp, _ = numberToInt64(resp.(ArObject))
+			return resp.(int64) == -1, ArErr{}
+		},
+	}
+	val.obj["__LessThanEqual__"] = builtinFunc{
+		"__LessThanEqual__",
+		func(a ...any) (any, ArErr) {
+			resp, err := val.obj["__Compare__"].(builtinFunc).FUNC(a...)
+			if err.EXISTS {
+				return nil, err
+			}
+			resp, _ = numberToInt64(resp.(ArObject))
+			return resp.(int64) != 1, ArErr{}
+		},
+	}
+	val.obj["__GreaterThan__"] = builtinFunc{
+		"__GreaterThan__",
+		func(a ...any) (any, ArErr) {
+			resp, err := val.obj["__Compare__"].(builtinFunc).FUNC(a...)
+			if err.EXISTS {
+				return nil, err
+			}
+			resp, _ = numberToInt64(resp.(ArObject))
+			return resp.(int64) == 1, ArErr{}
+		},
+	}
+	val.obj["__GreaterThanEqual__"] = builtinFunc{
+		"__GreaterThanEqual__",
+		func(a ...any) (any, ArErr) {
+			resp, err := val.obj["__Compare__"].(builtinFunc).FUNC(a...)
+			if err.EXISTS {
+				return nil, err
+			}
+			resp, _ = numberToInt64(resp.(ArObject))
+			return resp.(int64) != -1, ArErr{}
+		},
+	}
+	val.obj["__NotEqual__"] = builtinFunc{
+		"__NotEqual__",
+		func(a ...any) (any, ArErr) {
+			resp, err := val.obj["__Equal__"].(builtinFunc).FUNC(a...)
+			if err.EXISTS {
+				return nil, err
+			}
+			return !resp.(bool), ArErr{}
+		},
+	}
 	switch CurrentNumber := value.(type) {
 	case *big.Int:
 		_BigInt_logic(val, CurrentNumber)
 	case *big.Rat:
 		_BigRat_logic(val, CurrentNumber)
 	case int64:
+		debugPrintln("int64", CurrentNumber)
 		_int64_logic(val, CurrentNumber)
 	}
 
@@ -227,7 +306,7 @@ func _BigInt_logic(val ArObject, CurrentNumber *big.Int) {
 			coloured := a[0].(bool)
 			output := []string{}
 			if coloured {
-				output = append(output, "\x1b[34;5;240m")
+				output = append(output, "\x1b[34;5;25m")
 			}
 			output = append(output, fmt.Sprint(CurrentNumber))
 			if coloured {
@@ -276,6 +355,24 @@ func _BigInt_logic(val ArObject, CurrentNumber *big.Int) {
 				return Number(ReceivingNumber.Cmp(new(big.Rat).SetInt(CurrentNumber))), ArErr{}
 			}
 			return nil, ArErr{"Type Error", "expected number, got " + typeof(a[0]), 0, "", "", true}
+		},
+	}
+	val.obj["__Equal__"] = builtinFunc{
+		"__Equal__",
+		func(a ...any) (any, ArErr) {
+			if len(a) != 1 {
+				return nil, ArErr{"Type Error", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
+			}
+			a[0] = ArValidToAny(a[0])
+			switch ReceivingNumber := a[0].(type) {
+			case *big.Int:
+				return CurrentNumber.Cmp(ReceivingNumber) == 0, ArErr{}
+			case int64:
+				return CurrentNumber.Cmp(big.NewInt(ReceivingNumber)) == 0, ArErr{}
+			case *big.Rat:
+				return new(big.Rat).SetInt(CurrentNumber).Cmp(ReceivingNumber) == 0, ArErr{}
+			}
+			return false, ArErr{}
 		},
 	}
 	val.obj["__json__"] = builtinFunc{
@@ -455,6 +552,209 @@ func _BigInt_logic(val ArObject, CurrentNumber *big.Int) {
 			return nil, ArErr{"Type Error", "expected number, got " + typeof(a[0]), 0, "", "", true}
 		},
 	}
+	val.obj["__Modulo__"] = builtinFunc{
+		"__Modulo__",
+		func(a ...any) (any, ArErr) {
+			if len(a) != 1 {
+				return nil, ArErr{"Type Error", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
+			}
+			if typeof(a[0]) != "number" {
+				return nil, ArErr{"Type Error", "expected number, got " + typeof(a[0]), 0, "", "", true}
+			}
+			a[0] = ArValidToAny(a[0])
+			switch ReceivingNumber := a[0].(type) {
+			case *big.Int:
+				if ReceivingNumber.Cmp(_zero) == 0 {
+					return nil, ArErr{"Runtime Error", "division by zero", 0, "", "", true}
+				}
+				return Number(new(big.Int).Mod(CurrentNumber, ReceivingNumber)), ArErr{}
+			case int64:
+				if ReceivingNumber == 0 {
+					return nil, ArErr{"Runtime Error", "division by zero", 0, "", "", true}
+				}
+				return Number(new(big.Int).Mod(CurrentNumber, big.NewInt(ReceivingNumber))), ArErr{}
+			case *big.Rat:
+				if ReceivingNumber.Cmp(_zero_Rat) == 0 {
+					return nil, ArErr{"Runtime Error", "division by zero", 0, "", "", true}
+				}
+				x := newNumber().Set(ReceivingNumber)
+				output := new(big.Rat).SetInt(CurrentNumber)
+				x.Quo(output, x)
+				x = floor(x)
+				x.Mul(x, ReceivingNumber)
+				output.Sub(output, x)
+				return Number(output), ArErr{}
+			}
+			return nil, ArErr{"Type Error", "expected number, got " + typeof(a[0]), 0, "", "", true}
+		},
+	}
+	val.obj["__PostModulo__"] = builtinFunc{
+		"__PostModulo__",
+		func(a ...any) (any, ArErr) {
+			if len(a) != 1 {
+				return nil, ArErr{"Type Error", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
+			}
+			if typeof(a[0]) != "number" {
+				return nil, ArErr{"Type Error", "expected number, got " + typeof(a[0]), 0, "", "", true}
+			}
+			a[0] = ArValidToAny(a[0])
+			switch ReceivingNumber := a[0].(type) {
+			case *big.Int:
+				if CurrentNumber.Cmp(_zero) == 0 {
+					return nil, ArErr{"Runtime Error", "division by zero", 0, "", "", true}
+				}
+				return Number(new(big.Int).Mod(ReceivingNumber, CurrentNumber)), ArErr{}
+			case int64:
+				if CurrentNumber.Cmp(_zero) == 0 {
+					return nil, ArErr{"Runtime Error", "division by zero", 0, "", "", true}
+				}
+				return Number(new(big.Int).Mod(big.NewInt(ReceivingNumber), CurrentNumber)), ArErr{}
+			case *big.Rat:
+				if CurrentNumber.Cmp(_zero) == 0 {
+					return nil, ArErr{"Runtime Error", "division by zero", 0, "", "", true}
+				}
+				currentNumber_RAT := newNumber().SetInt(CurrentNumber)
+				x := newNumber().Set(currentNumber_RAT)
+				output := new(big.Rat).Set(ReceivingNumber)
+				x.Quo(output, x)
+				x = floor(x)
+				x.Mul(x, currentNumber_RAT)
+				output.Sub(output, x)
+				return Number(output), ArErr{}
+			}
+			return false, ArErr{}
+		},
+	}
+	val.obj["__IntDivide__"] = builtinFunc{
+		"__IntDivide__",
+		func(a ...any) (any, ArErr) {
+			if len(a) != 1 {
+				return nil, ArErr{"Type Error", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
+			}
+			if typeof(a[0]) != "number" {
+				return nil, ArErr{"Type Error", "expected number, got " + typeof(a[0]), 0, "", "", true}
+			}
+			a[0] = ArValidToAny(a[0])
+			switch ReceivingNumber := a[0].(type) {
+			case *big.Int:
+				if ReceivingNumber.Cmp(_zero) == 0 {
+					return nil, ArErr{"Runtime Error", "division by zero", 0, "", "", true}
+				}
+				return Number(new(big.Int).Div(CurrentNumber, ReceivingNumber)), ArErr{}
+			case int64:
+				if ReceivingNumber == 0 {
+					return nil, ArErr{"Runtime Error", "division by zero", 0, "", "", true}
+				}
+				return Number(new(big.Int).Div(CurrentNumber, big.NewInt(ReceivingNumber))), ArErr{}
+			case *big.Rat:
+				if ReceivingNumber.Cmp(_zero_Rat) == 0 {
+					return nil, ArErr{"Runtime Error", "division by zero", 0, "", "", true}
+				}
+				x := newNumber().Set(ReceivingNumber)
+				output := new(big.Rat).SetInt(CurrentNumber)
+				x.Quo(output, x)
+				x = floor(x)
+				return Number(x), ArErr{}
+			}
+			return nil, ArErr{"Type Error", "expected number, got " + typeof(a[0]), 0, "", "", true}
+		},
+	}
+
+	val.obj["__PostIntDivide__"] = builtinFunc{
+		"__PostIntDivide__",
+		func(a ...any) (any, ArErr) {
+			if len(a) != 1 {
+				return nil, ArErr{"Type Error", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
+			}
+			if typeof(a[0]) != "number" {
+				return nil, ArErr{"Type Error", "expected number, got " + typeof(a[0]), 0, "", "", true}
+			}
+			a[0] = ArValidToAny(a[0])
+			switch ReceivingNumber := a[0].(type) {
+			case *big.Int:
+				if CurrentNumber.Cmp(_zero) == 0 {
+					return nil, ArErr{"Runtime Error", "division by zero", 0, "", "", true}
+				}
+				return Number(new(big.Int).Div(ReceivingNumber, CurrentNumber)), ArErr{}
+			case int64:
+				if CurrentNumber.Cmp(_zero) == 0 {
+					return nil, ArErr{"Runtime Error", "division by zero", 0, "", "", true}
+				}
+				return Number(new(big.Int).Div(big.NewInt(ReceivingNumber), CurrentNumber)), ArErr{}
+			case *big.Rat:
+				if CurrentNumber.Cmp(_zero) == 0 {
+					return nil, ArErr{"Runtime Error", "division by zero", 0, "", "", true}
+				}
+				currentNumber_RAT := newNumber().SetInt(CurrentNumber)
+				x := newNumber().Set(currentNumber_RAT)
+				output := new(big.Rat).Set(ReceivingNumber)
+				x.Quo(output, x)
+				x = floor(x)
+				return Number(x), ArErr{}
+			}
+			return false, ArErr{}
+		},
+	}
+	val.obj["__Power__"] = builtinFunc{
+		"__Power__",
+		func(a ...any) (any, ArErr) {
+			if len(a) != 1 {
+				return nil, ArErr{"Type Error", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
+			}
+			if typeof(a[0]) != "number" {
+				return nil, ArErr{"Type Error", "expected number, got " + typeof(a[0]), 0, "", "", true}
+			}
+			a[0] = ArValidToAny(a[0])
+			switch ReceivingNumber := a[0].(type) {
+			case *big.Int:
+				if ReceivingNumber.Cmp(_zero) == 0 {
+					return Number(1), ArErr{}
+				}
+				output := new(big.Int).Set(CurrentNumber)
+				output.Exp(output, new(big.Int).Abs(ReceivingNumber), nil)
+				if ReceivingNumber.Cmp(_zero) < 0 {
+					output = new(big.Int).Quo(_one, output)
+				}
+				return Number(output), ArErr{}
+			case int64:
+				if ReceivingNumber == 0 {
+					return Number(1), ArErr{}
+				}
+				output := new(big.Int).Set(CurrentNumber)
+				output.Exp(output, new(big.Int).Abs(big.NewInt(ReceivingNumber)), nil)
+				if ReceivingNumber < 0 {
+					output = new(big.Int).Quo(_one, output)
+				}
+				return Number(output), ArErr{}
+			case *big.Rat:
+				if ReceivingNumber.Cmp(_zero_Rat) == 0 {
+					return Number(1), ArErr{}
+				}
+				exponent_numerator := new(big.Int).Abs(ReceivingNumber.Num())
+				exponent_denominator := ReceivingNumber.Denom()
+				output := new(big.Rat).SetInt(CurrentNumber)
+				output_float, _ := output.Float64()
+				// error if output_float is infinity
+				if math.IsInf(output_float, 0) {
+					return nil, ArErr{"Runtime Error", "number too large to perform rational exponential calculations on it.", 0, "", "", true}
+				}
+				exponent_denominator_float, _ := exponent_denominator.Float64()
+				if math.IsInf(exponent_denominator_float, 0) {
+					return nil, ArErr{"Runtime Error", "demominator too large to perform rational exponential calculations on it.", 0, "", "", true}
+				}
+				if exponent_denominator_float != 1 {
+					output_float = math.Pow(output_float, 1/exponent_denominator_float)
+				}
+				output = new(big.Rat).SetFloat64(output_float)
+				output = exponentBySquaring(output, exponent_numerator)
+				if ReceivingNumber.Cmp(_zero_Rat) < 0 {
+					output = new(big.Rat).Quo(_one_Rat, output)
+				}
+				return Number(output), ArErr{}
+			}
+			return nil, ArErr{"Type Error", "expected number, got " + typeof(a[0]), 0, "", "", true}
+		},
+	}
 }
 
 func _BigRat_logic(val ArObject, CurrentNumber *big.Rat) {
@@ -476,7 +776,7 @@ func _BigRat_logic(val ArObject, CurrentNumber *big.Rat) {
 			coloured := a[0].(bool)
 			output := []string{}
 			if coloured {
-				output = append(output, "\x1b[34;5;240m")
+				output = append(output, "\x1b[34;5;25m")
 			}
 			output = append(output, numberToString(CurrentNumber, true))
 			if coloured {
@@ -538,6 +838,25 @@ func _BigRat_logic(val ArObject, CurrentNumber *big.Rat) {
 				return Number(CurrentNumber.Cmp(ReceivingNumber)), ArErr{}
 			}
 			return nil, ArErr{"Type Error", "expected number, got " + typeof(a[0]), 0, "", "", true}
+		},
+	}
+
+	val.obj["__Equal__"] = builtinFunc{
+		"__Equal__",
+		func(a ...any) (any, ArErr) {
+			if len(a) != 1 {
+				return nil, ArErr{"Type Error", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
+			}
+			a[0] = ArValidToAny(a[0])
+			switch ReceivingNumber := a[0].(type) {
+			case *big.Int:
+				return CurrentNumber.Cmp(new(big.Rat).SetInt(ReceivingNumber)) == 0, ArErr{}
+			case int64:
+				return CurrentNumber.Cmp(new(big.Rat).SetInt64(ReceivingNumber)) == 0, ArErr{}
+			case *big.Rat:
+				return CurrentNumber.Cmp(ReceivingNumber) == 0, ArErr{}
+			}
+			return false, ArErr{}
 		},
 	}
 
@@ -711,6 +1030,229 @@ func _BigRat_logic(val ArObject, CurrentNumber *big.Rat) {
 			return nil, ArErr{"Type Error", "expected number, got " + typeof(a[0]), 0, "", "", true}
 		},
 	}
+	val.obj["__Modulo__"] = builtinFunc{
+		"__Modulo__",
+		func(a ...any) (any, ArErr) {
+			if len(a) != 1 {
+				return nil, ArErr{"Type Error", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
+			}
+			if typeof(a[0]) != "number" {
+				return nil, ArErr{"Type Error", "expected number, got " + typeof(a[0]), 0, "", "", true}
+			}
+			a[0] = ArValidToAny(a[0])
+			switch ReceivingNumber := a[0].(type) {
+			case *big.Int:
+				if ReceivingNumber.Cmp(_zero) == 0 {
+					return nil, ArErr{"Runtime Error", "division by zero", 0, "", "", true}
+				}
+				ReceivingNumber_RAT := new(big.Rat).SetInt(ReceivingNumber)
+				x := newNumber().Set(ReceivingNumber_RAT)
+				output := new(big.Rat).Set(CurrentNumber)
+				x.Quo(output, x)
+				x = floor(x)
+				x.Mul(x, ReceivingNumber_RAT)
+				output.Sub(output, x)
+				return Number(output), ArErr{}
+			case int64:
+				if ReceivingNumber == 0 {
+					return nil, ArErr{"Runtime Error", "division by zero", 0, "", "", true}
+				}
+				ReceivingNumber_RAT := new(big.Rat).SetInt64(ReceivingNumber)
+				x := newNumber().Set(ReceivingNumber_RAT)
+				output := new(big.Rat).Set(CurrentNumber)
+				x.Quo(output, x)
+				x = floor(x)
+				x.Mul(x, ReceivingNumber_RAT)
+				output.Sub(output, x)
+				return Number(output), ArErr{}
+			case *big.Rat:
+				if ReceivingNumber.Cmp(_zero_Rat) == 0 {
+					return nil, ArErr{"Runtime Error", "division by zero", 0, "", "", true}
+				}
+				x := newNumber().Set(ReceivingNumber)
+				output := new(big.Rat).Set(CurrentNumber)
+				x.Quo(output, x)
+				x = floor(x)
+				x.Mul(x, ReceivingNumber)
+				output.Sub(output, x)
+				return Number(output), ArErr{}
+			}
+			return nil, ArErr{"Type Error", "expected number, got " + typeof(a[0]), 0, "", "", true}
+		},
+	}
+	val.obj["__PostModulo__"] = builtinFunc{
+		"__PostModulo__",
+		func(a ...any) (any, ArErr) {
+			if len(a) != 1 {
+				return nil, ArErr{"Type Error", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
+			}
+			if typeof(a[0]) != "number" {
+				return nil, ArErr{"Type Error", "expected number, got " + typeof(a[0]), 0, "", "", true}
+			}
+			a[0] = ArValidToAny(a[0])
+			switch ReceivingNumber := a[0].(type) {
+			case *big.Int:
+				if CurrentNumber.Cmp(_zero_Rat) == 0 {
+					return nil, ArErr{"Runtime Error", "division by zero", 0, "", "", true}
+				}
+				ReceivingNumber_RAT := new(big.Rat).SetInt(ReceivingNumber)
+				x := newNumber().Set(ReceivingNumber_RAT)
+				output := new(big.Rat).Set(CurrentNumber)
+				x.Quo(output, x)
+				x = floor(x)
+				x.Mul(x, ReceivingNumber_RAT)
+				output.Sub(output, x)
+				return Number(output), ArErr{}
+			case int64:
+				if CurrentNumber.Cmp(_zero_Rat) == 0 {
+					return nil, ArErr{"Runtime Error", "division by zero", 0, "", "", true}
+				}
+				ReceivingNumber_RAT := new(big.Rat).SetInt64(ReceivingNumber)
+				x := newNumber().Set(ReceivingNumber_RAT)
+				output := new(big.Rat).Set(CurrentNumber)
+				x.Quo(output, x)
+				x = floor(x)
+				x.Mul(x, ReceivingNumber_RAT)
+				output.Sub(output, x)
+				return Number(output), ArErr{}
+			case *big.Rat:
+				if CurrentNumber.Cmp(_zero_Rat) == 0 {
+					return nil, ArErr{"Runtime Error", "division by zero", 0, "", "", true}
+				}
+				x := newNumber().Set(ReceivingNumber)
+				output := new(big.Rat).Set(CurrentNumber)
+				x.Quo(output, x)
+				x = floor(x)
+				x.Mul(x, ReceivingNumber)
+				output.Sub(output, x)
+				return Number(output), ArErr{}
+			}
+			return nil, ArErr{"Type Error", "expected number, got " + typeof(a[0]), 0, "", "", true}
+		},
+	}
+
+	val.obj["__IntDivide__"] = builtinFunc{
+		"__IntDivide__",
+		func(a ...any) (any, ArErr) {
+			if len(a) != 1 {
+				return nil, ArErr{"Type Error", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
+			}
+			if typeof(a[0]) != "number" {
+				return nil, ArErr{"Type Error", "expected number, got " + typeof(a[0]), 0, "", "", true}
+			}
+			a[0] = ArValidToAny(a[0])
+			switch ReceivingNumber := a[0].(type) {
+			case *big.Int:
+				if ReceivingNumber.Cmp(_zero) == 0 {
+					return nil, ArErr{"Runtime Error", "division by zero", 0, "", "", true}
+				}
+				return Number(floor(new(big.Rat).Quo(CurrentNumber, new(big.Rat).SetInt(ReceivingNumber)))), ArErr{}
+			case int64:
+				if ReceivingNumber == 0 {
+					return nil, ArErr{"Runtime Error", "division by zero", 0, "", "", true}
+				}
+				return Number(floor(new(big.Rat).Quo(CurrentNumber, new(big.Rat).SetInt64(ReceivingNumber)))), ArErr{}
+			case *big.Rat:
+				if ReceivingNumber.Cmp(_zero_Rat) == 0 {
+					return nil, ArErr{"Runtime Error", "division by zero", 0, "", "", true}
+				}
+				return Number(floor(new(big.Rat).Quo(CurrentNumber, ReceivingNumber))), ArErr{}
+			}
+			return nil, ArErr{"Type Error", "expected number, got " + typeof(a[0]), 0, "", "", true}
+		},
+	}
+
+	val.obj["__PostIntDivide__"] = builtinFunc{
+		"__PostIntDivide__",
+		func(a ...any) (any, ArErr) {
+			if len(a) != 1 {
+				return nil, ArErr{"Type Error", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
+			}
+			if typeof(a[0]) != "number" {
+				return nil, ArErr{"Type Error", "expected number, got " + typeof(a[0]), 0, "", "", true}
+			}
+			a[0] = ArValidToAny(a[0])
+			switch ReceivingNumber := a[0].(type) {
+			case *big.Int:
+				if CurrentNumber.Cmp(_zero_Rat) == 0 {
+					return nil, ArErr{"Runtime Error", "division by zero", 0, "", "", true}
+				}
+				return Number(floor(new(big.Rat).Quo(new(big.Rat).SetInt(ReceivingNumber), CurrentNumber))), ArErr{}
+			case int64:
+				if CurrentNumber.Cmp(_zero_Rat) == 0 {
+					return nil, ArErr{"Runtime Error", "division by zero", 0, "", "", true}
+				}
+				return Number(floor(new(big.Rat).Quo(new(big.Rat).SetInt64(ReceivingNumber), CurrentNumber))), ArErr{}
+			case *big.Rat:
+				if CurrentNumber.Cmp(_zero_Rat) == 0 {
+					return nil, ArErr{"Runtime Error", "division by zero", 0, "", "", true}
+				}
+				return Number(floor(new(big.Rat).Quo(ReceivingNumber, CurrentNumber))), ArErr{}
+			}
+			return nil, ArErr{"Type Error", "expected number, got " + typeof(a[0]), 0, "", "", true}
+		},
+	}
+
+	val.obj["__Power__"] = builtinFunc{
+		"__Power__",
+		func(a ...any) (any, ArErr) {
+			if len(a) != 1 {
+				return nil, ArErr{"Type Error", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
+			}
+			if typeof(a[0]) != "number" {
+				return nil, ArErr{"Type Error", "expected number, got " + typeof(a[0]), 0, "", "", true}
+			}
+			a[0] = ArValidToAny(a[0])
+			switch ReceivingNumber := a[0].(type) {
+			case *big.Int:
+				if ReceivingNumber.Cmp(_zero) == 0 {
+					return Number(1), ArErr{}
+				}
+				output := new(big.Rat).Set(CurrentNumber)
+				output = exponentBySquaring(output, new(big.Int).Abs(ReceivingNumber))
+				if ReceivingNumber.Cmp(_zero) < 0 {
+					output = new(big.Rat).Quo(_one_Rat, output)
+				}
+				return Number(output), ArErr{}
+			case int64:
+				if ReceivingNumber == 0 {
+					return Number(1), ArErr{}
+				}
+				output := new(big.Rat).Set(CurrentNumber)
+				output = exponentBySquaring(output, new(big.Int).Abs(big.NewInt(ReceivingNumber)))
+				if ReceivingNumber < 0 {
+					output = new(big.Rat).Quo(_one_Rat, output)
+				}
+				return Number(output), ArErr{}
+			case *big.Rat:
+				if ReceivingNumber.Cmp(_zero_Rat) == 0 {
+					return Number(1), ArErr{}
+				}
+				exponent_numerator := new(big.Int).Abs(ReceivingNumber.Num())
+				exponent_denominator := ReceivingNumber.Denom()
+				output := new(big.Rat).Set(CurrentNumber)
+				output_float, _ := output.Float64()
+				// error if output_float is infinity
+				if math.IsInf(output_float, 0) {
+					return nil, ArErr{"Runtime Error", "number too large to perform rational exponential calculations on it.", 0, "", "", true}
+				}
+				exponent_denominator_float, _ := exponent_denominator.Float64()
+				if math.IsInf(exponent_denominator_float, 0) {
+					return nil, ArErr{"Runtime Error", "demominator too large to perform rational exponential calculations on it.", 0, "", "", true}
+				}
+				if exponent_denominator_float != 1 {
+					output_float = math.Pow(output_float, 1/exponent_denominator_float)
+				}
+				output = new(big.Rat).SetFloat64(output_float)
+				output = exponentBySquaring(output, exponent_numerator)
+				if ReceivingNumber.Cmp(_zero_Rat) < 0 {
+					output = new(big.Rat).Quo(_one_Rat, output)
+				}
+				return Number(output), ArErr{}
+			}
+			return nil, ArErr{"Type Error", "expected number, got " + typeof(a[0]), 0, "", "", true}
+		},
+	}
 
 	val.obj["__factorial__"] = builtinFunc{
 		"__factorial__",
@@ -739,7 +1281,7 @@ func _int64_logic(val ArObject, CurrentNumber int64) {
 			coloured := a[0].(bool)
 			output := []string{}
 			if coloured {
-				output = append(output, "\x1b[34;5;240m")
+				output = append(output, "\x1b[34;5;25m")
 			}
 			output = append(output, fmt.Sprint(CurrentNumber))
 			if coloured {
@@ -813,6 +1355,25 @@ func _int64_logic(val ArObject, CurrentNumber int64) {
 				return Number(ReceivingNumber.Cmp(new(big.Rat).SetInt64(CurrentNumber))), ArErr{}
 			}
 			return nil, ArErr{"Type Error", "expected number, got " + typeof(a[0]), 0, "", "", true}
+		},
+	}
+
+	val.obj["__Equal__"] = builtinFunc{
+		"__Equal__",
+		func(a ...any) (any, ArErr) {
+			if len(a) != 1 {
+				return nil, ArErr{"Type Error", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
+			}
+			a[0] = ArValidToAny(a[0])
+			switch ReceivingNumber := a[0].(type) {
+			case *big.Int:
+				return big.NewInt(CurrentNumber).Cmp(ReceivingNumber) == 0, ArErr{}
+			case int64:
+				return CurrentNumber == ReceivingNumber, ArErr{}
+			case *big.Rat:
+				return new(big.Rat).SetInt64(CurrentNumber).Cmp(ReceivingNumber) == 0, ArErr{}
+			}
+			return false, ArErr{}
 		},
 	}
 
@@ -1008,11 +1569,218 @@ func _int64_logic(val ArObject, CurrentNumber int64) {
 			return nil, ArErr{"Type Error", "expected number, got " + typeof(a[0]), 0, "", "", true}
 		},
 	}
+	val.obj["__Modulo__"] = builtinFunc{
+		"__Modulo__",
+		func(a ...any) (any, ArErr) {
+			if len(a) != 1 {
+				return nil, ArErr{"Type Error", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
+			}
+			if typeof(a[0]) != "number" {
+				return nil, ArErr{"Type Error", "expected number, got " + typeof(a[0]), 0, "", "", true}
+			}
+			a[0] = ArValidToAny(a[0])
+			switch ReceivingNumber := a[0].(type) {
+			case *big.Int:
+				if ReceivingNumber.Cmp(_zero) == 0 {
+					return nil, ArErr{"Runtime Error", "division by zero", 0, "", "", true}
+				}
+				CurrentNumber_BigInt := big.NewInt(CurrentNumber)
+				return Number(new(big.Int).Mod(CurrentNumber_BigInt, ReceivingNumber)), ArErr{}
+			case int64:
+				if ReceivingNumber == 0 {
+					return nil, ArErr{"Runtime Error", "division by zero", 0, "", "", true}
+				}
+				return Number(CurrentNumber % ReceivingNumber), ArErr{}
+			case *big.Rat:
+				if ReceivingNumber.Cmp(_zero_Rat) == 0 {
+					return nil, ArErr{"Runtime Error", "division by zero", 0, "", "", true}
+				}
+				CurrentNumber_Rat := new(big.Rat).SetInt64(CurrentNumber)
+				x := newNumber().Set(ReceivingNumber)
+				output := new(big.Rat).Set(CurrentNumber_Rat)
+				x.Quo(output, x)
+				x = floor(x)
+				x.Mul(x, ReceivingNumber)
+				output.Sub(output, x)
+				return Number(output), ArErr{}
+			}
+			return nil, ArErr{"Type Error", "expected number, got " + typeof(a[0]), 0, "", "", true}
+		},
+	}
+	val.obj["__PostModulo__"] = builtinFunc{
+		"__PostModulo__",
+		func(a ...any) (any, ArErr) {
+			if len(a) != 1 {
+				return nil, ArErr{"Type Error", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
+			}
+			if typeof(a[0]) != "number" {
+				return nil, ArErr{"Type Error", "expected number, got " + typeof(a[0]), 0, "", "", true}
+			}
+			a[0] = ArValidToAny(a[0])
+			switch ReceivingNumber := a[0].(type) {
+			case *big.Int:
+				if CurrentNumber == 0 {
+					return nil, ArErr{"Runtime Error", "division by zero", 0, "", "", true}
+				}
+				return Number(new(big.Int).Mod(ReceivingNumber, big.NewInt(CurrentNumber))), ArErr{}
+			case int64:
+				if CurrentNumber == 0 {
+					return nil, ArErr{"Runtime Error", "division by zero", 0, "", "", true}
+				}
+				return Number(ReceivingNumber % CurrentNumber), ArErr{}
+			case *big.Rat:
+				if CurrentNumber == 0 {
+					return nil, ArErr{"Runtime Error", "division by zero", 0, "", "", true}
+				}
+				x := newNumber().Set(ReceivingNumber)
+				output := new(big.Rat).SetInt64(CurrentNumber)
+				x.Quo(output, x)
+				x = floor(x)
+				x.Mul(x, ReceivingNumber)
+				output.Sub(output, x)
+				return Number(output), ArErr{}
+			}
+			return nil, ArErr{"Type Error", "expected number, got " + typeof(a[0]), 0, "", "", true}
+		},
+	}
+
+	val.obj["__IntDivide__"] = builtinFunc{
+		"__IntDivide__",
+		func(a ...any) (any, ArErr) {
+			if len(a) != 1 {
+				return nil, ArErr{"Type Error", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
+			}
+			if typeof(a[0]) != "number" {
+				return nil, ArErr{"Type Error", "expected number, got " + typeof(a[0]), 0, "", "", true}
+			}
+			a[0] = ArValidToAny(a[0])
+			switch ReceivingNumber := a[0].(type) {
+			case *big.Int:
+				if ReceivingNumber.Cmp(_zero) == 0 {
+					return nil, ArErr{"Runtime Error", "division by zero", 0, "", "", true}
+				}
+				return Number(new(big.Int).Div(new(big.Int).SetInt64(CurrentNumber), ReceivingNumber)), ArErr{}
+			case int64:
+				if ReceivingNumber == 0 {
+					return nil, ArErr{"Runtime Error", "division by zero", 0, "", "", true}
+				}
+				return Number(CurrentNumber / ReceivingNumber), ArErr{}
+			case *big.Rat:
+				if ReceivingNumber.Cmp(_zero_Rat) == 0 {
+					return nil, ArErr{"Runtime Error", "division by zero", 0, "", "", true}
+				}
+				return Number(floor(new(big.Rat).Quo(new(big.Rat).SetInt64(CurrentNumber), ReceivingNumber))), ArErr{}
+			}
+			return nil, ArErr{"Type Error", "expected number, got " + typeof(a[0]), 0, "", "", true}
+		},
+	}
+
+	val.obj["__PostIntDivide__"] = builtinFunc{
+		"__PostIntDivide__",
+		func(a ...any) (any, ArErr) {
+			if len(a) != 1 {
+				return nil, ArErr{"Type Error", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
+			}
+			if typeof(a[0]) != "number" {
+				return nil, ArErr{"Type Error", "expected number, got " + typeof(a[0]), 0, "", "", true}
+			}
+			a[0] = ArValidToAny(a[0])
+			switch ReceivingNumber := a[0].(type) {
+			case *big.Int:
+				if CurrentNumber == 0 {
+					return nil, ArErr{"Runtime Error", "division by zero", 0, "", "", true}
+				}
+				return Number(new(big.Int).Div(ReceivingNumber, new(big.Int).SetInt64(CurrentNumber))), ArErr{}
+			case int64:
+				if CurrentNumber == 0 {
+					return nil, ArErr{"Runtime Error", "division by zero", 0, "", "", true}
+				}
+				return Number(CurrentNumber / ReceivingNumber), ArErr{}
+			case *big.Rat:
+				if CurrentNumber == 0 {
+					return nil, ArErr{"Runtime Error", "division by zero", 0, "", "", true}
+				}
+				return Number(floor(new(big.Rat).Quo(ReceivingNumber, new(big.Rat).SetInt64(CurrentNumber)))), ArErr{}
+			}
+			return nil, ArErr{"Type Error", "expected number, got " + typeof(a[0]), 0, "", "", true}
+		},
+	}
+
+	val.obj["__Power__"] = builtinFunc{
+		"__Power__",
+		func(a ...any) (any, ArErr) {
+			if len(a) != 1 {
+				return nil, ArErr{"Type Error", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
+			}
+			if typeof(a[0]) != "number" {
+				return nil, ArErr{"Type Error", "expected number, got " + typeof(a[0]), 0, "", "", true}
+			}
+			a[0] = ArValidToAny(a[0])
+			switch ReceivingNumber := a[0].(type) {
+			case *big.Int:
+				if ReceivingNumber.Cmp(_zero) == 0 {
+					return Number(1), ArErr{}
+				}
+				output := new(big.Int).SetInt64(CurrentNumber)
+				output.Exp(output, new(big.Int).Abs(ReceivingNumber), nil)
+				if ReceivingNumber.Cmp(_zero) < 0 {
+					output = new(big.Int).Quo(_one, output)
+				}
+				return Number(output), ArErr{}
+			case int64:
+				if ReceivingNumber == 0 {
+					return Number(1), ArErr{}
+				}
+				output := new(big.Int).SetInt64(CurrentNumber)
+				output.Exp(output, new(big.Int).Abs(big.NewInt(ReceivingNumber)), nil)
+				if ReceivingNumber < 0 {
+					output = new(big.Int).Quo(_one, output)
+				}
+				return Number(output), ArErr{}
+			case *big.Rat:
+				if ReceivingNumber.Cmp(_zero_Rat) == 0 {
+					return Number(1), ArErr{}
+				}
+				exponent_numerator := new(big.Int).Abs(ReceivingNumber.Num())
+				exponent_denominator := ReceivingNumber.Denom()
+				output := new(big.Rat).SetInt64(CurrentNumber)
+				output_float, _ := output.Float64()
+				// error if output_float is infinity
+				if math.IsInf(output_float, 0) {
+					return nil, ArErr{"Runtime Error", "number too large to perform rational exponential calculations on it.", 0, "", "", true}
+				}
+				exponent_denominator_float, _ := exponent_denominator.Float64()
+				if math.IsInf(exponent_denominator_float, 0) {
+					return nil, ArErr{"Runtime Error", "demominator too large to perform rational exponential calculations on it.", 0, "", "", true}
+				}
+				if exponent_denominator_float != 1 {
+					output_float = math.Pow(output_float, 1/exponent_denominator_float)
+				}
+				output = new(big.Rat).SetFloat64(output_float)
+				output = exponentBySquaring(output, exponent_numerator)
+				if ReceivingNumber.Cmp(_zero_Rat) < 0 {
+					output = new(big.Rat).Quo(_one_Rat, output)
+				}
+				return Number(output), ArErr{}
+			}
+			return nil, ArErr{"Type Error", "expected number, got " + typeof(a[0]), 0, "", "", true}
+		},
+	}
 
 	val.obj["__factorial__"] = builtinFunc{
 		"__factorial__",
 		func(a ...any) (any, ArErr) {
-			return nil, ArErr{"Runtime Error", "factorial of a non-integer number", 0, "", "", true}
+			if CurrentNumber < 0 {
+				return nil, ArErr{"Runtime Error", "factorial of a negative number", 0, "", "", true}
+			}
+			if CurrentNumber == 0 {
+				return Number(1), ArErr{}
+			}
+			result := big.NewInt(1)
+			for i := int64(1); i <= CurrentNumber; i++ {
+				result.Mul(result, big.NewInt(i))
+			}
+			return Number(result), ArErr{}
 		},
 	}
 }
