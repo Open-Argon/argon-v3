@@ -17,7 +17,12 @@ ARGON 3 is a math-driven programming language designed to make code easy to read
    - Cross-platform: Argon 3 can be run on any platform that has an interpreter for it.
 
 ## 💻 Installation
-As of now, Argon 3 does not have an installer. Feel free to clone this repo and run the `build` file for your plateform. the build will be found in `bin/argon(.exe)`.
+### Windows
+As of now, Argon 3 does not have a windows installer. Feel free to clone this repo and run the `build.bat` file. the build will be found in `bin\argon.exe`.
+If you want to also use the isotope package manager, you can find the source code [here](https://github.com/open-argon/isotope).
+
+### UNIX based (macOS and Linux)
+Unix based operating systems can use the argon installer script found at [https://argon.wbell.dev/](https://argon.wbell.dev/). The script should run on all modern linux distros, and should also work on macOS with limited support. It may also work on other Unix based operating systems such at FreeBSD, but those are untested but are supported if you have issues.
 
 ## 📖 Usage
 To use Argon 3, you can create a file with the .ar extension and write your code in it. Then, you can run your code using the interpreter. For example, if you have a file called example.ar, you can run it using the following command:
