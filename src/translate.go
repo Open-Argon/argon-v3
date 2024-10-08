@@ -139,6 +139,9 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine i
 			return nil, worked, err, step
 		}
 	}
+	if isNegative(code) {
+		return parseNegative(code, index, codelines)
+	}
 	if !QuickKnownFailures["call"+code.code] && isCall(code) {
 		resp, worked, err, i = parseCall(code, index, codelines)
 		if worked {
@@ -146,9 +149,7 @@ func translateVal(code UNPARSEcode, index int, codelines []UNPARSEcode, isLine i
 		}
 		QuickKnownFailures["call"+code.code] = true
 	}
-	if isNegative(code) {
-		return parseNegative(code, index, codelines)
-	} else if isMapGet(code) {
+	if isMapGet(code) {
 		return mapGetParse(code, index, codelines)
 	} else if !QuickKnownFailures["indexget"+code.code] && isIndexGet(code) {
 		resp, worked, err, i = indexGetParse(code, index, codelines)

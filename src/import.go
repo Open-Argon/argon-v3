@@ -156,6 +156,7 @@ func translateImport(realpath string, origin string, topLevelOnly bool) (transla
 
 	importing[p] = true
 	translated, translationerr := translate(codelines)
+	debugPrintln(translated...)
 	importing[p] = false
 
 	if translationerr.EXISTS {
