@@ -42,7 +42,7 @@ func anyToArgon(x any, quote bool, simplify bool, depth int, indent int, colored
 		}
 	case number:
 		if colored {
-			output = append(output, "\x1b[34;5;240m")
+			output = append(output, "\x1b[34;240m")
 		}
 		num, _ := x.Float64()
 		if math.IsNaN(num) {
@@ -59,7 +59,7 @@ func anyToArgon(x any, quote bool, simplify bool, depth int, indent int, colored
 		}
 	case bool:
 		if colored {
-			output = append(output, "\x1b[35;5;240m")
+			output = append(output, "\x1b[35;240m")
 		}
 		output = append(output, strconv.FormatBool(x))
 		if colored {
@@ -67,7 +67,7 @@ func anyToArgon(x any, quote bool, simplify bool, depth int, indent int, colored
 		}
 	case nil:
 		if colored {
-			output = append(output, "\x1b[31;5;240m")
+			output = append(output, "\x1b[31;240m")
 		}
 		output = append(output, "null")
 		if colored {
@@ -128,7 +128,7 @@ func anyToArgon(x any, quote bool, simplify bool, depth int, indent int, colored
 			} else {
 				outputkeyval := []string{}
 				if colored {
-					outputkeyval = append(outputkeyval, "\x1b[36;5;240m")
+					outputkeyval = append(outputkeyval, "\x1b[36;240m")
 				}
 				outputkeyval = append(outputkeyval, key.(string))
 				if colored {
@@ -148,7 +148,7 @@ func anyToArgon(x any, quote bool, simplify bool, depth int, indent int, colored
 				output = append(output, anyToArgon(item, true, true, depth-1, indent+1, colored, plain))
 			}
 			if colored {
-				output = append(output, "\x1b[38;5;240m(...)\x1b[0m")
+				output = append(output, "\x1b[38;240m(...)\x1b[0m")
 			} else {
 				output = append(output, "(...)")
 			}
@@ -173,7 +173,7 @@ func anyToArgon(x any, quote bool, simplify bool, depth int, indent int, colored
 		return "[" + maybenewline + (strings.Repeat("    ", (indent+1)*plain)) + strings.Join(output, ","+maybenewline+(strings.Repeat("    ", (indent+1)*plain))) + maybenewline + (strings.Repeat("    ", indent*plain)) + "]"
 	case builtinFunc:
 		if colored {
-			output = append(output, "\x1b[38;5;240m")
+			output = append(output, "\x1b[38;240m")
 		}
 		output = append(output, "<builtin function "+x.name+">")
 		if colored {
@@ -181,7 +181,7 @@ func anyToArgon(x any, quote bool, simplify bool, depth int, indent int, colored
 		}
 	case Callable:
 		if colored {
-			output = append(output, "\x1b[38;5;240m")
+			output = append(output, "\x1b[38;240m")
 		}
 		output = append(output, "<function "+x.name+">")
 		if colored {
