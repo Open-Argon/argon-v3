@@ -1,23 +1,36 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
+	"log"
 	"os"
 
+	"github.com/chzyer/readline"
 	"golang.org/x/term"
 )
 
-func input(args ...any) string {
+var tempFilePath = os.TempDir() + "/argon_input_history.tmp"
+
+func input(args ...any) (string, error) {
 	output := []any{}
 	for i := 0; i < len(args); i++ {
 		output = append(output, anyToArgon(args[i], false, true, 3, 0, true, 0))
 	}
-	fmt.Print(output...)
-	scanner := bufio.NewScanner(os.Stdin)
-	scanner.Scan()
-	input := scanner.Text()
-	return input
+	message := fmt.Sprint(output...)
+	rl, err := readline.NewEx(&readline.Config{
+		Prompt:            message,
+		HistoryFile:       tempFilePath,
+		HistorySearchFold: true,
+	})
+	if err != nil {
+		log.Fatalf("Failed to create readline instance: %v", err)
+	}
+	defer rl.Close()
+	line, err := rl.Readline()
+	if err != nil { // io.EOF or other error
+		return "", err
+	}
+	return line, nil
 }
 
 func getPassword(args ...any) (string, error) {
@@ -25,38 +38,21 @@ func getPassword(args ...any) (string, error) {
 	for i := 0; i < len(args); i++ {
 		output = append(output, anyToArgon(args[i], false, true, 3, 0, true, 0))
 	}
-	fmt.Print(output...)
-	password := []byte{}
-
-	oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
+	message := fmt.Sprint(output...)
+	rl, err := readline.NewEx(&readline.Config{
+		Prompt:     message,
+		MaskRune:   '*',
+		EnableMask: true,
+	})
 	if err != nil {
-		panic(err)
+		log.Fatalf("Failed to create readline instance: %v", err)
 	}
-	defer term.Restore(int(os.Stdin.Fd()), oldState)
-
-	for {
-		char := make([]byte, 1)
-		_, err := os.Stdin.Read(char)
-		if err != nil {
-			return "", err
-		}
-		if char[0] == 3 || char[0] == 4 {
-			return "", fmt.Errorf("keyboard interupt")
-		} else if char[0] == '\r' || char[0] == '\n' {
-			fmt.Println()
-			break
-		} else if char[0] == '\b' || char[0] == 127 {
-			if len(password) > 0 {
-				password = password[:len(password)-1]
-				fmt.Print("\b \b")
-			}
-		} else {
-			password = append(password, char[0])
-			fmt.Print("*")
-		}
+	defer rl.Close()
+	line, err := rl.Readline()
+	if err != nil { // io.EOF or other error
+		return "", err
 	}
-	fmt.Print("\r")
-	return string(password), nil
+	return line, nil
 }
 
 func pause() {

@@ -140,7 +140,15 @@ var ArInput = Map(
 			return ArString(resp), ArErr{}
 		}},
 		"__call__": builtinFunc{"input", func(args ...any) (any, ArErr) {
-			return input(args...), ArErr{}
+			inp, err := input(args...)
+			if err != nil {
+				return nil, ArErr{
+					TYPE:    "Runtime Error",
+					message: err.Error(),
+					EXISTS:  true,
+				}
+			}
+			return ArString(inp), ArErr{}
 		}},
 		"pause": builtinFunc{"pause", func(args ...any) (any, ArErr) {
 			pause()
