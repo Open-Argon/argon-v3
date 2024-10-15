@@ -3,11 +3,22 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/signal"
 	"strings"
 )
 
 func shell(global ArObject) {
 	stack := stack{global, newscope()}
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	go func() {
+		for sig := range c {
+			if sig == os.Interrupt {
+				fmt.Println("\x1b[0m\n\x1b[32;5;240mBye :)\x1b[0m")
+				os.Exit(0)
+			}
+		}
+	}()
 	fmt.Print("\x1b[32;240mWelcome to the Argon v3!\x1b[0m\n\n")
 	for {
 		indent := 0
