@@ -9,6 +9,7 @@ func makeGlobal() ArObject {
 	var vars = anymap{}
 	vars["global"] = vars
 	vars["env"] = env
+	vars["platform"] = platform
 	vars["term"] = ArTerm
 	vars["ArgonVersion"] = ArString(VERSION)
 	vars["ArgonVersionNumber"] = newNumber().SetInt64(VERSION_NUM)

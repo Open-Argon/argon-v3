@@ -14,7 +14,7 @@ func shell(global ArObject) {
 	go func() {
 		for sig := range c {
 			if sig == os.Interrupt {
-				fmt.Println("\x1b[0m\n\x1b[32;5;240mBye :)\x1b[0m")
+				fmt.Println("\x1b[0m\n\x1b[32;240mBye :)\x1b[0m")
 				os.Exit(0)
 			}
 		}
@@ -27,7 +27,7 @@ func shell(global ArObject) {
 		textBefore := ">>>"
 		for i := 1; indent > 0 || (previous != indent && indent >= 0) || i == 1; i++ {
 			indentStr := strings.Repeat("    ", indent)
-			inp, err := input("\x1b[38;240m" + textBefore + indentStr + " \x1b[0m\x1b[1;240m")
+			inp, err := input("\x1b[38;240m" + textBefore + indentStr + " \x1b[0m")
 			if err != nil {
 				fmt.Println("\x1b[0m\n\x1b[32;240mBye :)\x1b[0m")
 				os.Exit(0)
