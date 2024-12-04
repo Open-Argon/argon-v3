@@ -20,8 +20,8 @@ var operations = []string{
 	"==",
 	"+",
 	"-",
-	"*",
 	"%",
+	"*",
 	"//",
 	"/",
 	"^",
@@ -918,9 +918,9 @@ func runOperation(o operationType, stack stack, stacklevel int) (any, ArErr) {
 	case 11:
 		return calcNegative(o, stack, stacklevel+1)
 	case 12:
-		return calcMul(o, stack, stacklevel+1)
-	case 13:
 		return calcMod(o, stack, stacklevel+1)
+	case 13:
+		return calcMul(o, stack, stacklevel+1)
 	case 14:
 		return calcIntDiv(o, stack, stacklevel+1)
 	case 15:
