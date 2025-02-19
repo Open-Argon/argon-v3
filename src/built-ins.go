@@ -11,7 +11,7 @@ func makeGlobal() ArObject {
 	vars["env"] = env
 	vars["term"] = ArTerm
 	vars["ArgonVersion"] = ArString(VERSION)
-	vars["ArgonVersionNumber"] = newNumber().SetInt64(VERSION_NUM)
+	vars["ArgonVersionNumber"] = Number(VERSION_NUM)
 	vars["number"] = builtinFunc{"number", ArgonNumber}
 	vars["string"] = builtinFunc{"string", ArgonString}
 	vars["socket"] = Map(anymap{
@@ -65,12 +65,8 @@ func makeGlobal() ArObject {
 		}
 		a[0] = ArValidToAny(a[0])
 		switch x := a[0].(type) {
-		case number:
-			if x.Denom().Cmp(_one_Rat.Denom()) != 0 {
-				return nil, ArErr{TYPE: "Type Error", message: "Cannot convert non-integer to hex", EXISTS: true}
-			}
-			n := x.Num().Int64()
-			return ArString(fmt.Sprintf("%x", n)), ArErr{}
+		case int64:
+			return ArString(fmt.Sprintf("%x", x)), ArErr{}
 		}
 		return nil, ArErr{TYPE: "Type Error", message: "Cannot convert '" + typeof(a[0]) + "' to hex", EXISTS: true}
 	}}
@@ -131,22 +127,21 @@ func makeGlobal() ArObject {
 			return nil, ArErr{TYPE: "round", message: "round takes 1 argument",
 				EXISTS: true}
 		}
-		precision := newNumber()
+		var precision int64 = 0
 		if len(a) > 1 {
+			a[1] = ArValidToAny(a[1])
 			switch x := a[1].(type) {
-			case number:
-				if !x.IsInt() {
-					return nil, ArErr{TYPE: "Type Error", message: "Cannot round to '" + typeof(a[1]) + "'", EXISTS: true}
-				}
+			case int64:
 				precision = x
 			default:
 				return nil, ArErr{TYPE: "Type Error", message: "Cannot round to '" + typeof(a[1]) + "'", EXISTS: true}
 			}
 		}
-
 		switch x := a[0].(type) {
-		case number:
-			return round(newNumber().Set(x), int(precision.Num().Int64())), ArErr{}
+		case ArObject:
+			if round_method, ok := x.obj["__round__"]; ok {
+				return builtinCall(round_method, []any{Number(precision)})
+			}
 		}
 		return nil, ArErr{TYPE: "Type Error", message: "Cannot round '" + typeof(a[0]) + "'", EXISTS: true}
 	}}
@@ -156,8 +151,10 @@ func makeGlobal() ArObject {
 				EXISTS: true}
 		}
 		switch x := a[0].(type) {
-		case number:
-			return floor(x), ArErr{}
+		case ArObject:
+			if floor_method, ok := x.obj["__floor__"]; ok {
+				return builtinCall(floor_method, []any{})
+			}
 		}
 		return nil, ArErr{TYPE: "Type Error", message: "Cannot floor '" + typeof(a[0]) + "'", EXISTS: true}
 	}}
@@ -166,10 +163,11 @@ func makeGlobal() ArObject {
 			return nil, ArErr{TYPE: "ceil", message: "ceil takes 1 argument",
 				EXISTS: true}
 		}
-
 		switch x := a[0].(type) {
-		case number:
-			return ceil(x), ArErr{}
+		case ArObject:
+			if ceil_method, ok := x.obj["__ceil__"]; ok {
+				return builtinCall(ceil_method, []any{})
+			}
 		}
 		return nil, ArErr{TYPE: "Type Error", message: "Cannot ceil '" + typeof(a[0]) + "'", EXISTS: true}
 	}}
@@ -198,8 +196,6 @@ func makeGlobal() ArObject {
 				EXISTS: true}
 		}
 		switch x := a[0].(type) {
-		case number:
-			return ArString(x.String()), ArErr{}
 		case ArObject:
 			if callable, ok := x.obj["__fraction__"]; ok {
 				resp, err := runCall(
@@ -239,9 +235,11 @@ func makeGlobal() ArObject {
 		if len(a) == 0 {
 			os.Exit(0)
 		}
+		a[0] = ArValidToAny(a[0])
 		switch x := a[0].(type) {
-		case number:
-			os.Exit(int(floor(x).Num().Int64()))
+		case int64:
+			os.Exit(int(x))
+			return nil, ArErr{}
 		}
 		os.Exit(0)
 		return nil, ArErr{}
@@ -267,7 +265,7 @@ func makeGlobal() ArObject {
 			if len(x) != 1 {
 				return nil, ArErr{TYPE: "ord", message: "ord takes a string with only one character, got " + fmt.Sprint(len(a)), EXISTS: true}
 			}
-			return floor(newNumber().SetInt64(int64([]rune(x)[0]))), ArErr{}
+			return Number(int64([]rune(x)[0])), ArErr{}
 		}
 		return nil, ArErr{TYPE: "Type Error", message: "Cannot convert '" + typeof(a[0]) + "' to string", EXISTS: true}
 	}}
@@ -281,15 +279,27 @@ func makeGlobal() ArObject {
 			if len(x) == 0 {
 				return nil, ArErr{TYPE: "runtime Error", message: "max takes a non-empty array", EXISTS: true}
 			}
-			var max number
+			var max ArObject
 			for i, v := range x {
-				switch m := v.(type) {
-				case number:
+				switch x := v.(type) {
+				case ArObject:
 					if i == 0 {
-						max = m
+						max = x
 					} else {
-						if m.Cmp(max) == 1 {
-							max = m
+						compared, err := CompareObjects(max, x)
+
+						if err.EXISTS {
+							return nil, err
+						}
+
+						compared_int, Err := numberToInt64(compared)
+
+						if Err != nil {
+							return nil, ArErr{TYPE: "Type Error", message: Err.Error(), EXISTS: true}
+						}
+
+						if compared_int == 1 {
+							max = x
 						}
 					}
 				}
@@ -308,15 +318,27 @@ func makeGlobal() ArObject {
 			if len(x) == 0 {
 				return nil, ArErr{TYPE: "runtime Error", message: "max takes a non-empty array", EXISTS: true}
 			}
-			var max number
+			var max ArObject
 			for i, v := range x {
-				switch m := v.(type) {
-				case number:
+				switch x := v.(type) {
+				case ArObject:
 					if i == 0 {
-						max = m
+						max = x
 					} else {
-						if m.Cmp(max) == -1 {
-							max = m
+						compared, err := CompareObjects(max, x)
+
+						if err.EXISTS {
+							return nil, err
+						}
+
+						compared_int, Err := numberToInt64(compared)
+
+						if Err != nil {
+							return nil, ArErr{TYPE: "Type Error", message: Err.Error(), EXISTS: true}
+						}
+
+						if compared_int == -1 {
+							max = x
 						}
 					}
 				}

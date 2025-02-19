@@ -153,11 +153,11 @@ func ArRead(args ...any) (any, ArErr) {
 				if typeof(args[0]) != "number" {
 					return ArObject{}, ArErr{TYPE: "Runtime Error", message: "buffer takes a number not type '" + typeof(args[0]) + "'", EXISTS: true}
 				}
-				size := args[0].(number)
-				if size.Denom().Int64() != 1 {
-					return ArObject{}, ArErr{TYPE: "Runtime Error", message: "buffer takes an integer not type '" + typeof(args[0]) + "'", EXISTS: true}
+				size, err := numberToInt64(args[0].(ArObject))
+				if err != nil {
+					return ArObject{}, ArErr{TYPE: "Runtime Error", message: err.Error(), EXISTS: true}
 				}
-				buf := make([]byte, size.Num().Int64())
+				buf := make([]byte, size)
 				n, err := file.Read(buf)
 				if err != nil {
 					return ArObject{}, ArErr{TYPE: "Runtime Error", message: err.Error(), EXISTS: true}
@@ -177,11 +177,11 @@ func ArRead(args ...any) (any, ArErr) {
 			if typeof(args[0]) != "number" {
 				return ArObject{}, ArErr{TYPE: "Runtime Error", message: "seek takes a number not type '" + typeof(args[0]) + "'", EXISTS: true}
 			}
-			offset := args[0].(number)
-			if offset.Denom().Int64() != 1 {
-				return ArObject{}, ArErr{TYPE: "Runtime Error", message: "seek takes an integer not type '" + typeof(args[0]) + "'", EXISTS: true}
+			offset, Err := numberToInt64(args[0].(ArObject))
+			if Err != nil {
+				return ArObject{}, ArErr{TYPE: "Runtime Error", message: Err.Error(), EXISTS: true}
 			}
-			_, err := file.Seek(offset.Num().Int64(), io.SeekStart)
+			_, err := file.Seek(offset, io.SeekStart)
 			if err != nil {
 				return ArObject{}, ArErr{TYPE: "Runtime Error", message: err.Error(), EXISTS: true}
 			}
@@ -192,7 +192,7 @@ func ArRead(args ...any) (any, ArErr) {
 			if err != nil {
 				return ArObject{}, ArErr{TYPE: "Runtime Error", message: err.Error(), EXISTS: true}
 			}
-			return newNumber().SetInt64(info.Size()), ArErr{}
+			return Number(info.Size()), ArErr{}
 		}},
 		"ModTime": builtinFunc{"ModTime", func(...any) (any, ArErr) {
 			info, err := file.Stat()

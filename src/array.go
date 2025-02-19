@@ -80,7 +80,7 @@ func ArArray(arr []any) ArObject {
 			if typeof(a[0]) != "number" {
 				return nil, ArErr{
 					TYPE:    "Type Error",
-					message: "dex must be a number",
+					message: "index must be a number",
 					EXISTS:  true,
 				}
 			}

@@ -5,14 +5,24 @@ import (
 	"math"
 )
 
-var N = newNumber().SetInt64(1e6)
+var N = Number(1e6)
 
-func Ln(x number) number {
-	output := newNumber()
-	output.SetInt64(1)
-	output.Quo(output, N)
+func Ln(x ArObject) (any, ArErr) {
+	var output any = Number(1)
+	var err ArErr
+	output, err = runOperation(
+		operationType{
+			operation: 15,
+			values:    []any{x},
+		},
+		stack{},
+		0,
+	)
+	if err.EXISTS {
+		return nil, err
+	}
 
-	n1, _ := x.Float64()
+	n1, _ := x_rational.Float64()
 	n2, _ := output.Float64()
 	output = newNumber().SetFloat64(math.Pow(n1, n2))
 	output.Sub(output, newNumber().SetInt64(1))
@@ -34,10 +44,11 @@ func ArgonLn(a ...any) (any, ArErr) {
 		return nil, ArErr{TYPE: "Runtime Error", message: "ln takes a positive number",
 			EXISTS: true}
 	}
-	return Ln(x), ArErr{}
+	return Ln(x)
+	
 }
 
-var __ln10 = Ln(newNumber().SetInt64(10))
+var __ln10, _ = Ln(Number(10))
 
 func ArgonLog(a ...any) (any, ArErr) {
 	if len(a) != 1 {
@@ -53,7 +64,7 @@ func ArgonLog(a ...any) (any, ArErr) {
 		return nil, ArErr{TYPE: "Runtime Error", message: "log takes a positive number",
 			EXISTS: true}
 	}
-	return Ln(x).Quo(Ln(x), __ln10), ArErr{}
+	return Ln(x).Quo(Ln(x), __ln10)
 }
 
 func ArgonLogN(a ...any) (any, ArErr) {

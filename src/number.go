@@ -13,12 +13,12 @@ var hexCompile = makeRegex("( *)(-)?(0x[a-fA-F0-9]+(\\.[a-fA-F0-9]+)?)( *)")
 var octalCompile = makeRegex("( *)(-)?(0o[0-7]+(\\.[0-7]+)?(e((\\-|\\+)?([0-9]+(\\.[0-9]+)?)))?)( *)")
 
 // a number type
-type number = *big.Rat
+// type number = *big.Rat
 
 // create a new number type
-func newNumber() *big.Rat {
-	return new(big.Rat)
-}
+// func newNumber() *big.Rat {
+// 	return new(big.Rat)
+// }
 
 func isNumber(code UNPARSEcode) bool {
 	return numberCompile.MatchString(code.code) || binaryCompile.MatchString(code.code) || hexCompile.MatchString(code.code) || octalCompile.MatchString(code.code)

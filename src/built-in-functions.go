@@ -48,26 +48,12 @@ func ArgonSqrt(a ...any) (any, ArErr) {
 		return nil, ArErr{TYPE: "Runtime Error", message: "sqrt takes 1 argument",
 			EXISTS: true}
 	}
-	if typeof(a[0]) != "number" {
-		return nil, ArErr{TYPE: "Runtime Error", message: "sqrt takes a number not a '" + typeof(a[0]) + "'",
+	if _, ok := a[0].(ArObject); !ok {
+		return nil, ArErr{TYPE: "Runtime Error", message: "can't sqrt type '" + typeof(a[0]) + "'",
 			EXISTS: true}
 	}
-
-	r := a[0].(number)
-
-	if r.Sign() < 0 {
-		return nil, ArErr{TYPE: "Runtime Error", message: "sqrt takes a positive number",
-			EXISTS: true}
+	if sqrt_method, ok := a[0].(ArObject).obj["__sqrt__"]; ok {
+		return builtinCall(sqrt_method, []any{})
 	}
-
-	var x big.Float
-	x.SetPrec(30)
-	x.SetRat(r)
-
-	var s big.Float
-	s.SetPrec(15)
-	s.Sqrt(&x)
-
-	r, _ = s.Rat(nil)
-	return r, ArErr{}
+	return nil, ArErr{TYPE: "Runtime Error", message: "can't sqrt type '" + typeof(a[0]) + "'"}
 }
