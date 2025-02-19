@@ -267,7 +267,7 @@ func makeGlobal() ArObject {
 		switch x := a[0].(type) {
 		case string:
 			if len(x) != 1 {
-				return nil, ArErr{TYPE: "ord", message: "ord takes a string with only one character, got " + fmt.Sprint(len(a)), EXISTS: true}
+				return nil, ArErr{TYPE: "ord", message: "ord takes a string with only one character, got " + fmt.Sprint(len(x)), EXISTS: true}
 			}
 			return floor(newNumber().SetInt64(int64([]rune(x)[0]))), ArErr{}
 		}

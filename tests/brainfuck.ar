@@ -1,33 +1,45 @@
-let interpret(code) = do
-    memory = map()
+let brainfuck(INPUT) = do
+    memory = [0] * 30*1000
     pointer = 0
-    code_ptr = 0
-    loops = []
+    output = ""
+    i = 0
+    while (i < INPUT.length) do
+        if (INPUT[i] == ">") do
+            pointer += 1
+        else if (INPUT[i] == "<") do
+            pointer -= 1
+        else if (INPUT[i] == "+") do
+            memory[pointer] += 1
+        else if (INPUT[i] == "-") do
+            memory[pointer] -= 1
+        else if (INPUT[i] == ".") do
+            output += chr(memory[pointer])
+        else if (INPUT[i] == ",") do
+            memory[pointer] = ord(input())
+        else if (INPUT[i] == "[") do
+            if (memory[pointer] == 0) do
+                count = 1
+                while (count > 0) do
+                    i += 1
+                    if (INPUT[i] == "[") do
+                        count += 1
+                    else if (INPUT[i] == "]") do
+                        count -= 1
+        else if (INPUT[i] == "]") do
+            if (memory[pointer] != 0) do
+                count = 1
+                while (count > 0) do
+                    i -= 1
+                    if (INPUT[i] == "]") do
+                        count += 1
+                    else if (INPUT[i] == "[") do
+                        count -= 1
+        else do
+            pass
+        i += 1
+    term.print(memory)
+    return output
 
-    while (code_ptr < code.length) do
-        command = code[code_ptr]
-
-        if (command == '>') pointer = pointer + 1
-        else if (command == '<') pointer = pointer - 1
-        else if (command == '+') do
-            if (pointer not in memory) memory[pointer] = 0
-            memory[pointer] = memory[pointer] + 1
-        else if (command == '-') do
-            if (pointer not in memory) memory[pointer] = 0
-            memory[pointer] = memory[pointer] - 1
-        else if (command == '.') term.log((memory.get(pointer, 0)))
-        else if (command == ',') memory[pointer] = ord(input())
-        else if (command == '[') do
-            if (memory.get(pointer, 0) == 0) do
-                loop_depth = 1
-                while (loop_depth > 0) do
-                    code_ptr = code_ptr + 1
-                    if (code[code_ptr] == '[') loop_depth = loop_depth + 1
-                    else if (code[code_ptr] == ']') loop_depth = loop_depth - 1
-            else loops.append(code_ptr)
-        else if (command == ']') do
-            if (memory.get(pointer, 0) != 0) code_ptr = loops[-1]
-            else loops.pop()
-        code_ptr = code_ptr + 1
-
-interpret('>+++++++++[<++++++++>-]<.>+++++++[<++++>-]<+.+++++++..+++.>>>++++++++[<++++>-]<.>>>++++++++++[<+++++++++>-]<---.<<<<.+++.------.--------.>>+.>++++++++++.')
+term.time("brainfuck")
+term.plain.oneLine(brainfuck(input()))
+term.timeEnd("brainfuck")

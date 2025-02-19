@@ -1,0 +1,9 @@
+import "http.ar" as http
+
+let server = http.server()
+
+let home(req,res) = do
+    res.send("hello world")
+server.get("/", home)
+
+server.run()

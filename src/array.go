@@ -61,6 +61,29 @@ func ArArray(arr []any) ArObject {
 			return nil, ArErr{}
 		},
 	}
+	val.obj["__Multiply__"] = builtinFunc{
+		"__Multiply__",
+		func(a ...any) (any, ArErr) {
+			if len(a) != 1 {
+				return nil, ArErr{"Type Error", "expected 1 argument, got " + fmt.Sprint(len(a)), 0, "", "", true}
+			}
+			if typeof(a[0]) != "number" {
+				return nil, ArErr{"Type Error", "cannot multiply array by " + typeof(a[0]), 0, "", "", true}
+			}
+			n := a[0].(number)
+			if !n.IsInt() {
+				return nil, ArErr{"Value Error", "cannot multiply array by float", 0, "", "", true}
+			}
+			if n.Sign() < 0 {
+				return nil, ArErr{"Value Error", "cannot multiply array by negative number", 0, "", "", true}
+			}
+			size := int(n.Num().Int64())
+			retval := make([]any, 0, len(arr)*size)
+			for i := 0; i < size; i++ {
+				retval = append(retval, arr...)
+			}
+			return ArArray(retval), ArErr{}
+		}}
 	val.obj["__getindex__"] = builtinFunc{
 		"__getindex__",
 		func(a ...any) (any, ArErr) {
@@ -474,7 +497,7 @@ func ArArray(arr []any) ArObject {
 			}
 			if len(arr) == 0 {
 				return nil, ArErr{
-					TYPE:    "ValueError",
+					TYPE:    "Value Error",
 					message: "array is empty",
 					EXISTS:  true,
 				}

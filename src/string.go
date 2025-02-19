@@ -629,10 +629,10 @@ func ArString(str string) ArObject {
 			}
 			n := a[0].(number)
 			if !n.IsInt() {
-				return nil, ArErr{"ValueError", "cannot multiply string by float", 0, "", "", true}
+				return nil, ArErr{"Value Error", "cannot multiply string by float", 0, "", "", true}
 			}
 			if n.Sign() < 0 {
-				return nil, ArErr{"ValueError", "cannot multiply string by negative number", 0, "", "", true}
+				return nil, ArErr{"Value Error", "cannot multiply string by negative number", 0, "", "", true}
 			}
 			return strings.Repeat(str, int(n.Num().Int64())), ArErr{}
 		}}

@@ -53,7 +53,7 @@ func ArByte(Byte byte) ArObject {
 				n := x.Num().Int64()
 				if n > 255 || n < 0 {
 					return nil, ArErr{
-						TYPE:    "ValueError",
+						TYPE:    "Value Error",
 						message: "expected number between 0 and 255, got " + fmt.Sprint(floor(x).Num().Int64()),
 						EXISTS:  true,
 					}
@@ -62,7 +62,7 @@ func ArByte(Byte byte) ArObject {
 			case string:
 				if len(x) != 1 {
 					return nil, ArErr{
-						TYPE:    "ValueError",
+						TYPE:    "Value Error",
 						message: "expected string of length 1, got " + fmt.Sprint(len(x)),
 						EXISTS:  true,
 					}
